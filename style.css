@@ -1,0 +1,197 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #fff;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header & Logo */
+header {
+  text-align: center;
+  padding: 20px 0;
+  background-color: #000; /* Black background for header */
+  color: #d4af37;       /* Gold text for a professional feel */
+}
+
+.logo img {
+  max-width: 150px;
+}
+
+/* Navbar Styles */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #000;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.nav-links li a:hover {
+  color: #fff;
+}
+
+.login-btn a {
+  background-color: #d4af37;
+  padding: 8px 16px;
+  color: #000;
+  text-decoration: none;
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.login-btn a:hover {
+  background-color: #fff;
+}
+
+/* Hamburger Menu */
+.menu-toggle {
+  font-size: 24px;
+  cursor: pointer;
+  color: #d4af37;
+}
+
+/* Side Menu (Sliding Drawer) */
+.side-menu {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  background-color: #000;
+  overflow-x: hidden;
+  transition: 0.3s;
+  padding-top: 60px;
+}
+
+.side-menu a {
+  padding: 10px 20px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #d4af37;
+  display: block;
+  transition: 0.3s;
+}
+
+.side-menu a:hover {
+  color: #fff;
+}
+
+.side-menu .closebtn {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 36px;
+}
+
+/* Main Content Sections */
+.placeholder-section {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.placeholder-section h2 {
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.placeholder-section p {
+  max-width: 800px;
+  margin: 0 auto;
+  color: #333;
+}
+
+/* Login Section Styles */
+.login-section {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+}
+
+.login-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: 'Montserrat', sans-serif;
+  color: #000;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  background-color: #d4af37;
+  color: #000;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #fff;
+}
+
+/* Footer Styles */
+footer {
+  text-align: center;
+  padding: 20px 0;
+  background-color: #000;
+  color: #d4af37;
+  margin-top: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none; /* Hide normal nav links on smaller screens */
+  }
+  
+  .navbar {
+    justify-content: space-between;
+  }
+}

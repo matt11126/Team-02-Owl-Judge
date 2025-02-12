@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - About Us</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Side Sliding Drawer -->
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="#">Project Selection</a>
+  </div>
+
+  <!-- Common Header -->
+  <header>
+    <!-- Logo -->
+    <div class="logo">
+      <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+    </div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <!-- Hamburger Menu -->
+      <div class="menu-toggle" id="menu-toggle">
+        <i class="fas fa-bars"></i>
+      </div>
+      <!-- Navigation Links -->
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="vote_casting.html">Vote Casting</a></li>
+        <li><a href="about_us.html">About Us</a></li>
+        <li><a href="contact_us.html">Contact Us</a></li>
+      </ul>
+      <!-- Login Button / Welcome Message -->
+      <div class="login-btn" id="loginBtnContainer">
+        <a href="login.html">Login</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content: About Us -->
+  <main>
+    <section class="placeholder-section">
+      <h2>About OwlJudge</h2>
+      <p>
+        OwlJudge is a revolutionary web-based platform designed to streamline student project evaluations. Our mission is to provide a fair, transparent, and efficient process for judges and administrators.
+      </p>
+      <p>
+        We leverage modern technology to create a seamless experience in academic reviews. Whether you are a judge or an admin, our platform offers innovative tools to manage the entire evaluation process.
+      </p>
+      <p>
+        Join us as we redefine academic excellence and promote fairness in evaluations.
+      </p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript: Sliding Drawer & Logged-In User Display -->
+  <script>
+    // Sliding Drawer Functionality
+    document.getElementById("menu-toggle").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "250px";
+    });
+    document.getElementById("closebtn").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "0";
+    });
+
+    // Check if a user is logged in and display their name instead of the Login link
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (loggedInUser) {
+      document.getElementById("loginBtnContainer").innerHTML = `<span>Welcome, ${loggedInUser}</span>`;
+    }
+  </script>
+</body>
+</html>
