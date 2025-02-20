@@ -1,45 +1,42 @@
-/* Global Styles */
-* {
+/* Ensure html and body fill the entire viewport */
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
+/* Make the body a flex container with column direction */
 body {
+  display: flex;
+  flex-direction: column;
   font-family: 'Roboto', sans-serif;
-  background-color: #fff;
-  color: #333;
-  line-height: 1.6;
 }
 
-/* Header & Logo */
+/* Header styling */
 header {
+  background-color: #000;
+  color: #d4af37;
+  padding: 20px;
   text-align: center;
-  padding: 20px 0;
-  background-color: #000; /* Black background for header */
-  color: #d4af37;       /* Gold text for a professional feel */
 }
 
+/* Logo styling */
 .logo img {
   max-width: 150px;
 }
 
-/* Navbar Styles */
-.navbar {
+/* Navigation Bar */
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background-color: #000;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
+  justify-content: center;
   gap: 20px;
 }
 
-.nav-links li a {
+nav ul li a {
   text-decoration: none;
   color: #d4af37;
   font-family: 'Montserrat', sans-serif;
@@ -47,10 +44,11 @@ header {
   transition: color 0.3s;
 }
 
-.nav-links li a:hover {
+nav ul li a:hover {
   color: #fff;
 }
 
+/* Login/User Dropdown styling */
 .login-btn a {
   background-color: #d4af37;
   padding: 8px 16px;
@@ -66,24 +64,77 @@ header {
   background-color: #fff;
 }
 
-/* Hamburger Menu */
-.menu-toggle {
-  font-size: 24px;
+/* User Dropdown */
+.user-dropdown {
+  position: relative;
   cursor: pointer;
-  color: #d4af37;
+  display: flex;
+  align-items: center;
 }
 
-/* Side Menu (Sliding Drawer) */
+.user-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #d4af37;
+  border-radius: 4px;
+  padding: 8px 0;
+  display: none;
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 16px;
+  color: #000;
+  text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+  background-color: #d4af37;
+  color: #000;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+/* Main content grows to fill available space */
+main {
+  flex: 1;
+  padding: 20px;
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+/* Footer at the bottom */
+footer {
+  background-color: #000;
+  color: #d4af37;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Side Drawer */
 .side-menu {
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 100;
+  z-index: 1100;
   top: 0;
   left: 0;
   background-color: #000;
   overflow-x: hidden;
-  transition: 0.3s;
+  transition: width 0.3s;
   padding-top: 60px;
 }
 
@@ -93,7 +144,7 @@ header {
   font-size: 20px;
   color: #d4af37;
   display: block;
-  transition: 0.3s;
+  transition: color 0.3s;
 }
 
 .side-menu a:hover {
@@ -105,93 +156,24 @@ header {
   top: 10px;
   right: 20px;
   font-size: 36px;
-}
-
-/* Main Content Sections */
-.placeholder-section {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.placeholder-section h2 {
-  font-family: 'Montserrat', sans-serif;
-  margin-bottom: 10px;
-  color: #000;
-}
-
-.placeholder-section p {
-  max-width: 800px;
-  margin: 0 auto;
-  color: #333;
-}
-
-/* Login Section Styles */
-.login-section {
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-  border: 1px solid #d4af37;
-  border-radius: 8px;
-}
-
-.login-section h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-family: 'Montserrat', sans-serif;
-  color: #000;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.btn {
-  display: block;
-  width: 100%;
-  background-color: #d4af37;
-  color: #000;
-  border: none;
-  padding: 10px;
-  font-size: 16px;
-  font-family: 'Montserrat', sans-serif;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.btn:hover {
-  background-color: #fff;
-}
-
-/* Footer Styles */
-footer {
-  text-align: center;
-  padding: 20px 0;
-  background-color: #000;
   color: #d4af37;
-  margin-top: 40px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .nav-links {
-    display: none; /* Hide normal nav links on smaller screens */
-  }
-  
-  .navbar {
-    justify-content: space-between;
-  }
+/* Center form elements in pages like Login/Signup/Contact */
+.login-section, .contact-form, .signup-section {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
 }
+
+.form-group input,
+.form-group textarea {
+  display: block;
+  margin: 10px auto;
+  width: 100%;
+  max-width: 400px;
+}
+
+
+
+

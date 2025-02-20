@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OwlJudge - Profile</title>
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <!-- External CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,17 +17,16 @@
 
   <!-- Common Header -->
   <header>
-    <!-- Logo -->
+    <!-- Clickable Logo -->
     <div class="logo">
-      <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+      <a href="index.html">
+        <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+      </a>
     </div>
-    <!-- Navigation Bar -->
     <nav class="navbar">
-      <!-- Hamburger Menu -->
       <div class="menu-toggle" id="menu-toggle">
         <i class="fas fa-bars"></i>
       </div>
-      <!-- Navigation Links -->
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="vote_casting.html">Vote Casting</a></li>
@@ -38,7 +34,6 @@
         <li><a href="contact_us.html">Contact Us</a></li>
         <li><a href="profile.html">Profile</a></li>
       </ul>
-      <!-- Login Button / Welcome Message Container -->
       <div class="login-btn" id="loginBtnContainer">
         <a href="login.html">Login</a>
       </div>
@@ -69,12 +64,11 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript -->
   <script>
-    // --- Sliding Drawer Functionality ---
+    // Sliding Drawer Functionality
     document.getElementById("menu-toggle").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "250px";
     });
@@ -82,49 +76,51 @@
       document.getElementById("side-menu").style.width = "0";
     });
 
-    // --- Check Logged-In User ---
+    // Ensure user is logged in
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (!loggedInUser) {
-      // If no user is logged in, redirect to login page
       window.location.href = "login.html";
     } else {
-      // Replace the Login link with a welcome message in the header
-      document.getElementById("loginBtnContainer").innerHTML = `<span>Welcome, ${loggedInUser}</span>`;
+      document.getElementById("loginBtnContainer").innerHTML = `
+        <div class="user-dropdown" id="userDropdown">
+          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
+          <span class="user-name">${loggedInUser}</span>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logoutLink">Log Out</a>
+          </div>
+        </div>
+      `;
     }
 
-    // --- Profile Picture Display ---
+    // Display stored profile picture if available
     const profilePictureElement = document.getElementById("profilePicture");
     const storedPicture = localStorage.getItem("profilePicture");
     if (storedPicture) {
       profilePictureElement.src = storedPicture;
     } else {
-      // Use a placeholder if no profile picture has been uploaded
       profilePictureElement.src = "https://via.placeholder.com/200?text=No+Picture";
     }
 
-    // --- Handle File Upload for Profile Picture ---
+    // Handle profile picture upload
     document.getElementById("profileUpload").addEventListener("change", function(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
           const base64Image = e.target.result;
-          // Save the image in localStorage (for demo purposes)
           localStorage.setItem("profilePicture", base64Image);
-          // Update the displayed profile picture
           profilePictureElement.src = base64Image;
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // --- Log Out Functionality ---
+    // Log Out Button functionality
     document.getElementById("logoutButton").addEventListener("click", function() {
-      // Remove the logged-in user (and optionally the profile picture) from localStorage
       localStorage.removeItem("loggedInUser");
-      // Optionally, remove the profile picture as well:
+      // Optionally remove the profile picture:
       // localStorage.removeItem("profilePicture");
-      // Redirect to the login page
       window.location.href = "login.html";
     });
   </script>

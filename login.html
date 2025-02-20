@@ -9,14 +9,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- (Optional) You can include the common header here if desired -->
+  <!-- Minimal Header with Clickable Logo -->
   <header>
     <div class="logo">
-      <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+      <a href="index.html">
+        <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+      </a>
     </div>
   </header>
 
-  <!-- Login Form Section -->
+  <!-- Login Form Section (centered via CSS) -->
   <main>
     <section class="login-section">
       <h2>Login</h2>
@@ -37,11 +39,11 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
   <script>
-    // Dummy authentication example for demonstration purposes only
+    // Dummy authentication for demonstration purposes
     const dummyUser = {
       username: "user@example.com",
       password: "password123",
@@ -52,10 +54,8 @@
       event.preventDefault();
       const usernameInput = document.getElementById("username").value;
       const passwordInput = document.getElementById("password").value;
-
       if (usernameInput === dummyUser.username && passwordInput === dummyUser.password) {
         localStorage.setItem("loggedInUser", dummyUser.name);
-        // Redirect to home page or dashboard as desired
         window.location.href = "index.html";
       } else {
         document.getElementById("error").textContent = "Invalid username or password. Please try again.";

@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Home</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <!-- External CSS -->
   <link rel="stylesheet" href="style.css">
+  <!-- Include Google Fonts and Font Awesome in your project as needed -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
   <!-- Side Sliding Drawer -->
@@ -18,79 +16,89 @@
     <a href="#">Project Selection</a>
   </div>
 
-  <!-- Header Section -->
+  <!-- Common Header -->
   <header>
-    <!-- Placeholder Logo -->
     <div class="logo">
-      <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+      <a href="index.html">
+        <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+      </a>
     </div>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-      <!-- Hamburger Menu on Left -->
-      <div class="menu-toggle" id="menu-toggle">
-        <i class="fas fa-bars"></i>
-      </div>
-      <!-- Centered Navigation Links -->
-      <ul class="nav-links">
+    <nav>
+      <ul>
         <li><a href="index.html">Home</a></li>
         <li><a href="vote_casting.html">Vote Casting</a></li>
         <li><a href="about_us.html">About Us</a></li>
         <li><a href="contact_us.html">Contact Us</a></li>
+        <li id="loginSignupContainer"></li>
       </ul>
-      <!-- Login Button / Welcome Message on Right -->
-      <div class="login-btn" id="loginBtnContainer">
-        <a href="login.html">Login</a>
-      </div>
     </nav>
   </header>
 
-  <!-- Main Content: Placeholder Sections -->
   <main>
-    <section class="placeholder-section" id="section1">
-      <h2>Welcome to OwlJudge</h2>
-      <p>
-        Experience a revolutionary platform designed to streamline student project evaluations. OwlJudge provides a fair and transparent process for judges and admins.
-      </p>
-    </section>
-    
-    <section class="placeholder-section" id="section2">
-      <h2>Our Innovative Platform</h2>
-      <p>
-        Leveraging modern technology, our platform offers secure role-based access, a dynamic interface, and engaging interactions for judges, admins, and students alike.
-      </p>
-    </section>
-    
-    <section class="placeholder-section" id="section3">
-      <h2>Get Involved</h2>
-      <p>
-        Whether you’re here to cast a vote or manage the process, OwlJudge makes it simple. Join us in shaping the future of academic evaluations.
-      </p>
+    <section class="welcome">
+      <h1>Welcome to OwlJudge</h1>
+      <p>Your platform for fair and transparent student project evaluations.</p>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript -->
   <script>
-    // Sliding Drawer Functionality
-    document.getElementById("menu-toggle").addEventListener("click", function() {
+    // Side Drawer functionality (if you have a hamburger trigger elsewhere)
+    document.getElementById("menu-toggle")?.addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "250px";
     });
-    document.getElementById("closebtn").addEventListener("click", function() {
+    document.getElementById("closebtn")?.addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "0";
     });
 
-    // Check if the user is logged in
-    const loggedInUser = localStorage.getItem("loggedInUser");
+    // Dynamic header: if a user is logged in, display user dropdown; otherwise, show Login | Signup
+    const container = document.getElementById('loginSignupContainer');
+    const loggedInUser = localStorage.getItem('loggedInUser');
     if (loggedInUser) {
-      // Replace the login button with a welcome message
-      document.getElementById("loginBtnContainer").innerHTML = `<span>Welcome, ${loggedInUser}</span>`;
+      container.innerHTML = `
+        <div class="user-dropdown" id="userDropdown">
+          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
+          <span class="user-name">${loggedInUser}</span>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logoutLink">Log Out</a>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `<a href="login.html">Login</a> | <a href="signup.html">Signup</a>`;
     }
+
+    // Toggle dropdown menu for user
+    document.addEventListener("click", function(e) {
+      const userDropdown = document.getElementById("userDropdown");
+      if (userDropdown) {
+        if (userDropdown.contains(e.target)) {
+          const dropdownMenu = document.getElementById("dropdownMenu");
+          dropdownMenu.classList.toggle("show");
+        } else {
+          const dropdownMenu = document.getElementById("dropdownMenu");
+          if (dropdownMenu) dropdownMenu.classList.remove("show");
+        }
+      }
+    });
+
+    // Log out functionality
+    document.addEventListener("click", function(e) {
+      if (e.target && e.target.id === "logoutLink") {
+        e.preventDefault();
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "login.html";
+      }
+    });
   </script>
 </body>
 </html>
+
+
+
 
 

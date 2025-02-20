@@ -3,17 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OwlJudge - Vote Casting</title>
+  <title>OwlJudge - Signup</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
-  <div id="side-menu" class="side-menu">
-    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
-    <a href="#">Project Selection</a>
-  </div>
-
   <header>
     <div class="logo">
       <a href="index.html">
@@ -30,20 +25,51 @@
       </ul>
     </nav>
   </header>
-
+  
   <main>
-    <section class="welcome">
-      <h1>Vote Casting</h1>
-      <p>This page is designed for judges to review submissions and cast their votes.</p>
-      <!-- Insert your vote casting UI elements here -->
+    <section class="signup-section">
+      <h2>Create an Account</h2>
+      <form id="signupForm" action="#" method="post">
+        <div class="form-group">
+          <label for="signupUsername">Username or Email</label>
+          <input type="text" id="signupUsername" name="signupUsername" placeholder="Enter your username or email" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" name="signupPassword" placeholder="Enter a password" required>
+        </div>
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" placeholder="Confirm your password" required>
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+      <p id="signupError" style="color:red;"></p>
     </section>
   </main>
-
+  
   <footer>
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
-
+  
   <script>
+    // Simple signup demo: store the username and redirect to home.
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const username = document.getElementById("signupUsername").value;
+      const password = document.getElementById("signupPassword").value;
+      const confirmPassword = document.getElementById("signupConfirmPassword").value;
+      
+      if (password !== confirmPassword) {
+        document.getElementById("signupError").textContent = "Passwords do not match.";
+        return;
+      }
+      
+      // For demo purposes, store the username as the logged-in user
+      localStorage.setItem("loggedInUser", username);
+      window.location.href = "index.html";
+    });
+    
     const container = document.getElementById('loginSignupContainer');
     const loggedInUser = localStorage.getItem('loggedInUser');
     if (loggedInUser) {
@@ -80,13 +106,6 @@
         localStorage.removeItem("loggedInUser");
         window.location.href = "login.html";
       }
-    });
-    
-    document.getElementById("menu-toggle")?.addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "250px";
-    });
-    document.getElementById("closebtn")?.addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "0";
     });
   </script>
 </body>
