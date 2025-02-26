@@ -5,48 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Contact Us</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
-  <div id="side-menu" class="side-menu">
-    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
-    <a href="#">Project Selection</a>
-  </div>
-  
   <header>
-    <div class="logo">
-      <a href="index.html">
-        <img src="image.png" alt="OwlJudge Logo" class="logo-img">
-      </a>
+    <div class="header-container">
+      <!-- Left: Hamburger & Logo -->
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <!-- Middle: Navigation Links -->
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vote_casting.html">Vote Casting</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Right: Auth Buttons -->
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
+      </div>
     </div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vote_casting.html">Vote Casting</a></li>
-        <li><a href="about_us.html">About Us</a></li>
-        <li><a href="contact_us.html">Contact Us</a></li>
-        <li id="loginSignupContainer"></li>
-      </ul>
-    </nav>
   </header>
   
   <main>
-    <section class="welcome">
+    <section class="contact">
       <h1>Contact OwlJudge</h1>
-      <p>We'd love to hear from you! Please use the form below to get in touch.</p>
+      <p>We would love to hear from you. Reach out for any queries or feedback.</p>
       <form class="contact-form">
         <div class="form-group">
-          <label for="name">Name</label>
-          <input type="text" id="name" name="name" placeholder="Your Name" required>
+          <label for="contact-name">Name</label>
+          <input type="text" id="contact-name" name="contact-name" placeholder="Your Name" required>
         </div>
         <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="Your Email" required>
+          <label for="contact-email">Email</label>
+          <input type="email" id="contact-email" name="contact-email" placeholder="Your Email" required>
         </div>
         <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5" placeholder="Your Message" required></textarea>
+          <label for="contact-message">Message</label>
+          <textarea id="contact-message" name="contact-message" rows="5" placeholder="Your Message" required></textarea>
         </div>
         <button type="submit" class="btn">Send Message</button>
       </form>
@@ -58,45 +68,8 @@
   </footer>
   
   <script>
-    const container = document.getElementById('loginSignupContainer');
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    if (loggedInUser) {
-      container.innerHTML = `
-        <div class="user-dropdown" id="userDropdown">
-          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
-          <span class="user-name">${loggedInUser}</span>
-          <div class="dropdown-menu" id="dropdownMenu">
-            <a href="profile.html">Profile</a>
-            <a href="#" id="logoutLink">Log Out</a>
-          </div>
-        </div>
-      `;
-    } else {
-      container.innerHTML = `<a href="login.html">Login</a> | <a href="signup.html">Signup</a>`;
-    }
-    
-    document.addEventListener("click", function(e) {
-      const userDropdown = document.getElementById("userDropdown");
-      if (userDropdown) {
-        if (userDropdown.contains(e.target)) {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          dropdownMenu.classList.toggle("show");
-        } else {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          if (dropdownMenu) dropdownMenu.classList.remove("show");
-        }
-      }
-    });
-    
-    document.addEventListener("click", function(e) {
-      if (e.target && e.target.id === "logoutLink") {
-        e.preventDefault();
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "login.html";
-      }
-    });
-    
-    document.getElementById("menu-toggle")?.addEventListener("click", function() {
+    // Hamburger menu functionality
+    document.getElementById("menu-toggle").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "250px";
     });
     document.getElementById("closebtn")?.addEventListener("click", function() {
@@ -105,6 +78,7 @@
   </script>
 </body>
 </html>
+
 
 
 

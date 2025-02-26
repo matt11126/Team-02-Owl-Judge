@@ -1,128 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Profile</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Side Sliding Drawer -->
-  <div id="side-menu" class="side-menu">
-    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
-    <a href="#">Project Selection</a>
-  </div>
-
-  <!-- Common Header -->
   <header>
-    <!-- Clickable Logo -->
-    <div class="logo">
-      <a href="index.html">
-        <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
-      </a>
+    <div class="header-container">
+      <!-- Left: Hamburger & Logo -->
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <!-- Middle: Navigation Links -->
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vote_casting.html">Vote Casting</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Right: Auth Buttons (if logged in, these are replaced by user dropdown via JS) -->
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
+      </div>
     </div>
-    <nav class="navbar">
-      <div class="menu-toggle" id="menu-toggle">
-        <i class="fas fa-bars"></i>
-      </div>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vote_casting.html">Vote Casting</a></li>
-        <li><a href="about_us.html">About Us</a></li>
-        <li><a href="contact_us.html">Contact Us</a></li>
-        <li><a href="profile.html">Profile</a></li>
-      </ul>
-      <div class="login-btn" id="loginBtnContainer">
-        <a href="login.html">Login</a>
-      </div>
-    </nav>
   </header>
-
-  <!-- Profile Content -->
+  
   <main>
-    <section class="placeholder-section">
-      <h2>Profile</h2>
-      <div id="profileContainer" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-        <!-- Profile Picture Display -->
-        <div id="profilePictureContainer">
-          <img id="profilePicture" src="" alt="Profile Picture" style="max-width: 200px; border-radius: 50%; border: 2px solid #d4af37;">
-        </div>
-        <!-- File Upload for Profile Picture -->
-        <div id="uploadSection">
-          <label for="profileUpload">Upload Profile Picture:</label>
-          <input type="file" id="profileUpload" accept="image/*">
-        </div>
-        <!-- Log Out Button -->
-        <div id="logoutSection">
-          <button id="logoutButton" class="btn">Log Out</button>
-        </div>
+    <section class="profile">
+      <h1>Your Profile</h1>
+      <p>Manage your account and upload your profile picture.</p>
+      <div class="profile-picture-container">
+        <img id="profilePicture" src="https://via.placeholder.com/200?text=No+Picture" alt="Profile Picture">
+        <input type="file" id="profileUpload" accept="image/*">
       </div>
+      <button class="btn" id="logoutButton">Log Out</button>
     </section>
   </main>
-
-  <!-- Footer -->
+  
   <footer>
-    <p>© 2025 OwlJudge. All rights reserved.</p>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
-
+  
   <script>
-    // Sliding Drawer Functionality
-    document.getElementById("menu-toggle").addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "250px";
-    });
-    document.getElementById("closebtn").addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "0";
-    });
-
-    // Ensure user is logged in
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (!loggedInUser) {
-      window.location.href = "login.html";
-    } else {
-      document.getElementById("loginBtnContainer").innerHTML = `
-        <div class="user-dropdown" id="userDropdown">
-          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
-          <span class="user-name">${loggedInUser}</span>
-          <div class="dropdown-menu" id="dropdownMenu">
-            <a href="profile.html">Profile</a>
-            <a href="#" id="logoutLink">Log Out</a>
-          </div>
-        </div>
-      `;
-    }
-
-    // Display stored profile picture if available
-    const profilePictureElement = document.getElementById("profilePicture");
-    const storedPicture = localStorage.getItem("profilePicture");
-    if (storedPicture) {
-      profilePictureElement.src = storedPicture;
-    } else {
-      profilePictureElement.src = "https://via.placeholder.com/200?text=No+Picture";
-    }
-
     // Handle profile picture upload
-    document.getElementById("profileUpload").addEventListener("change", function(event) {
-      const file = event.target.files[0];
+    const profilePic = document.getElementById('profilePicture');
+    const storedPic = localStorage.getItem('profilePicture');
+    if (storedPic) {
+      profilePic.src = storedPic;
+    }
+    document.getElementById('profileUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          const base64Image = e.target.result;
-          localStorage.setItem("profilePicture", base64Image);
-          profilePictureElement.src = base64Image;
-        };
+        reader.onload = function(evt) {
+          const dataUrl = evt.target.result;
+          localStorage.setItem('profilePicture', dataUrl);
+          profilePic.src = dataUrl;
+        }
         reader.readAsDataURL(file);
       }
     });
-
-    // Log Out Button functionality
-    document.getElementById("logoutButton").addEventListener("click", function() {
-      localStorage.removeItem("loggedInUser");
-      // Optionally remove the profile picture:
-      // localStorage.removeItem("profilePicture");
-      window.location.href = "login.html";
+    // Log out functionality for profile page
+    document.getElementById('logoutButton').addEventListener('click', function() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
     });
   </script>
 </body>
 </html>
+
+

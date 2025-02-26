@@ -1,3 +1,76 @@
+/* Header Container Setup */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Left Section: Hamburger & Logo */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+.hamburger {
+  background: none;
+  border: none;
+  color: #d4af37;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+.logo img {
+  max-width: 150px;
+}
+
+/* Middle Section: Navigation */
+.header-middle {
+  flex: 1;
+  text-align: center;
+}
+.header-middle nav ul {
+  list-style: none;
+  display: inline-flex;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+}
+.header-middle nav ul li a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.header-middle nav ul li a:hover {
+  color: #fff;
+}
+
+/* Right Section: Login/Signup or User Dropdown */
+.header-right {
+  text-align: right;
+  white-space: nowrap;
+}
+.header-right a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  margin-left: 10px;
+  transition: color 0.3s;
+}
+.header-right a:hover {
+  color: #fff;
+}
+
+/* (Keep the rest of your existing CSS below unchanged) */
+
+
+
+
+
+
+
+
 /* Ensure html and body fill the entire viewport */
 html, body {
   height: 100%;

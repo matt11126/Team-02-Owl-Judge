@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OwlJudge - Home</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Include Google Fonts and Font Awesome in your project as needed -->
+  <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
@@ -16,24 +16,39 @@
     <a href="#">Project Selection</a>
   </div>
 
-  <!-- Common Header -->
+  <!-- Header -->
   <header>
-    <div class="logo">
-      <a href="index.html">
-        <img src="image.png" alt="OwlJudge Logo" class="logo-img">
-      </a>
+    <div class="header-container">
+      <!-- Left Section: Hamburger Button & Logo -->
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <!-- Middle Section: Navigation Links -->
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vote_casting.html">Vote Casting</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Right Section: Login/Signup or User Dropdown -->
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html">Login</a> | <a href="signup.html">Signup</a>
+      </div>
     </div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vote_casting.html">Vote Casting</a></li>
-        <li><a href="about_us.html">About Us</a></li>
-        <li><a href="contact_us.html">Contact Us</a></li>
-        <li id="loginSignupContainer"></li>
-      </ul>
-    </nav>
   </header>
 
+  <!-- Main Content -->
   <main>
     <section class="welcome">
       <h1>Welcome to OwlJudge</h1>
@@ -41,20 +56,22 @@
     </section>
   </main>
 
+  <!-- Footer -->
   <footer>
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
+  <!-- JavaScript -->
   <script>
-    // Side Drawer functionality (if you have a hamburger trigger elsewhere)
-    document.getElementById("menu-toggle")?.addEventListener("click", function() {
+    // Side Drawer Functionality
+    document.getElementById("menu-toggle").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "250px";
     });
-    document.getElementById("closebtn")?.addEventListener("click", function() {
+    document.getElementById("closebtn").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "0";
     });
 
-    // Dynamic header: if a user is logged in, display user dropdown; otherwise, show Login | Signup
+    // Dynamic Header: If user is logged in, replace Login/Signup with user dropdown.
     const container = document.getElementById('loginSignupContainer');
     const loggedInUser = localStorage.getItem('loggedInUser');
     if (loggedInUser) {
@@ -68,11 +85,9 @@
           </div>
         </div>
       `;
-    } else {
-      container.innerHTML = `<a href="login.html">Login</a> | <a href="signup.html">Signup</a>`;
     }
 
-    // Toggle dropdown menu for user
+    // Toggle user dropdown on click
     document.addEventListener("click", function(e) {
       const userDropdown = document.getElementById("userDropdown");
       if (userDropdown) {
