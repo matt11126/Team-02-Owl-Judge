@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Home</title>
   <link rel="stylesheet" href="style.css">
   <!-- Google Fonts & Font Awesome -->
@@ -13,13 +13,14 @@
   <!-- Side Sliding Drawer -->
   <div id="side-menu" class="side-menu">
     <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
-    <a href="#">Project Selection</a>
+    <!-- Updated: Clicking "Project Selection" navigates to project_selection.html -->
+    <a href="project_selection.html">Project Selection</a>
   </div>
 
   <!-- Header -->
   <header>
     <div class="header-container">
-      <!-- Left Section: Hamburger Button & Logo -->
+      <!-- Left Section: Hamburger & Logo -->
       <div class="header-left">
         <button id="menu-toggle" class="hamburger">
           <i class="fas fa-bars"></i>
@@ -30,7 +31,7 @@
           </a>
         </div>
       </div>
-      <!-- Middle Section: Navigation Links -->
+      <!-- Middle Section: Navigation -->
       <div class="header-middle">
         <nav>
           <ul class="nav-links">
@@ -41,9 +42,9 @@
           </ul>
         </nav>
       </div>
-      <!-- Right Section: Login/Signup or User Dropdown -->
+      <!-- Right Section: Login/Signup -->
       <div class="header-right" id="loginSignupContainer">
-        <a href="login.html">Login</a> | <a href="signup.html">Signup</a>
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
       </div>
     </div>
   </header>
@@ -61,53 +62,13 @@
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript -->
   <script>
-    // Side Drawer Functionality
+    // Hamburger menu functionality
     document.getElementById("menu-toggle").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "250px";
     });
     document.getElementById("closebtn").addEventListener("click", function() {
       document.getElementById("side-menu").style.width = "0";
-    });
-
-    // Dynamic Header: If user is logged in, replace Login/Signup with user dropdown.
-    const container = document.getElementById('loginSignupContainer');
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    if (loggedInUser) {
-      container.innerHTML = `
-        <div class="user-dropdown" id="userDropdown">
-          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
-          <span class="user-name">${loggedInUser}</span>
-          <div class="dropdown-menu" id="dropdownMenu">
-            <a href="profile.html">Profile</a>
-            <a href="#" id="logoutLink">Log Out</a>
-          </div>
-        </div>
-      `;
-    }
-
-    // Toggle user dropdown on click
-    document.addEventListener("click", function(e) {
-      const userDropdown = document.getElementById("userDropdown");
-      if (userDropdown) {
-        if (userDropdown.contains(e.target)) {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          dropdownMenu.classList.toggle("show");
-        } else {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          if (dropdownMenu) dropdownMenu.classList.remove("show");
-        }
-      }
-    });
-
-    // Log out functionality
-    document.addEventListener("click", function(e) {
-      if (e.target && e.target.id === "logoutLink") {
-        e.preventDefault();
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "login.html";
-      }
     });
   </script>
 </body>

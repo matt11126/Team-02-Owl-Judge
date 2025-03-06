@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Profile</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="project_selection.html">Project Selection</a>
+  </div>
+
   <header>
     <div class="header-container">
-      <!-- Left: Hamburger & Logo -->
       <div class="header-left">
         <button id="menu-toggle" class="hamburger">
           <i class="fas fa-bars"></i>
@@ -23,7 +26,6 @@
           </a>
         </div>
       </div>
-      <!-- Middle: Navigation Links -->
       <div class="header-middle">
         <nav>
           <ul class="nav-links">
@@ -31,58 +33,58 @@
             <li><a href="vote_casting.html">Vote Casting</a></li>
             <li><a href="about_us.html">About Us</a></li>
             <li><a href="contact_us.html">Contact Us</a></li>
+            <li><a href="profile.html">Profile</a></li>
           </ul>
         </nav>
       </div>
-      <!-- Right: Auth Buttons (if logged in, these are replaced by user dropdown via JS) -->
       <div class="header-right" id="loginSignupContainer">
         <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
       </div>
     </div>
   </header>
-  
+
   <main>
     <section class="profile">
       <h1>Your Profile</h1>
-      <p>Manage your account and upload your profile picture.</p>
       <div class="profile-picture-container">
         <img id="profilePicture" src="https://via.placeholder.com/200?text=No+Picture" alt="Profile Picture">
         <input type="file" id="profileUpload" accept="image/*">
       </div>
-      <button class="btn" id="logoutButton">Log Out</button>
+      <button id="logoutButton" class="btn">Log Out</button>
     </section>
   </main>
-  
+
   <footer>
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
-  
+
   <script>
-    // Handle profile picture upload
-    const profilePic = document.getElementById('profilePicture');
-    const storedPic = localStorage.getItem('profilePicture');
+    // Display stored profile picture if available
+    const profilePic = document.getElementById("profilePicture");
+    const storedPic = localStorage.getItem("profilePicture");
     if (storedPic) {
       profilePic.src = storedPic;
     }
-    document.getElementById('profileUpload').addEventListener('change', function(e) {
+    
+    // Handle profile picture upload
+    document.getElementById("profileUpload").addEventListener("change", function(e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function(evt) {
           const dataUrl = evt.target.result;
-          localStorage.setItem('profilePicture', dataUrl);
+          localStorage.setItem("profilePicture", dataUrl);
           profilePic.src = dataUrl;
-        }
+        };
         reader.readAsDataURL(file);
       }
     });
-    // Log out functionality for profile page
-    document.getElementById('logoutButton').addEventListener('click', function() {
-      localStorage.removeItem('loggedInUser');
-      window.location.href = 'login.html';
+    
+    // Log out functionality
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
     });
   </script>
 </body>
 </html>
-
-

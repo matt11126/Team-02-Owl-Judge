@@ -3,33 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OwlJudge - Signup</title>
+  <title>OwlJudge - Sign Up</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
   <header>
-    <div class="logo">
-      <a href="index.html">
-        <img src="image.png" alt="OwlJudge Logo" class="logo-img">
-      </a>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vote_casting.html">Vote Casting</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
+      </div>
     </div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vote_casting.html">Vote Casting</a></li>
-        <li><a href="about_us.html">About Us</a></li>
-        <li><a href="contact_us.html">Contact Us</a></li>
-        <li id="loginSignupContainer"></li>
-      </ul>
-    </nav>
   </header>
-  
+
   <main>
     <section class="signup-section">
-      <h2>Create an Account</h2>
-      <form id="signupForm" action="#" method="post">
+      <h1>Create an Account</h1>
+      <form id="signupForm">
         <div class="form-group">
           <label for="signupUsername">Username or Email</label>
           <input type="text" id="signupUsername" name="signupUsername" placeholder="Enter your username or email" required>
@@ -47,65 +58,24 @@
       <p id="signupError" style="color:red;"></p>
     </section>
   </main>
-  
+
   <footer>
     <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
-  
+
   <script>
-    // Simple signup demo: store the username and redirect to home.
     document.getElementById("signupForm").addEventListener("submit", function(event) {
       event.preventDefault();
       const username = document.getElementById("signupUsername").value;
       const password = document.getElementById("signupPassword").value;
       const confirmPassword = document.getElementById("signupConfirmPassword").value;
-      
       if (password !== confirmPassword) {
         document.getElementById("signupError").textContent = "Passwords do not match.";
         return;
       }
-      
-      // For demo purposes, store the username as the logged-in user
+      // For demo purposes, store the username as logged-in
       localStorage.setItem("loggedInUser", username);
       window.location.href = "index.html";
-    });
-    
-    const container = document.getElementById('loginSignupContainer');
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    if (loggedInUser) {
-      container.innerHTML = `
-        <div class="user-dropdown" id="userDropdown">
-          <img src="https://via.placeholder.com/40?text=User" alt="User Icon" class="user-icon">
-          <span class="user-name">${loggedInUser}</span>
-          <div class="dropdown-menu" id="dropdownMenu">
-            <a href="profile.html">Profile</a>
-            <a href="#" id="logoutLink">Log Out</a>
-          </div>
-        </div>
-      `;
-    } else {
-      container.innerHTML = `<a href="login.html">Login</a> | <a href="signup.html">Signup</a>`;
-    }
-    
-    document.addEventListener("click", function(e) {
-      const userDropdown = document.getElementById("userDropdown");
-      if (userDropdown) {
-        if (userDropdown.contains(e.target)) {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          dropdownMenu.classList.toggle("show");
-        } else {
-          const dropdownMenu = document.getElementById("dropdownMenu");
-          if (dropdownMenu) dropdownMenu.classList.remove("show");
-        }
-      }
-    });
-    
-    document.addEventListener("click", function(e) {
-      if (e.target && e.target.id === "logoutLink") {
-        e.preventDefault();
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "login.html";
-      }
     });
   </script>
 </body>

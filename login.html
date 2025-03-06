@@ -4,24 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwlJudge - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
-  <!-- Minimal Header with Clickable Logo -->
   <header>
-    <div class="logo">
-      <a href="index.html">
-        <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
-      </a>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vote_casting.html">Vote Casting</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
+      </div>
     </div>
   </header>
 
-  <!-- Login Form Section (centered via CSS) -->
   <main>
     <section class="login-section">
-      <h2>Login</h2>
+      <h1>Login</h1>
       <form id="loginForm">
         <div class="form-group">
           <label for="username">Username or Email</label>
@@ -37,17 +55,16 @@
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>© 2025 OwlJudge. All rights reserved.</p>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
   </footer>
 
   <script>
     // Dummy authentication for demonstration purposes
     const dummyUser = {
-      username: "user@example.com",
-      password: "password123",
-      name: "John Doe"
+      username: "testuser@example.com",
+      password: "Test1234!",
+      name: "Test User"
     };
 
     document.getElementById("loginForm").addEventListener("submit", function(event) {
