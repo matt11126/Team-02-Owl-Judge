@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Voting</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header: same pattern as your other pages -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+            <!-- The “Voting” link can also be injected by our .js if needed -->
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <!-- If user is not logged in, show login/sign up; otherwise your session code or the .js will replace it -->
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="voting-section">
+      <h1>Voting Page</h1>
+      <p>Please cast your votes based on the following rubric by selecting the appropriate bubble for each category.</p>
+      <form id="votingForm">
+        <!-- Undergraduate and Graduate Projects (Scale 0-10) -->
+        <div class="rating-category">
+          <p>Successfully completed stated project goals and reported deliverables:</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Methodology/Approach (clear, organized, articulated):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Effective verbal presentation:</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Evidence of Rigor:</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Merit and Broader impact:</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+
+        <!-- Games (Scale 0-10) -->
+        <div class="rating-category">
+          <p>TECHNICAL (Visual &amp; audio fidelity):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>GAMEPLAY (Engaging &amp; fun; intuitive UI; clear rules &amp; win/lose state):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>ORIGINALITY (Art, design, or code):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Evidence of Rigor (Games):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+        <div class="rating-category">
+          <p>Merit and Broader impact (Games):</p>
+          <div class="rating-bubbles" data-max="10"></div>
+        </div>
+
+        <!-- Alumni's Choice Award Rubric (using custom max values) -->
+        <div class="rating-category">
+          <p>Team Approach (0-20):</p>
+          <div class="rating-bubbles" data-max="20"></div>
+        </div>
+        <div class="rating-category">
+          <p>Presentation (0-20):</p>
+          <div class="rating-bubbles" data-max="20"></div>
+        </div>
+        <div class="rating-category">
+          <p>Use of Technology (0-40):</p>
+          <div class="rating-bubbles" data-max="40"></div>
+        </div>
+        <div class="rating-category">
+          <p>Feasibility/Impact for Business/Industry (0-20):</p>
+          <div class="rating-bubbles" data-max="20"></div>
+        </div>
+
+        <button type="submit" class="btn">Submit Vote</button>
+      </form>
+      <p id="voteStatus"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- Inline JS: Create the bubble UI & handle form submission -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // 1) Create bubble UI
+      const ratingCategories = document.querySelectorAll(".rating-category");
+      ratingCategories.forEach(category => {
+        const container = category.querySelector(".rating-bubbles");
+        let max = parseInt(container.getAttribute("data-max") || "10", 10);
+        container.innerHTML = "";
+        for (let i = 0; i <= max; i++) {
+          const bubble = document.createElement("div");
+          bubble.classList.add("bubble");
+          bubble.textContent = i;
+          bubble.dataset.value = i;
+          bubble.addEventListener("click", function() {
+            [...container.children].forEach(b => b.classList.remove("selected"));
+            bubble.classList.add("selected");
+          });
+          container.appendChild(bubble);
+        }
+      });
+
+      // 2) On form submit, gather chosen bubble values
+      const votingForm = document.getElementById("votingForm");
+      votingForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        let voteData = {};
+        ratingCategories.forEach((cat, idx) => {
+          const sel = cat.querySelector(".bubble.selected");
+          voteData["category_" + idx] = sel ? sel.dataset.value : null;
+        });
+        document.getElementById("voteStatus").textContent =
+          "Votes submitted: " + JSON.stringify(voteData);
+        // For a real app, you’d do a fetch() to your server endpoint with voteData
+      });
+    });
+  </script>
+<script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+
+</body>
+</html>
