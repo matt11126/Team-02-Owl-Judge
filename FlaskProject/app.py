@@ -2,12 +2,19 @@ from flask import Flask, render_template, request, session, jsonify, flash, redi
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
+from flask_sqlalchemy import SQLAlchemy                                            # added by dba
+
 app = Flask(__name__)
 # Use a strong secret key (in production, use environment variables)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'                    # added by dba
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False                               # added by dba
+
+
+db = SQLAlchemy(app)                                                               # added by dba
 # In-memory user store (for demonstration - use a database in production)
 users = {}
 
