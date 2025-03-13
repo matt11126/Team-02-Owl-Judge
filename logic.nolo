@@ -1,0 +1,36 @@
+class VotingSystem:
+    def __init__(self, candidates):
+        self.candidates = {candidate: 0 for candidate in candidates}
+    
+    def cast_vote(self, candidate):
+        if candidate in self.candidates:
+            self.candidates[candidate] += 1
+            print(f"Vote cast for {candidate}!")
+        else:
+            print("Invalid candidate!")
+    
+    def get_results(self):
+        return sorted(self.candidates.items(), key=lambda x: x[1], reverse=True)
+    
+    def display_winner(self):
+        results = self.get_results()
+        winner, votes = results[0]
+        print(f"Winner: {winner} with {votes} votes!")
+
+# Example Usage
+candidates = ["Alice", "Bob", "Charlie"]
+voting = VotingSystem(candidates)
+
+# Simulating votes
+voting.cast_vote("Alice")
+voting.cast_vote("Bob")
+voting.cast_vote("Alice")
+voting.cast_vote("Charlie")
+voting.cast_vote("Alice")
+
+# Display results
+print("Final Results:")
+for candidate, votes in voting.get_results():
+    print(f"{candidate}: {votes} votes")
+
+voting.display_winner()
