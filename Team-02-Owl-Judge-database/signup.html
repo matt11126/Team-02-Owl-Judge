@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="index.html">
+            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="Audience.html">Audience</a></li>
+            <li><a href="about_us.html">About Us</a></li>
+            <li><a href="contact_us.html">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="signup-section">
+      <h1>Create an Account</h1>
+      <form id="signupForm">
+        <div class="form-group">
+          <label for="signupUsername">Username or Email</label>
+          <input type="text" id="signupUsername" name="signupUsername" placeholder="Enter your username or email" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" name="signupPassword" placeholder="Enter a password" required>
+        </div>
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" placeholder="Confirm your password" required>
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+      <p id="signupError" style="color:red;"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const username = document.getElementById("signupUsername").value;
+      const password = document.getElementById("signupPassword").value;
+      const confirmPassword = document.getElementById("signupConfirmPassword").value;
+      if (password !== confirmPassword) {
+        document.getElementById("signupError").textContent = "Passwords do not match.";
+        return;
+      }
+      // For demo purposes, store the username as logged-in
+      localStorage.setItem("loggedInUser", username);
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

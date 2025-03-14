@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Selection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header-container">
+        <div class="header-left">
+            <button class="hamburger" onclick="toggleMenu()">☰</button>
+            <div class="logo">
+                <a href="index.html"><img src="image.png" alt="OwlJudge Logo"></a>
+            </div>
+        </div>
+        <div class="header-middle">
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="Audience.html">Audience</a></li>
+                    <li><a href="about_us.html">About Us</a></li>
+                    <li><a href="contact_us.html">Contact Us</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="login.html">Login</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </header>
+
+    <main>
+        <h1>Project Selection</h1>
+        
+        <label for="projectDropdown">Select a Project:</label>
+        <select id="projectDropdown" onchange="showVotingSection()">
+            <option value="">-- Choose a project --</option>
+            <option value="proj1">AI-Powered Chatbot</option>
+            <option value="proj2">E-Commerce Dashboard</option>
+            <option value="proj3">Game Development: Space Shooter</option>
+            <option value="proj4">Cybersecurity Risk Analysis</option>
+        </select>
+
+        <div id="votingSection" class="hidden">
+            <h2>Rate the Project</h2>
+            <form id="voteForm">
+                <div class="rating-category">
+                    <p>Successfully completed stated project goals and deliverables</p>
+                    <div class="rating-bubbles" data-category="goals"></div>
+                </div>
+
+                <div class="rating-category">
+                    <p>Methodology/Approach</p>
+                    <div class="rating-bubbles" data-category="methodology"></div>
+                </div>
+
+                <div class="rating-category">
+                    <p>Effective verbal presentation</p>
+                    <div class="rating-bubbles" data-category="presentation"></div>
+                </div>
+
+                <div class="rating-category">
+                    <p>Evidence of Rigor</p>
+                    <div class="rating-bubbles" data-category="rigor"></div>
+                </div>
+
+                <div class="rating-category">
+                    <p>Merit and Broader Impact</p>
+                    <div class="rating-bubbles" data-category="impact"></div>
+                </div>
+
+                <button type="button" onclick="calculateScore()">Submit Vote</button>
+            </form>
+
+            <h3>Final Score: <span id="finalScore">0</span>/100</h3>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+

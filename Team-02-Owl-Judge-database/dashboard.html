@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OwlJudge - Dashboard</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <header>
+    <div class="logo">
+      <img src="https://via.placeholder.com/150?text=Owl+Logo" alt="OwlJudge Logo">
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main>
+    <section class="placeholder-section">
+      <h2>Welcome, <span id="userName"></span>!</h2>
+      <p>This is your dashboard. You will be redirected to the home page shortly.</p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Retrieve the logged-in user's name from localStorage
+    const userName = localStorage.getItem("loggedInUser");
+    if (userName) {
+      document.getElementById("userName").textContent = userName;
+    } else {
+      // If no user is logged in, redirect to the login page
+      window.location.href = "login.html";
+    }
+    
+    // Redirect back to index.html after 5 seconds
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 5000); // 5000 milliseconds = 5 seconds
+  </script>
+</body>
+</html>
+

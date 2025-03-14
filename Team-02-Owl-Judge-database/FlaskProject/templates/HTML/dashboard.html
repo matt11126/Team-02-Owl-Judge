@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo">
+      </div>
+      <!-- Optionally add nav links here, or keep it minimal if it's a judge-only dashboard -->
+    </div>
+  </header>
+
+  <main>
+    <section class="placeholder-section">
+      <h2>Welcome, <span id="userName"></span>!</h2>
+      <p>This is your dashboard. You will be redirected to the home page shortly.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Example: retrieve the logged-in user's name from localStorage
+    const userName = localStorage.getItem("loggedInUser");
+    if (userName) {
+      document.getElementById("userName").textContent = userName;
+    } else {
+      // If no user is logged in, redirect to the login page
+      window.location.href = "{{ url_for('login') }}";
+    }
+
+    // Redirect back to index after 5 seconds
+    setTimeout(() => {
+      window.location.href = "{{ url_for('index') }}";
+    }, 5000);
+  </script>
+
+<script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+
+</body>
+</html>

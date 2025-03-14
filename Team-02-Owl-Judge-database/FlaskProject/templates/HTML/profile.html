@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="#">Project Selection</a>
+  </div>
+
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+            <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="profile">
+      <h1>Your Profile</h1>
+      <div class="profile-picture-container">
+        <img id="profilePicture" src="https://via.placeholder.com/200?text=No+Picture" alt="Profile Picture">
+        <input type="file" id="profileUpload" accept="image/*">
+      </div>
+      <button id="logoutButton" class="btn">Log Out</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Display stored profile picture if available
+    const profilePic = document.getElementById("profilePicture");
+    const storedPic = localStorage.getItem("profilePicture");
+    if (storedPic) {
+      profilePic.src = storedPic;
+    }
+
+    // Handle profile picture upload
+    document.getElementById("profileUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const dataUrl = evt.target.result;
+          localStorage.setItem("profilePicture", dataUrl);
+          profilePic.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Log out functionality
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "{{ url_for('login') }}";
+    });
+
+    document.getElementById("menu-toggle").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "250px";
+    });
+    document.getElementById("closebtn").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "0";
+    });
+  </script>
+
+<script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+
+</body>
+</html>

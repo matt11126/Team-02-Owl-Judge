@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - About Us</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Side Sliding Drawer -->
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="#">Project Selection</a>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section class="welcome">
+      <h1>About OwlJudge</h1>
+      <p>OwlJudge is a revolutionary platform designed to streamline student project evaluations with fairness and transparency.</p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById("menu-toggle").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "250px";
+    });
+    document.getElementById("closebtn").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "0";
+    });
+  </script>
+<script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+
+</body>
+</html>
