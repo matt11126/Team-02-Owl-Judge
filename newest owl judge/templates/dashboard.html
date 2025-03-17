@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Redirect</title>
+    <style>
+        /* Center the content on the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* Style the button */
+        .vote-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50; /* Green color */
+            color: white;
+            text-decoration: none; /* Remove underline from link */
+            border-radius: 5px;
+            animation: slideIn 0.5s ease-out, pulse 2s infinite 0.5s;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        /* Hover effect: change color and scale up */
+        .vote-button:hover {
+            background-color: #45a049; /* Slightly darker green */
+            transform: scale(1.05);
+            animation: none; /* Stop pulsing on hover */
+        }
+
+        /* Click effect: scale down */
+        .vote-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Animation for sliding in from the left */
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animation for a gentle pulsing effect */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02); /* Slight grow */
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Our Voting Platform</h1>
+    <p>Click the button below to go to the voting page and cast your vote.</p>
+    <a href="voting.html" class="vote-button">Go to Voting</a>
+</body>
+</html>

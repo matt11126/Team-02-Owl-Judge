@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Voting</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Slideshow styles to complement existing style.css */
+    .slideshow-container {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .slide.active {
+      display: block;
+      opacity: 1;
+    }
+    .slideshow-nav {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .slideshow-nav button {
+      background: #4a4a4a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-family: 'Roboto', sans-serif;
+    }
+    .slideshow-nav button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .rating-category {
+      margin-bottom: 20px;
+    }
+    .rating-bubbles {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .bubble {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .bubble.selected {
+      background: #4a90e2; /* Example color, adjust to match your theme */
+      color: white;
+    }
+    #voteStatus.error {
+      color: red;
+    }
+    /* Modernized button styles for login/signup to match signup page */
+    .btn {
+      display: inline-block;
+      padding: 10px 25px; /* Slightly smaller padding for header */
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem; /* Adjusted for header context */
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(90deg, #6a82fb, #fc5c7d); /* Matching gradient */
+      border: none;
+      border-radius: 50px; /* Pill shape */
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none; /* Remove underline from links */
+      text-transform: none; /* Matching signup page */
+      letter-spacing: 0.5px;
+    }
+    .btn:hover {
+      transform: scale(1.05); /* Slightly larger scale for header */
+      box-shadow: 0 8px 20px rgba(106, 130, 251, 0.3); /* Matching shadow */
+    }
+    .btn:active {
+      transform: scale(1);
+      box-shadow: 0 4px 10px rgba(106, 130, 251, 0.2);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Space between buttons and separator */
+    }
+    .header-right span {
+      color: #fff; /* Separator color, adjust as needed */
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav aria-label="Main Navigation">
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+  <li><a href="{{ url_for('audience') }}">Audience</a></li>
+  <li><a href="{{ url_for('about') }}">About Us</a></li>
+  <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+  {% if current_user and current_user.role == 'judge' %}
+    <li><a href="{{ url_for('voting') }}">Voting</a></li>
+  {% endif %}
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <div class="header-right">
+    {% if current_user %}
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+    {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="voting-section">
+      <h1>Voting Page</h1>
+      <p>Please evaluate the project by selecting a score for each category. Navigate through the sections using the buttons below.</p>
+      <form id="votingForm" novalidate>
+        <div class="slideshow-container">
+          <!-- Slide 1: Undergraduate and Graduate Projects -->
+          <div class="slide" id="slide-1">
+            <fieldset>
+              <legend>Undergraduate and Graduate Projects (0-10)</legend>
+              <div class="rating-category">
+                <label>Successfully completed stated project goals and deliverables:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Methodology/Approach (clear, organized, articulated):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Effective verbal presentation:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Slide 2: Games -->
+          <div class="slide" id="slide-2">
+            <fieldset>
+              <legend>Games (0-10)</legend>
+              <div class="rating-category">
+                <label>Technical (Visual & Audio Fidelity):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Gameplay (Engaging & Fun; Intuitive UI; Clear Rules):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Originality (Art, Design, or Code):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Slide 3: Alumni's Choice Award -->
+          <div class="slide" id="slide-3">
+            <fieldset>
+              <legend>Alumni's Choice Award</legend>
+              <div class="rating-category">
+                <label>Team Approach (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category">
+                <label>Presentation (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category">
+                <label>Use of Technology (0-40):</label>
+                <div class="rating-bubbles" data-max="40" aria-label="Score from 0 to 40"></div>
+              </div>
+              <div class="rating-category">
+                <label>Feasibility/Impact for Business/Industry (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="slideshow-nav">
+          <button type="button" id="prevBtn" disabled>Previous</button>
+          <button type="button" id="nextBtn">Next</button>
+          <button type="submit" id="submitBtn" class="btn" style="display: none;">Submit Vote</button>
+        </div>
+      </form>
+      <p id="voteStatus" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Initialize bubbles
+      const ratingCategories = document.querySelectorAll(".rating-category");
+      ratingCategories.forEach(category => {
+        const container = category.querySelector(".rating-bubbles");
+        const max = parseInt(container.getAttribute("data-max"), 10);
+        container.innerHTML = "";
+        for (let i = 0; i <= max; i++) {
+          const bubble = document.createElement("button");
+          bubble.type = "button";
+          bubble.classList.add("bubble");
+          bubble.textContent = i;
+          bubble.dataset.value = i;
+          bubble.setAttribute("aria-label", `Score ${i} out of ${max}`);
+          bubble.addEventListener("click", function() {
+            [...container.children].forEach(b => b.classList.remove("selected"));
+            bubble.classList.add("selected");
+          });
+          container.appendChild(bubble);
+        }
+      });
+
+      // Slideshow logic
+      const slides = document.querySelectorAll(".slide");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      let currentSlide = 0;
+
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === index);
+        });
+        prevBtn.disabled = index === 0;
+        nextBtn.style.display = index === slides.length - 1 ? "none" : "inline-block";
+        submitBtn.style.display = index === slides.length - 1 ? "inline-block" : "none";
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentSlide > 0) {
+          currentSlide--;
+          showSlide(currentSlide);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentSlide < slides.length - 1) {
+          currentSlide++;
+          showSlide(currentSlide);
+        }
+      });
+
+      // Show the first slide
+      showSlide(currentSlide);
+
+      // Form submission
+      const votingForm = document.getElementById("votingForm");
+      votingForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const voteData = {};
+        let allSelected = true;
+
+        ratingCategories.forEach((cat, idx) => {
+          const sel = cat.querySelector(".bubble.selected");
+          voteData[`category_${idx}`] = sel ? sel.dataset.value : null;
+          if (!sel) allSelected = false;
+        });
+
+        const status = document.getElementById("voteStatus");
+        if (allSelected) {
+          status.textContent = "Votes submitted successfully: " + JSON.stringify(voteData);
+          status.classList.remove("error");
+          // Uncomment for real submission:
+          // fetch('/submit-vote', { method: 'POST', body: JSON.stringify(voteData), headers: { 'Content-Type': 'application/json' } });
+        } else {
+          status.textContent = "Error: Please select a score for all categories.";
+          status.classList.add("error");
+        }
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'921d9149b8cabce0',t:'MTc0MjIyNTgwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
