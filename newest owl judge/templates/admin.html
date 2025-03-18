@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}
+    OwlJudge - Admin Dashboard
+{% endblock %}
+
+{% block content %}
+    <!-- Inline Styles (assuming no styles block in base) -->
+    <style>
+        /* Main content styling */
+        main {
+            padding: 2rem;
+            min-height: 80vh;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        /* Section styling */
+        section {
+            background: #ffffff;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        /* Form group styling */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-family: 'Roboto', sans-serif;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* Form container styling */
+        .form-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        /* Button styling */
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .btn.cancel {
+            background-color: #ccc;
+        }
+
+        .btn.cancel:hover {
+            background-color: #bbb;
+        }
+
+        .btn.delete {
+            background-color: #f44336;
+        }
+
+        .btn.delete:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        section:nth-child(1) { animation-delay: 0.2s; }
+        section:nth-child(2) { animation-delay: 0.4s; }
+        section:nth-child(3) { animation-delay: 0.6s; }
+
+        /* Notification styling */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .notification.success {
+            background-color: #28a745;
+        }
+
+        .notification.error {
+            background-color: #f44336;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+            table {
+                font-size: 0.9em;
+            }
+            .btn {
+                padding: 0.4rem 0.8rem;
+            }
+        }
+    </style>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Admin Dashboard</h1>
+
+        <!-- Users Section -->
+        <section id="users">
+            <h2>Users</h2>
+            <button id="add-user-btn" class="btn">Add New User</button>
+            <div id="add-user-form" class="form-container">
+                <form id="user-form">
+                    <div class="form-group">
+                        <label for="user-email">Email</label>
+                        <input type="email" id="user-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-password">Password</label>
+                        <input type="password" id="user-password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-name">Name</label>
+                        <input type="text" id="user-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-role">Role</label>
+                        <select id="user-role" name="role">
+                            <option value="user">User</option>
+                            <option value="judge">Judge</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn cancel" id="cancel-add-user">Cancel</button>
+                </form>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    {% for user in users %}
+                    <tr data-id="{{ user.id }}">
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <button class="edit-btn btn">Edit</button>
+                            <button class="delete-btn btn delete">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects">
+            <h2>Projects</h2>
+            <button id="add-project-btn" class="btn">Add New Project</button>
+            <div id="add-project-form" class="form-container">
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name">Project Name</label>
+                        <input type="text" id="project-name" name="project_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-group-id">Group ID</label>
+                        <input type="number" id="project-group-id" name="group_id" required>
+                    </div>
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn cancel" id="cancel-add-project">Cancel</button>
+                </form>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Project ID</th>
+                        <th>Project Name</th>
+                        <th>Group ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="projects-table-body">
+                    {% for project in projects %}
+                    <tr data-id="{{ project.project_id }}">
+                        <td>{{ project.project_id }}</td>
+                        <td>{{ project.project_name }}</td>
+                        <td>{{ project.group_id }}</td>
+                        <td>
+                            <button class="edit-btn btn">Edit</button>
+                            <button class="delete-btn btn delete">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Scores Section -->
+        <section id="scores">
+            <h2>Scores</h2>
+            <button id="add-score-btn" class="btn">Add New Score</button>
+            <div id="add-score-form" class="form-container">
+                <form id="score-form">
+                    <div class="form-group">
+                        <label for="score-category">Category</label>
+                        <input type="text" id="score-category" name="category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="score-given">Score Given</label>
+                        <input type="number" id="score-given" name="score_given" min="0" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="score-project-id">Project</label>
+                        <select id="score-project-id" name="project_id" required>
+                            {% for project in projects %}
+                            <option value="{{ project.project_id }}">{{ project.project_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="score-judge-id">Judge</label>
+                        <select id="score-judge-id" name="judge_id" required>
+                            {% for user in users if user.role == 'judge' %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn cancel" id="cancel-add-score">Cancel</button>
+                </form>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Score ID</th>
+                        <th>Category</th>
+                        <th>Score Given</th>
+                        <th>Project Name</th>
+                        <th>Judge Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="scores-table-body">
+                    {% for score in scores %}
+                    <tr data-id="{{ score.score_id }}">
+                        <td>{{ score.score_id }}</td>
+                        <td>{{ score.category }}</td>
+                        <td>{{ score.score_given }}</td>
+                        <td>{{ score.project.project_name if score.project else 'N/A' }}</td>
+                        <td>{{ score.judge.name if score.judge else 'N/A' }}</td>
+                        <td>
+                            <button class="edit-btn btn">Edit</button>
+                            <button class="delete-btn btn delete">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper Functions
+            function toggleForm(formId) {
+                const formContainer = document.getElementById(formId);
+                formContainer.classList.toggle('active');
+            }
+
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                }, 10);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            }
+
+            async function handleFormSubmit(formId, url, tableBodyId, successCallback) {
+                const form = document.getElementById(formId);
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    console.log('Sending data:', data); // Debug log
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await response.json();
+                        console.log('Response:', result); // Debug log
+
+                        if (response.ok) {
+                            showNotification(result.message || 'Operation successful', 'success');
+                            successCallback(result, document.getElementById(tableBodyId));
+                            form.reset();
+                            toggleForm(formId);
+                        } else {
+                            showNotification(result.error || 'An error occurred', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showNotification('A network error occurred', 'error');
+                    }
+                });
+            }
+
+            // Users Section
+            document.getElementById('add-user-btn').addEventListener('click', () => toggleForm('add-user-form'));
+            document.getElementById('cancel-add-user').addEventListener('click', () => toggleForm('add-user-form'));
+            handleFormSubmit('user-form', '/admin/users', 'users-table-body', (result, tableBody) => {
+                const user = result.user;
+                const row = document.createElement('tr');
+                row.setAttribute('data-id', user.id);
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.email}</td>
+                    <td>${user.name}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="edit-btn btn">Edit</button>
+                        <button class="delete-btn btn delete">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Projects Section
+            document.getElementById('add-project-btn').addEventListener('click', () => toggleForm('add-project-form'));
+            document.getElementById('cancel-add-project').addEventListener('click', () => toggleForm('add-project-form'));
+            handleFormSubmit('project-form', '/admin/projects', 'projects-table-body', (result, tableBody) => {
+                const project = result.project;
+                const row = document.createElement('tr');
+                row.setAttribute('data-id', project.project_id);
+                row.innerHTML = `
+                    <td>${project.project_id}</td>
+                    <td>${project.project_name}</td>
+                    <td>${project.group_id}</td>
+                    <td>
+                        <button class="edit-btn btn">Edit</button>
+                        <button class="delete-btn btn delete">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Scores Section
+            document.getElementById('add-score-btn').addEventListener('click', () => toggleForm('add-score-form'));
+            document.getElementById('cancel-add-score').addEventListener('click', () => toggleForm('add-score-form'));
+            handleFormSubmit('score-form', '/admin/scores', 'scores-table-body', (result, tableBody) => {
+                const score = result.score;
+                const projectName = document.querySelector(`#score-project-id option[value="${score.project_id}"]`).textContent;
+                const judgeName = document.querySelector(`#score-judge-id option[value="${score.judge_id}"]`).textContent;
+                const row = document.createElement('tr');
+                row.setAttribute('data-id', score.score_id);
+                row.innerHTML = `
+                    <td>${score.score_id}</td>
+                    <td>${score.category}</td>
+                    <td>${score.score_given}</td>
+                    <td>${projectName}</td>
+                    <td>${judgeName}</td>
+                    <td>
+                        <button class="edit-btn btn">Edit</button>
+                        <button class="delete-btn btn delete">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Edit and Delete Functionality (Placeholder)
+            document.querySelectorAll('tbody').forEach(tableBody => {
+                tableBody.addEventListener('click', async (e) => {
+                    const row = e.target.closest('tr');
+                    const id = row?.getAttribute('data-id');
+                    if (!id) return;
+
+                    const section = tableBody.closest('section').id;
+                    const baseUrl = `/admin/${section}/${id}`;
+
+                    if (e.target.classList.contains('delete-btn')) {
+                        if (confirm(`Are you sure you want to delete ID ${id}?`)) {
+                            try {
+                                const response = await fetch(baseUrl, { method: 'DELETE' });
+                                const result = await response.json();
+                                if (response.ok) {
+                                    showNotification(result.message || 'Deleted successfully', 'success');
+                                    row.remove();
+                                } else {
+                                    showNotification(result.error || 'Error deleting', 'error');
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                showNotification('A network error occurred', 'error');
+                            }
+                        }
+                    } else if (e.target.classList.contains('edit-btn')) {
+                        alert('Edit functionality to be implemented');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

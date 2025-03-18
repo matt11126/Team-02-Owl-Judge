@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Contact Us</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* Side Menu Slide Animation */
+    .side-menu {
+      transition: width 0.3s ease;
+    }
+
+    /* Logo Hover Zoom Effect */
+    .logo-img {
+      transition: transform 0.3s ease;
+    }
+    .logo-img:hover {
+      transform: scale(1.1);
+    }
+
+    /* Hamburger Icon Hover Scale Effect */
+    .hamburger i {
+      transition: transform 0.3s ease;
+    }
+    .hamburger:hover i {
+      transform: scale(1.2);
+    }
+
+    /* Navigation Links Underline Effect on Hover */
+    .nav-links a {
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: currentColor;
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Login/Signup Buttons Lift Effect on Hover */
+    .header-right a.btn {
+      transition: transform 0.3s ease;
+    }
+    .header-right a.btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Main Content Animations */
+    .contact-section h1 {
+      animation: fadeInDown 1s ease;
+    }
+    .contact-section p, .contact-info, .form-group {
+      animation: fadeIn 1.2s ease;
+    }
+
+    /* Footer Fade-In Animation */
+    footer {
+      animation: fadeIn 1.5s ease;
+    }
+
+    /* Keyframes for Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Additional Styling for Contact Form */
+    .contact-section {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .contact-info {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      font-family: 'Roboto', sans-serif;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .form-group textarea {
+      height: 150px;
+      resize: vertical;
+    }
+    .btn.submit-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #formStatus {
+      margin-top: 10px;
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <!-- Side Sliding Drawer -->
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="#">Project Selection</a>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+     <div class="header-right">
+    {% if current_user %}
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+    {% endif %}
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section class="contact-section">
+      <h1>Contact Us</h1>
+      <p>Have questions or need assistance? Reach out to the OwlJudge team at Kennesaw State University’s College of Computing and Software Engineering (CCSE).</p>
+
+      <div class="contact-info">
+        <p><strong>Address:</strong> College of Computing and Software Engineering<br>
+        1100 South Marietta Pkwy SE, Marietta, GA 30060</p>
+        <p><strong>Phone:</strong> (470) 578-3803</p>
+        <p><strong>Email:</strong> ccse@kennesaw.edu</p>
+        <p><strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM</p>
+      </div>
+
+      <form id="contactForm">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Enter your message" required></textarea>
+        </div>
+        <button type="submit" class="btn submit-btn">Send Message</button>
+      </form>
+      <p id="formStatus"></p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Hamburger menu functionality
+    document.getElementById("menu-toggle").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "250px";
+    });
+    document.getElementById("closebtn").addEventListener("click", function() {
+      document.getElementById("side-menu").style.width = "0";
+    });
+
+    // Contact form submission simulation
+    document.getElementById("contactForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const message = document.getElementById("message").value;
+
+      // Basic validation
+      if (name && email && message) {
+        document.getElementById("formStatus").textContent = "Thank you, " + name + "! Your message has been sent.";
+        document.getElementById("formStatus").style.color = "green";
+        document.getElementById("contactForm").reset();
+        // In a real implementation, you'd send this data to a server via fetch()
+      } else {
+        document.getElementById("formStatus").textContent = "Please fill out all fields.";
+        document.getElementById("formStatus").style.color = "red";
+      }
+    });
+  </script>
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'921d45fa4a38bcb4',t:'MTc0MjIyMjcxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

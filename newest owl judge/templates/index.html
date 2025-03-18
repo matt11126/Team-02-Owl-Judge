@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block content %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* Existing animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Side menu animation */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: #fff;
+      opacity: 0;
+      transition: width 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+      z-index: 1000;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    }
+
+    .side-menu.open {
+      width: 250px;
+      opacity: 1;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 1rem;
+      color: #333;
+      text-decoration: none;
+    }
+
+    /* Logo fade-in on page load */
+    .logo img {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    /* Navigation links staggered fade-in */
+    .nav-links li {
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in forwards;
+    }
+
+    .nav-links li:nth-olchild(1) { animation-delay: 0.1s; }
+    .nav-links li:nth-child(2) { animation-delay: 0.2s; }
+    .nav-links li:nth-child(3) { animation-delay: 0.3s; }
+    .nav-links li:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Welcome section content fade-in with delays */
+    .welcome h1 {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 0.2s;
+    }
+
+    .welcome p {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .welcome p:nth-of-type(1) { animation-delay: 0.4s; }
+    .welcome p:nth-of-type(2) { animation-delay: 0.6s; }
+    .welcome p:nth-of-type(3) { animation-delay: 0.8s; }
+
+    /* Hover animations */
+    .nav-links a:hover, .side-menu a:hover {
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+    .header-right a.btn {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .header-right a.btn:hover, .vote-btn:hover, .signup-btn:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .hamburger:hover {
+      color: #007bff;
+      transform: rotate(90deg);
+    }
+
+    /* New content styles */
+    .featured-projects, .how-it-works, .testimonials, .get-started {
+      padding: 2rem;
+      text-align: center;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .featured-projects { animation-delay: 1.0s; }
+    .how-it-works { animation-delay: 1.2s; }
+    .testimonials { animation-delay: 1.4s; }
+    .get-started { animation-delay: 1.6s; }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .project-card {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .steps, .quotes {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1rem;
+    }
+
+    .step, .quote {
+      flex: 1;
+      margin: 0 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .get-started .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .vote-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .vote-btn:hover {
+      background-color: #218838;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-wrap: wrap;
+        padding: 1rem;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .project-grid, .steps, .quotes {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .welcome h1 { font-size: 1.5rem; }
+      .header-right a.btn, .vote-btn, .get-started .btn { padding: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+
+
+  <!-- Main Content -->
+  <main>
+    <section class="welcome">
+      <h1>Welcome to OwlJudge!</h1>
+      <p>Your platform for fair and transparent student project evaluations.</p>
+      <p>Join us in creating a community where every project is judged on its merit, and every student gets the recognition they deserve.</p>
+      <p>Explore projects, vote for your favorites, and see the impact of your feedback in real-time.</p>
+    </section>
+    <section class="featured-projects">
+      <h2>Your personalized voting itinerary </h2>
+      <div class="project-grid">
+        <div class="project-card">
+          <h3>Smart Home Automation</h3>
+          <p>A project that integrates IoT devices for seamless home control.</p>
+          <a href="#" class="vote-btn">Vote Now</a>
+        </div>
+        <div class="project-card">
+          <h3>Eco-Friendly Packaging</h3>
+          <p>Innovative packaging solutions using biodegradable materials.</p>
+          <a href="#" class="vote-btn">Vote Now</a>
+        </div>
+        <div class="project-card">
+          <h3>AI-Powered Tutoring</h3>
+          <p>An intelligent system that adapts to student learning paces.</p>
+          <a href="#" class="vote-btn">Vote Now</a>
+        </div>
+      </div>
+    </section>
+    <section class="how-it-works">
+      <h2>How to Vote</h2>
+      <div class="steps">
+        <div class="step">
+          <h3>1. Sign Up</h3>
+          <p>Create an account to access voting features.</p>
+        </div>
+        <div class="step">
+          <h3>2. Browse Projects</h3>
+          <p>Explore student projects and read their details.</p>
+        </div>
+        <div class="step">
+          <h3>3. Cast Your Vote</h3>
+          <p>Vote on projects and see results in real-time.</p>
+        </div>
+      </div>
+    </section>
+    <section class="testimonials">
+      <h2>What Our Sponsors Say</h2>
+      <div class="quotes">
+        <div class="quote">
+          <p>"OwlJudge made voting on projects simple and fair." - Sponsor</p>
+        </div>
+        <div class="quote">
+          <p>"A great tool for transparent project evaluations." - Sponsor</p>
+        </div>
+      </div>
+    </section>
+    <section class="get-started">
+      <h2>Get Started Today</h2>
+      <p>Join OwlJudge and start voting on projects!</p>
+      <a href="{{ url_for('signup') }}" class="btn signup-btn">Sign Up Now</a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- Updated JavaScript for side menu animation -->
+  <script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const sideMenu = document.getElementById("side-menu");
+    const closeBtn = document.getElementById("closebtn");
+
+    menuToggle.addEventListener("click", () => sideMenu.classList.add("open"));
+    closeBtn.addEventListener("click", () => sideMenu.classList.remove("open"));
+
+    // Close side menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove("open");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const currentPath = window.location.pathname;
+      document.querySelectorAll("#side-menu a").forEach(link => {
+        if (link.getAttribute("href") === currentPath) {
+          link.classList.add("active");
+        }
+      });
+    });
+  </script>
+
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+</body>
+</html>
+{% endblock %}
