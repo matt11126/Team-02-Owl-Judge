@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Voting</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* Updated slideshow and voting styles */
+    .voting-section {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      font-family: 'Roboto', sans-serif;
+    }
+    .slideshow-container {
+      position: relative;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .slide.active {
+      display: block;
+      opacity: 1;
+    }
+    .slideshow-nav {
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .slideshow-nav button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    .slideshow-nav button:hover:not(:disabled) {
+      background: #357abd;
+    }
+    .slideshow-nav button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .rating-category {
+      margin-bottom: 25px;
+    }
+    .rating-category label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .rating-bubbles {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bubble {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .bubble:hover {
+      background: #b3d4fc;
+    }
+    .bubble.selected {
+      background: #4a90e2;
+      color: white;
+    }
+    #voteStatus {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    #voteStatus.error {
+      color: #e74c3c;
+    }
+    fieldset {
+      border: none;
+      padding: 0;
+    }
+    legend {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav aria-label="Main Navigation">
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+            <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <div class="header-right">
+    {% if current_user %}
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn">Login</a> |
+        <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+    {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="voting-section">
+      <h1>Voting Page</h1>
+      <p>Please evaluate the project by selecting a score for each category. Use the navigation buttons to switch sections.</p>
+      <form id="votingForm" novalidate>
+        <div class="slideshow-container">
+          <!-- Slide 1: Undergraduate and Graduate Projects -->
+          <div class="slide" id="slide-1">
+            <fieldset>
+              <legend>Undergraduate and Graduate Projects (0-10)</legend>
+              <div class="rating-category">
+                <label>Successfully completed stated project goals and deliverables:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Methodology/Approach (clear, organized, articulated):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Effective verbal presentation:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Slide 2: Games -->
+          <div class="slide" id="slide-2">
+            <fieldset>
+              <legend>Games (0-10)</legend>
+              <div class="rating-category">
+                <label>Technical (Visual & Audio Fidelity):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Gameplay (Engaging & Fun; Intuitive UI; Clear Rules):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Originality (Art, Design, or Code):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Slide 3: Alumni's Choice Award -->
+          <div class="slide" id="slide-3">
+            <fieldset>
+              <legend>Alumni's Choice Award</legend>
+              <div class="rating-category">
+                <label>Team Approach (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category">
+                <label>Presentation (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category">
+                <label>Use of Technology (0-40):</label>
+                <div class="rating-bubbles" data-max="40" aria-label="Score from 0 to 40"></div>
+              </div>
+              <div class="rating-category">
+                <label>Feasibility/Impact for Business/Industry (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="slideshow-nav">
+          <button type="button" id="prevBtn" disabled>Previous</button>
+          <button type="button" id="nextBtn">Next</button>
+          <button type="submit" id="submitBtn" class="btn" style="display: none;">Submit Vote</button>
+        </div>
+      </form>
+      <p id="voteStatus" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Initialize rating bubbles
+      const ratingCategories = document.querySelectorAll(".rating-category");
+      ratingCategories.forEach(category => {
+        const container = category.querySelector(".rating-bubbles");
+        const max = parseInt(container.getAttribute("data-max"), 10);
+        container.innerHTML = "";
+        for (let i = 0; i <= max; i++) {
+          const bubble = document.createElement("button");
+          bubble.type = "button";
+          bubble.classList.add("bubble");
+          bubble.textContent = i;
+          bubble.dataset.value = i;
+          bubble.setAttribute("aria-label", `Score ${i} out of ${max}`);
+          bubble.addEventListener("click", function() {
+            const siblings = container.querySelectorAll(".bubble");
+            siblings.forEach(b => b.classList.remove("selected"));
+            bubble.classList.add("selected");
+          });
+          container.appendChild(bubble);
+        }
+      });
+
+      // Slideshow logic
+      const slides = document.querySelectorAll(".slide");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      let currentSlide = 0;
+
+      function updateSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === index);
+        });
+        prevBtn.disabled = index === 0;
+        nextBtn.style.display = index === slides.length - 1 ? "none" : "inline-block";
+        submitBtn.style.display = index === slides.length - 1 ? "inline-block" : "none";
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentSlide > 0) {
+          currentSlide--;
+          updateSlide(currentSlide);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentSlide < slides.length - 1) {
+          currentSlide++;
+          updateSlide(currentSlide);
+        }
+      });
+
+      // Initial slide
+      updateSlide(currentSlide);
+
+      // Form submission
+      const votingForm = document.getElementById("votingForm");
+      votingForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const voteData = {};
+        let allSelected = true;
+
+        ratingCategories.forEach((cat, idx) => {
+          const selectedBubble = cat.querySelector(".bubble.selected");
+          voteData[`category_${idx}`] = selectedBubble ? selectedBubble.dataset.value : null;
+          if (!selectedBubble) allSelected = false;
+        });
+
+        const status = document.getElementById("voteStatus");
+        if (allSelected) {
+          status.textContent = "Votes submitted successfully!";
+          status.classList.remove("error");
+          // Uncomment for real submission:
+          // fetch('/submit-vote', {
+          //   method: 'POST',
+          //   body: JSON.stringify(voteData),
+          //   headers: { 'Content-Type': 'application/json' }
+          // }).then(response => response.json()).then(data => console.log(data));
+        } else {
+          status.textContent = "Error: Please select a score for all categories.";
+          status.classList.add("error");
+        }
+      });
+
+      // Menu toggle (assuming side-menu exists in style.css)
+      document.getElementById("menu-toggle").addEventListener("click", function() {
+        document.getElementById("side-menu")?.style.width = "250px";
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Sign Up</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+{% extends 'base.html' %}
+{% block content %}
+  <style>
+    /* Center the signup section vertically and horizontally */
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Larger signup form card styling to match login */
+    .signup-section {
+      max-width: 500px;
+      width: 100%;
+      padding: 30px;
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Form group spacing */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1.1em;
+    }
+
+    /* Input field styling with focus effect */
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: none;
+      border-bottom: 2px solid #ccc;
+      font-size: 1em;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-group input:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    /* Button styling with hover and disabled states */
+    .btn {
+      background-color: #FFC107; /* Yellowish background */
+      color: #000000; /* Black text */
+      padding: 12px 24px; /* Same size as login */
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em; /* Matching font size */
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #FFA000; /* Darker yellow when hovering */
+      color: #000000; /* Keep the text black */
+      transform: scale(1.05); /* Slight zoom effect */
+    }
+
+    .btn:disabled {
+      background-color: #ccc; /* Gray when disabled */
+      color: #000000; /* Black text */
+      cursor: not-allowed;
+    }
+
+    /* Error message styling */
+    #error-message.error {
+      color: red;
+      animation: slideIn 0.3s ease;
+    }
+
+    /* Success message styling */
+    #error-message.success {
+      color: green;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Shake animation for form on error */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake 0.5s;
+    }
+
+    /* Flashed messages styling */
+    .flash-message {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .flash-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .flash-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    /* Media query for reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .signup-section, .shake, .flash-message, #error-message.error, #error-message.success {
+        animation: none;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .signup-section {
+        padding: 20px;
+        max-width: 90%;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+
+  <main>
+    <section class="signup-section">
+      <h1>Sign Up</h1>
+      <form id="signupForm" method="POST">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <div style="position: relative;">
+            <input type="password" id="signupPassword" name="signupPassword" placeholder="Enter your password" required>
+            <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <div style="position: relative;">
+            <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" placeholder="Confirm your password" required>
+            <i class="fas fa-eye" id="toggleConfirmPassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+          </div>
+        </div>
+        <div id="error-message" role="alert" style="margin-top: 10px;"></div>
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <p class="flash-message {{ category }}">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </section>
+  </main>
+
+  <script>
+    // Client-side validation and form handling
+    document.getElementById("signupForm").addEventListener("submit", async function(event) {
+      event.preventDefault(); // Prevent default form submission
+
+      // Get form values
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("signupPassword").value.trim();
+      const confirmPassword = document.getElementById("signupConfirmPassword").value.trim();
+      const errorDiv = document.getElementById("error-message");
+      const submitBtn = this.querySelector('button[type="submit"]');
+
+      // Clear previous error messages
+      errorDiv.textContent = "";
+      errorDiv.classList.remove("error", "success");
+
+      // Basic validation
+      if (!name || !email || !password || !confirmPassword) {
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> All fields are required.';
+        errorDiv.classList.add("error");
+        this.classList.add("shake");
+        setTimeout(() => this.classList.remove("shake"), 500);
+        return;
+      }
+      if (password !== confirmPassword) {
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match.';
+        errorDiv.classList.add("error");
+        this.classList.add("shake");
+        setTimeout(() => this.classList.remove("shake"), 500);
+        return;
+      }
+
+      // Update button to show loading state
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing up...';
+      submitBtn.disabled = true;
+
+      try {
+        // Send data to the server
+        const response = await fetch("{{ url_for('signup') }}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, email, password, confirmPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Success: Show message and redirect
+          errorDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+          errorDiv.classList.add("success");
+          setTimeout(() => window.location.href = data.redirect_url || "{{ url_for('index') }}", 2000);
+        } else {
+          // Error: Display server message
+          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.error;
+          errorDiv.classList.add("error");
+          this.classList.add("shake");
+          setTimeout(() => this.classList.remove("shake"), 500);
+          submitBtn.innerHTML = "Sign Up";
+          submitBtn.disabled = false;
+        }
+      } catch (error) {
+        // Network error
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error. Please try again.';
+        errorDiv.classList.add("error");
+        this.classList.add("shake");
+        setTimeout(() => this.classList.remove("shake"), 500);
+        submitBtn.innerHTML = "Sign Up";
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Password visibility toggle for password field
+    document.getElementById("togglePassword").addEventListener("click", function() {
+      const passwordInput = document.getElementById("signupPassword");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        this.classList.remove("fa-eye");
+        this.classList.add("fa-eye-slash");
+      } else {
+        passwordInput.type = "password";
+        this.classList.remove("fa-eye-slash");
+        this.classList.add("fa-eye");
+      }
+    });
+
+    // Password visibility toggle for confirm password field
+    document.getElementById("toggleConfirmPassword").addEventListener("click", function() {
+      const confirmPasswordInput = document.getElementById("signupConfirmPassword");
+      if (confirmPasswordInput.type === "password") {
+        confirmPasswordInput.type = "text";
+        this.classList.remove("fa-eye");
+        this.classList.add("fa-eye-slash");
+      } else {
+        confirmPasswordInput.type = "password";
+        this.classList.remove("fa-eye-slash");
+        this.classList.add("fa-eye");
+      }
+    });
+  </script>
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* Center the login section vertically and horizontally */
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Larger login form card styling */
+    .login-section {
+      max-width: 500px; /* Increased from 400px */
+      width: 100%;
+      padding: 30px; /* Increased from 20px */
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Form group spacing */
+    .form-group {
+      margin-bottom: 20px; /* Increased from 15px for better spacing */
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1.1em; /* Slightly larger labels */
+    }
+
+    /* Input field styling with focus effect */
+    .form-group input {
+      width: 100%;
+      padding: 10px; /* Increased from 8px */
+      box-sizing: border-box;
+      border: none;
+      border-bottom: 2px solid #ccc;
+      font-size: 1em; /* Larger text */
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-group input:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+   .btn {
+  background-color: #FFC107; /* Yellowish background */
+  color: #000000; /* Black text */
+  padding: 12px 24px; /* Same size as login */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em; /* Matching font size */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+  background-color: #FFA000; /* Darker yellow when hovering */
+  color: #000000; /* Keep the text black */
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
+.btn:disabled {
+  background-color: #ccc; /* Gray when disabled */
+  color: #000000; /* Black text */
+  cursor: not-allowed;
+}
+    /* Success message with slide-in animation */
+    #error-message.success {
+      color: green;
+      font-weight: bold;
+      animation: slideIn 0.3s ease;
+    }
+
+    /* Error message with slide-in animation */
+    #error-message.error {
+      color: red;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Shake animation for form on error */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake 0.5s;
+    }
+
+    /* Flashed messages styling */
+    .flash-message {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .flash-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .flash-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    /* Media query for reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .login-section, .shake, .flash-message, #error-message.success, #error-message.error {
+        animation: none;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .login-section {
+        padding: 20px;
+        max-width: 90%;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+              {% if is_logged_in and current_user.role == 'admin' %}
+                <li><a href="{{ url_for('admin') }}">Admin Dashboard</a></li>
+                          {% endif %}
+
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right">
+{% if is_logged_in %}
+<span>Welcome, {{ current_user.name }}</span>          <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn">Login</a> |
+          <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="login-section">
+      <h1>Login</h1>
+      <form id="loginForm" method="POST">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div style="position: relative;">
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+          </div>
+        </div>
+        <div id="error-message" role="alert" style="margin-top: 10px;"></div>
+        <button type="submit" class="btn">Login</button>
+      </form>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <p class="flash-message {{ category }}">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </section>
+  </main>
+  <footer>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+<script>
+  // Reset form state on page load (fix lingering issues after logout)
+  window.addEventListener('load', function() {
+    const form = document.getElementById("loginForm");
+    const errorDiv = document.getElementById("error-message");
+    const submitBtn = form.querySelector('button[type="submit"]');
+    form.reset();
+    errorDiv.textContent = "";
+    errorDiv.classList.remove('success', 'error');
+    submitBtn.innerHTML = 'Login';
+    submitBtn.disabled = false;
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorDiv = document.getElementById("error-message");
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const loginSection = document.querySelector('.login-section');
+
+    errorDiv.textContent = "";
+    errorDiv.classList.remove('success', 'error');
+    loginSection.classList.remove('shake');
+
+    if (!email || !password) {
+      errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Email and password are required.';
+      errorDiv.classList.add('error');
+      loginSection.classList.add('shake');
+      setTimeout(() => loginSection.classList.remove('shake'), 500);
+      return;
+    }
+
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    submitBtn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        errorDiv.innerHTML = '<i class="fas fa-check-circle"></i> Login successful! Redirecting...';
+        errorDiv.classList.add('success');
+        setTimeout(() => window.location.href = data.redirect_url, 2000);
+      } else {
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.message;
+        errorDiv.classList.add('error');
+        loginSection.classList.add('shake');
+        setTimeout(() => loginSection.classList.remove('shake'), 500);
+        submitBtn.innerHTML = 'Login';
+        submitBtn.disabled = false;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> A network error occurred. Please try again later.';
+      errorDiv.classList.add('error');
+      loginSection.classList.add('shake');
+      setTimeout(() => loginSection.classList.remove('shake'), 500);
+      submitBtn.innerHTML = 'Login';
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Password visibility toggle
+  document.getElementById("togglePassword").addEventListener("click", function() {
+    const passwordInput = document.getElementById("password");
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      this.classList.remove("fa-eye");
+      this.classList.add("fa-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      this.classList.remove("fa-eye-slash");
+      this.classList.add("fa-eye");
+    }
+  });
+</script></body>
+</html>

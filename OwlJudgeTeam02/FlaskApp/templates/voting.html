@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OwlJudge - Voting</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header (unchanged content) -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav aria-label="Main Navigation">
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+            {% if current_user and current_user.role == 'judge' %}
+              <li><a href="{{ url_for('voting') }}">Voting</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <div class="header-right">
+          {% if current_user %}
+            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="btn">Login</a> |
+            <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content (redesigned with progress bar and modern layout) -->
+  <main>
+    <section class="voting-section">
+      <h1>Voting Page</h1>
+      <p>Please evaluate the project by selecting a score for each category. Your progress is saved as you go.</p>
+      <div class="progress-bar">
+        <div class="progress"></div>
+      </div>
+      <form id="votingForm" novalidate>
+        <input type="hidden" id="project_id" value="{{ project.project_id }}">
+        <div class="slideshow-container">
+          <!-- Slide 1: Undergraduate and Graduate Projects -->
+          <div class="slide" id="slide-1">
+            <fieldset>
+              <legend>Undergraduate and Graduate Projects (0-10)</legend>
+              <div class="rating-category" data-category="goals_and_deliverables">
+                <label>Successfully completed stated project goals and deliverables:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="methodology">
+                <label>Methodology/Approach (clear, organized, articulated):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="verbal_presentation">
+                <label>Effective verbal presentation:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="rigor">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="merit_impact">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+          <!-- Slide 2: Games -->
+          <div class="slide" id="slide-2">
+            <fieldset>
+              <legend>Games (0-10)</legend>
+              <div class="rating-category" data-category="technical">
+                <label>Technical (Visual & Audio Fidelity):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="gameplay">
+                <label>Gameplay (Engaging & Fun; Intuitive UI; Clear Rules):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="originality">
+                <label>Originality (Art, Design, or Code):</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="games_rigor">
+                <label>Evidence of Rigor:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+              <div class="rating-category" data-category="games_merit_impact">
+                <label>Merit and Broader Impact:</label>
+                <div class="rating-bubbles" data-max="10" aria-label="Score from 0 to 10"></div>
+              </div>
+            </fieldset>
+          </div>
+          <!-- Slide 3: Alumni's Choice Award -->
+          <div class="slide" id="slide-3">
+            <fieldset>
+              <legend>Alumni's Choice Award</legend>
+              <div class="rating-category" data-category="team_approach">
+                <label>Team Approach (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category" data-category="presentation">
+                <label>Presentation (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+              <div class="rating-category" data-category="use_of_technology">
+                <label>Use of Technology (0-40):</label>
+                <div class="rating-bubbles" data-max="40" aria-label="Score from 0 to 40"></div>
+              </div>
+              <div class="rating-category" data-category="feasibility_impact">
+                <label>Feasibility/Impact for Business/Industry (0-20):</label>
+                <div class="rating-bubbles" data-max="20" aria-label="Score from 0 to 20"></div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+        <div class="slideshow-nav">
+          <button type="button" id="prevBtn" disabled aria-label="Previous slide">Previous</button>
+          <button type="button" id="nextBtn" aria-label="Next slide">Next</button>
+          <button type="submit" id="submitBtn" class="btn" style="display: none;" aria-label="Submit vote">Submit Vote</button>
+        </div>
+      </form>
+      <p id="voteStatus" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <!-- Footer (unchanged content, now sticky) -->
+  <footer>
+    <p>© 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- Inline CSS (moved from <style> tag) -->
+  <style>
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      background: #ddd;
+      height: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+    .progress {
+      height: 100%;
+      background: #4a90e2;
+      width: 0;
+      transition: width 0.3s ease;
+      border-radius: 5px;
+    }
+
+    /* Slideshow */
+    .slideshow-container {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .slide.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Rating Categories and Bubbles */
+    .rating-category {
+      margin-bottom: 25px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid #eee;
+    }
+    .rating-category label {
+      font-weight: 500;
+      font-size: 1.2em;
+      color: #333;
+    }
+    .rating-bubbles {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .bubble {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+      border: 2px solid transparent;
+    }
+    .bubble:hover {
+      transform: scale(1.1);
+      background: #ccc;
+    }
+    .bubble.selected {
+      background: #4a90e2;
+      color: white;
+      border-color: #2a6db8;
+    }
+
+    /* Fieldset */
+    fieldset {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 25px;
+    }
+    legend {
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #222;
+    }
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensures the body takes up the full viewport height */
+    margin: 0;
+}
+    /* Navigation */
+    .slideshow-nav {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .slideshow-nav button {
+      background: #4a4a4a;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      margin: 0 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1em;
+      transition: background 0.3s;
+    }
+    .slideshow-nav button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .slideshow-nav button:hover:not(:disabled) {
+      background: #333;
+    }
+
+    /* Status */
+    #voteStatus {
+      margin-top: 20px;
+      font-weight: 500;
+      text-align: center;
+    }
+    #voteStatus.success {
+      color: #2ecc71;
+    }
+    #voteStatus.error {
+      color: #e74c3c;
+    }
+
+    /* Footer (sticky) */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      z-index: 1000;
+    }
+
+    /* Main content padding to avoid overlap with sticky footer */
+    main {
+      padding-bottom: 70px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .slideshow-container {
+        padding: 15px;
+      }
+      .rating-category {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+      }
+      .bubble {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3em;
+      }
+      .slideshow-nav button {
+        padding: 12px 20px;
+        font-size: 1.1em;
+      }
+    }
+    .project-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Retain existing styles like border and background */
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Optional: space between buttons */
+}
+  </style>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const projectId = document.getElementById("project_id").value;
+      const slides = document.querySelectorAll(".slide");
+      const progress = document.querySelector(".progress");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const voteStatus = document.getElementById("voteStatus");
+      const votingForm = document.getElementById("votingForm");
+      let currentSlide = 0;
+
+      // **Initialize Rating Bubbles**
+      const ratingCategories = document.querySelectorAll(".rating-category");
+      ratingCategories.forEach(category => {
+        const container = category.querySelector(".rating-bubbles");
+        const max = parseInt(container.getAttribute("data-max"), 10);
+        container.innerHTML = "";
+        for (let i = 0; i <= max; i++) {
+          const bubble = document.createElement("button");
+          bubble.type = "button";
+          bubble.classList.add("bubble");
+          bubble.textContent = i;
+          bubble.dataset.value = i;
+          bubble.setAttribute("aria-label", `Score ${i} out of ${max}`);
+          bubble.addEventListener("click", function() {
+            const siblings = container.querySelectorAll(".bubble");
+            siblings.forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+            // **Incremental Saving to Local Storage**
+            const categoryName = category.getAttribute("data-category");
+            const score = this.dataset.value;
+            const savedData = JSON.parse(localStorage.getItem(`vote_${projectId}`)) || {};
+            savedData[categoryName] = score;
+            localStorage.setItem(`vote_${projectId}`, JSON.stringify(savedData));
+            voteStatus.textContent = `Saved score ${score} for ${categoryName}`;
+            voteStatus.classList.add("success");
+            setTimeout(() => voteStatus.textContent = "", 2000); // Clear feedback after 2s
+          });
+          container.appendChild(bubble);
+        }
+      });
+
+      // **Load Saved Data from Local Storage**
+      const savedData = JSON.parse(localStorage.getItem(`vote_${projectId}`)) || {};
+      ratingCategories.forEach(cat => {
+        const categoryName = cat.getAttribute("data-category");
+        const savedScore = savedData[categoryName];
+        if (savedScore !== undefined) {
+          const bubble = cat.querySelector(`.bubble[data-value="${savedScore}"]`);
+          if (bubble) bubble.classList.add("selected");
+        }
+      });
+      if (Object.keys(savedData).length > 0) {
+        voteStatus.textContent = "Restored your previous selections.";
+        voteStatus.classList.add("success");
+        setTimeout(() => voteStatus.textContent = "", 2000);
+      }
+
+      // **Slideshow Navigation**
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === index);
+          slide.setAttribute("aria-hidden", i !== index ? "true" : "false");
+        });
+        // Update progress bar (based on slide position)
+        progress.style.width = `${(index / (slides.length - 1)) * 100}%`;
+        prevBtn.disabled = index === 0;
+        nextBtn.style.display = index === slides.length - 1 ? "none" : "inline-block";
+        submitBtn.style.display = index === slides.length - 1 ? "inline-block" : "none";
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentSlide > 0) {
+          currentSlide--;
+          showSlide(currentSlide);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentSlide < slides.length - 1) {
+          currentSlide++;
+          showSlide(currentSlide);
+        }
+      });
+
+      // Show initial slide
+      showSlide(currentSlide);
+
+      // **Modernized Submission Process**
+      votingForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        // Collect all vote data from local storage
+        const voteData = JSON.parse(localStorage.getItem(`vote_${projectId}`)) || {};
+        const allCategories = Array.from(ratingCategories).map(cat => cat.getAttribute("data-category"));
+        const allSelected = allCategories.every(cat => voteData[cat] !== undefined);
+
+        if (!allSelected) {
+          voteStatus.textContent = "Error: Please score all categories before submitting.";
+          voteStatus.classList.remove("success");
+          voteStatus.classList.add("error");
+          return;
+        }
+
+        // Prepare submission data
+        const submissionData = { project_id: projectId, ...voteData };
+
+        // Disable UI during submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+
+        try {
+          // **API-Driven Submission with Fetch**
+          const response = await fetch('/submit-vote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(submissionData)
+          });
+
+          if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+          // Success feedback
+          voteStatus.textContent = "Votes submitted successfully!";
+          voteStatus.classList.remove("error");
+          voteStatus.classList.add("success");
+          localStorage.removeItem(`vote_${projectId}`); // Clear saved data
+          setTimeout(() => {
+            currentSlide = 0;
+            showSlide(currentSlide);
+            ratingCategories.forEach(cat => {
+              cat.querySelectorAll(".bubble").forEach(b => b.classList.remove("selected"));
+            });
+            voteStatus.textContent = "";
+          }, 2000);
+        } catch (error) {
+          voteStatus.textContent = `Submission failed: ${error.message}`;
+          voteStatus.classList.remove("success");
+          voteStatus.classList.add("error");
+        } finally {
+          // Re-enable UI
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Vote";
+          prevBtn.disabled = currentSlide === 0;
+          nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+</body>
+</html>

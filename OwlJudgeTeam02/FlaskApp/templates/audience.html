@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OwlJudge - Audience</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Side Sliding Drawer -->
+  <div id="side-menu" class="side-menu">
+    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('audience') }}">Audience</a>
+    <a href="{{ url_for('about') }}">About Us</a>
+    <a href="{{ url_for('contact') }}">Contact Us</a>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <button id="menu-toggle" class="hamburger">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
+          </a>
+        </div>
+      </div>
+      <div class="header-middle">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('audience') }}">Audience</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-right" id="loginSignupContainer">
+        <div class="header-right">
+          {% if current_user %}
+            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="btn">Login</a> |
+            <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section class="welcome">
+      <h1>Audience Viewing</h1>
+      <p>This page is designed for the public or audience to see the top submissions based on current results.</p>
+      <p>They can see how projects are faring in real-time and share feedback.</p>
+    </section>
+
+
+
+    <section class="audience-feedback">
+      <h2>Share Your Feedback</h2>
+      <form>
+        <textarea placeholder="Write your feedback here..." rows="5"></textarea>
+        <button type="submit" class="btn">Submit Feedback position</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
+  </footer>
+
+  <!-- Inline Styles with Animations -->
+  <style>
+    /* Button Styles */
+    .btn {
+      background-color: #FFC107;
+      color: #000000;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #FFA000;
+      color: #000000;
+      transform: scale(1.05);
+    }
+
+    .btn:disabled {
+      background-color: #ccc;
+      color: #000000;
+      cursor: not-allowed;
+    }
+
+    /* Hamburger Hover */
+    .hamburger:hover {
+      color: #007bff;
+      transform: rotate(90deg);
+    }
+
+    /* Navigation Links Hover */
+    .nav-links a:hover, .side-menu a:hover {
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+    /* Structural Styles */
+    .top-submissions {
+      margin-top: 20px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .project-card {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+    }
+
+    .project-card h3 {
+      margin-top: 0;
+    }
+
+    .project-card .rank {
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .audience-feedback {
+      margin-top: 40px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .audience-feedback form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .audience-feedback textarea {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .audience-feedback .btn {
+      align-self: flex-start;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Side Menu */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: #fff;
+      opacity: 0;
+      transition: width 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+      z-index: 1000;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    }
+
+    .side-menu.open {
+      width: 250px;
+      opacity: 1;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 1rem;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .side-menu a.active {
+      background-color: #e9ecef;
+      font-weight: bold;
+    }
+
+    /* Logo */
+    .logo img {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    /* Navigation Links */
+    .nav-links li {
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in forwards;
+    }
+
+    .nav-links li:nth-child(1) { animation-delay: 0.1s; }
+    .nav-links li:nth-child(2) { animation-delay: 0.2s; }
+    .nav-links li:nth-child(3) { animation-delay: 0.3s; }
+    .nav-links li:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Welcome Section */
+    .welcome h1 {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 0.2s;
+    }
+
+    .welcome p {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .welcome p:nth-of-type(1) { animation-delay: 0.4s; }
+    .welcome p:nth-of-type(2) { animation-delay: 0.6s; }
+
+    /* Content Sections */
+    .top-submissions {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 0.8s;
+    }
+
+    .audience-feedback {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 1.0s;
+    }
+
+    .project-grid .project-card {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .project-grid .project-card:nth-child(1) { animation-delay: 1.0s; }
+    .project-grid .project-card:nth-child(2) { animation-delay: 1.2s; }
+
+    .audience-feedback textarea {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 1.2s;
+    }
+
+    .audience-feedback .btn {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      animation-delay: 1.4s;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-wrap: wrap;
+        padding: 1rem;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .project-grid {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .welcome h1 { font-size: 1.5rem; }
+      .header-right a.btn { padding: 0.5rem; }
+    }
+  </style>
+
+  <!-- JavaScript for Side Menu and Active Link -->
+  <script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const sideMenu = document.getElementById("side-menu");
+    const closeBtn = document.getElementById("closebtn");
+
+    if (menuToggle && sideMenu && closeBtn) {
+      menuToggle.addEventListener("click", () => sideMenu.classList.add("open"));
+      closeBtn.addEventListener("click", () => sideMenu.classList.remove("open"));
+
+      // Close side menu when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+          sideMenu.classList.remove("open");
+        }
+      });
+
+      // Highlight active link
+      document.addEventListener("DOMContentLoaded", function() {
+        const currentPath = window.location.pathname;
+        document.querySelectorAll("#side-menu a").forEach(link => {
+          if (link.getAttribute("href") === currentPath) {
+            link.classList.add("active");
+          }
+        });
+      });
+    }
+  </script>
+
+  <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  /* Project Container and Grid */
+  .project-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .project-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    text-align: center; /* Center all text and elements */
+    opacity: 0; /* Initial state for animation */
+    transform: translateY(20px); /* Initial position for animation */
+    animation: slideIn 0.5s ease forwards; /* Slide-in animation for cards */
+    animation-delay: calc(var(--index) * 0.1s); /* Staggered delay based on index */
+  }
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  .project-card h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  .project-card p {
+    color: #666;
+    margin: 10px 0;
+  }
+
+  /* Voted Badge and Green Arrow */
+  .voted-badge {
+    background: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-left: 10px;
+    position: relative;
+    display: inline-block;
+  }
+  .voted-badge::after {
+    content: '➜'; /* Unicode for a right arrow, replaceable with an SVG if preferred */
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: #28a745;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .voted-badge.success::after {
+    opacity: 1;
+    animation: fadeOut 2s forwards;
+    animation-delay: 0.5s; /* Arrow stays visible briefly before fading */
+  }
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Vote Button */
+  .vote-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s; /* Added transform for click animation */
+  }
+  .vote-btn:hover {
+    background: #0056b3;
+  }
+  .vote-btn:active {
+    transform: scale(0.95); /* Animation when clicking the Vote button */
+  }
+
+  /* Modal Styling */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+  }
+  .modal.show {
+    display: flex;
+  }
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: scale(0.8); /* Initial state for pop-in animation */
+    opacity: 0; /* Initial opacity for animation */
+  }
+  .modal.show .modal-content {
+    animation: popIn 0.4s ease forwards; /* Pop-in animation for modal */
+  }
+  @keyframes popIn {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .close {
+    float: right;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
+  }
+  .close:hover {
+    color: #000;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  button[type="submit"] {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button[type="submit"]:hover {
+    background: #218838;
+  }
+  button[type="submit"]:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* Accessibility */
+  .vote-announcement {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
+</style>
+
+{% if current_user and (current_user.role == 'FlaskApp' or current_user.role == 'admin') %}
+<div class="project-container">
+  <h2 style="text-align: center;">Projects to Judge</h2> <!-- Centered the heading -->
+  <div class="project-grid">
+    {% for project in projects %}
+    <div class="project-card" style="--index: {{ loop.index0 }};"> <!-- Added index for staggered animation -->
+      <h3>{{ project.project_name }}</h3>
+      {% if project.scores | selectattr('judge_id', 'equalto', current_user.id) | list | count > 0 %}
+        <span class="voted-badge">Voted</span>
+      {% endif %}
+      <button class="vote-btn" data-project-id="{{ project.project_id }}">
+        {% if project.scores | selectattr('judge_id', 'equalto', current_user.id) | list | count > 0 %}
+          Edit Vote
+        {% else %}
+          Vote
+        {% endif %}
+      </button>
+      <div class="vote-announcement" aria-live="polite"></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div id="voting-modal" class="modal">
+  <div class="modal-content" tabindex="-1">
+    <span class="close">×</span>
+    <h2>Vote for Project: <span id="project-name"></span></h2>
+    <!-- Success message div -->
+    <div id="success-message" style="display: none; color: green; margin-bottom: 10px; font-weight: bold; padding: 10px; background: #e6ffe6; border: 1px solid #28a745; border-radius: 5px;" role="alert"></div>
+    <p id="vote-status" style="color: #666;"></p>
+    <form id="voting-form" data-project-id="">
+      <div class="form-group">
+        <label for="innovation">Innovation (1-10)</label>
+        <input type="number" id="innovation" name="innovation" min="1" max="10" required>
+      </div>
+      <div class="form-group">
+        <label for="presentation">Presentation (1-10)</label>
+        <input type="number" id="presentation" name="presentation" min="1" max="10" required>
+      </div>
+      <div class="form-group">
+        <label for="technical_merit">Technical Merit (1-10)</label>
+        <input type="number" id="technical_merit" name="technical_merit" min="1" max="10" required>
+      </div>
+      <button type="submit">Submit Vote</button>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="project-container">
+  <h2>Access Denied</h2>
+  <p>You do not have permission to judge projects.</p>
+</div>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Open modal
+    document.querySelectorAll('.vote-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const projectId = button.dataset.projectId;
+        const projectName = button.parentElement.querySelector('h3').textContent;
+        openVotingModal(projectId, projectName);
+      });
+    });
+
+    // Close modal
+    document.querySelector('.close').addEventListener('click', () => {
+      document.getElementById('voting-modal').classList.remove('show');
+    });
+
+    document.getElementById('voting-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('voting-modal')) {
+        document.getElementById('voting-modal').classList.remove('show');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('voting-modal').classList.contains('show')) {
+        document.getElementById('voting-modal').classList.remove('show');
+      }
+    });
+
+    // Form submission
+    document.getElementById('voting-form').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const projectId = this.dataset.projectId;
+      const scores = {};
+      const inputs = this.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => {
+        scores[input.name] = parseInt(input.value);
+      });
+
+      // Client-side validation
+      for (const [category, score] of Object.entries(scores)) {
+        if (isNaN(score) || score < 1 || score > 10) {
+          alert(`Please enter a valid score (1-10) for ${category}`);
+          return;
+        }
+      }
+
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const response = await fetch('/submit_vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ project_id: projectId, scores: scores })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          // Update the project card dynamically
+          const projectCard = document.querySelector(`.project-card button[data-project-id="${projectId}"]`).parentElement;
+          let votedBadge = projectCard.querySelector('.voted-badge');
+          const isNewVote = !votedBadge;
+
+          // Create the badge if it doesn’t exist
+          if (isNewVote) {
+            votedBadge = document.createElement('span');
+            votedBadge.className = 'voted-badge';
+            votedBadge.textContent = 'Voted';
+            projectCard.insertBefore(votedBadge, projectCard.querySelector('.vote-btn'));
+          }
+
+          // Add the success class to show the green arrow
+          votedBadge.classList.add('success');
+          setTimeout(() => {
+            votedBadge.classList.remove('success');
+          }, 2500);
+
+          // Update button text
+          const voteBtn = projectCard.querySelector('.vote-btn');
+          voteBtn.textContent = 'Edit Vote';
+
+          // Accessibility announcement
+          const announcement = projectCard.querySelector('.vote-announcement');
+          announcement.textContent = isNewVote ? 'Your vote has been submitted successfully.' : 'Your vote has been updated successfully.';
+          setTimeout(() => {
+            announcement.textContent = '';
+          }, 5000);
+
+          // Show success message in modal
+          const successMessage = document.getElementById('success-message');
+          successMessage.textContent = isNewVote ? 'Your vote has been submitted successfully.' : 'Your vote has been updated successfully.';
+          successMessage.style.display = 'block';
+
+          // Close modal after 2 seconds
+          setTimeout(() => {
+            document.getElementById('voting-modal').classList.remove('show');
+            successMessage.style.display = 'none'; // Reset for next time
+          }, 2000);
+        } else {
+          alert(data.error || 'Failed to submit vote.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while submitting your vote.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Vote';
+      }
+    });
+  });
+
+  async function openVotingModal(projectId, projectName) {
+    const modal = document.getElementById('voting-modal');
+    document.getElementById('project-name').textContent = projectName;
+    document.getElementById('voting-form').dataset.projectId = projectId;
+    document.getElementById('success-message').style.display = 'none'; // Hide success message initially
+    modal.classList.add('show');
+    document.querySelector('.modal-content').focus();
+
+    // Fetch existing scores
+    try {
+      const response = await fetch(`/get_scores/${projectId}`);
+      const scores = await response.json();
+      let hasScores = false;
+      for (const [category, score] of Object.entries(scores)) {
+        const input = document.getElementById(category.toLowerCase().replace(' ', '_'));
+        if (input && score !== null) {
+          input.value = score;
+          hasScores = true;
+        }
+      }
+      const voteStatus = document.getElementById('vote-status');
+      if (hasScores) {
+        voteStatus.textContent = 'You have already voted. You can update your scores below.';
+      } else {
+        voteStatus.textContent = '';
+      }
+    } catch (error) {
+      console.error('Error fetching scores:', error);
+    }
+  }
+</script>
+{% endblock %}
