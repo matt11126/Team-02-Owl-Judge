@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Audience Scores</title>
+    <script>
+        async function fetchScores() {
+            try {
+                const response = await fetch('http://10.96.33.113/audience_scores'); 
+                const scores = await response.json();
+                document.getElementById('scoreboard').innerHTML = 
+                    Object.entries(scores).map(([team, score]) => `<p>${team}: ${score}</p>`).join('');
+            } catch (error) {
+                console.error("Error fetching scores:", error);
+            }
+        }
+        setInterval(fetchScores, 3000);  
+    </script>
+</head>
+<body>
+    <h1>Live Audience Scores</h1>
+    <div id="scoreboard">Loading...</div>
+</body>
+</html>
