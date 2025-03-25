@@ -4,6 +4,30 @@ import os
 
 from flask_sqlalchemy import SQLAlchemy                                            # added by dba
 
+from flask import Flask, jsonify                                                    #Flask Import
+import redis
+
+app = Flask(__name__)
+redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)        #Added by B.E.D
+
+@app.route('/update_score/<project>/<int:score>', methods=['POST'])
+def update_score(project, score):
+    redis_client.hincrby("scores", project, score)
+    return jsonify({"message": "Score updated", "project": project, "score": redis_client.hget("scores", project)})
+
+@app.route('/get_scores', methods=['GET'])
+def get_scores():
+    scores = redis_client.hgetall("scores")
+    return jsonify(scores)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+
+
+
+
 app = Flask(__name__)
 # Use a strong secret key (in production, use environment variables)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
