@@ -1,70 +1,441 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OwlJudge - Vote Casting</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-</head>
-<body>
-  <!-- Side Sliding Drawer -->
-  <div id="side-menu" class="side-menu">
-    <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
-    <a href="project_selection.html">Project Selection</a>
-  </div>
+{% extends 'base.html' %}
+{% block content %}
+<!-- FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Canvas Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
-  <!-- Header -->
-  <header>
-    <div class="header-container">
-      <div class="header-left">
-        <button id="menu-toggle" class="hamburger">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="logo">
-          <a href="index.html">
-            <img src="image.png" alt="OwlJudge Logo" class="logo-img">
-          </a>
-        </div>
-      </div>
-      <div class="header-middle">
-        <nav>
-          <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="vote_casting.html">Vote Casting</a></li>
-            <li><a href="about_us.html">About Us</a></li>
-            <li><a href="contact_us.html">Contact Us</a></li>
-          </ul>
-        </nav>
-      </div>
-      <div class="header-right" id="loginSignupContainer">
-        <a href="login.html" class="btn">Login</a> | <a href="signup.html" class="btn">Sign Up</a>
-      </div>
+<style>
+  :root {
+    /* Base values */
+    --base-font-size: 16px;
+    --golden: 1.618;
+
+    /* Derived values */
+    --heading-font-size: calc(var(--base-font-size) * var(--golden)); /* ~26px */
+    --container-margin: calc(20px * var(--golden)); /* ~32px */
+    --container-padding: calc(20px * var(--golden)); /* ~32px */
+    --card-padding: calc(16px * var(--golden)); /* ~26px */
+  }
+
+  /* Animated Gradient Background */
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(-45deg, #000, #d4af37, #000, #d4af37);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Tooltip Styling */
+  .tooltip {
+    position: relative;
+    cursor: pointer;
+  }
+  .tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -1.5em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .tooltip:hover::after {
+    opacity: 1;
+  }
+
+  /* Glassmorphism Projects Section (Voting Area) with Golden Ratio Applied */
+  .glass-project-container {
+    max-width: 1200px;
+    margin: var(--container-margin) auto;
+    padding: var(--container-padding);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .glass-project-header {
+    text-align: center;
+    font-size: calc(var(--heading-font-size) * 1.2); /* Slightly larger for emphasis */
+    margin-bottom: calc(var(--container-padding) / 2);
+    color: #d4af37;
+  }
+  .glass-project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: calc(var(--container-padding) / 2);
+  }
+  .glass-project-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: var(--card-padding);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.5s ease forwards;
+    animation-delay: calc(var(--index) * 0.1s);
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .glass-project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+  }
+  .glass-project-card h3 {
+    font-size: var(--heading-font-size);
+    margin-bottom: calc(var(--card-padding) / 2);
+    color: #d4af37;
+  }
+  .glass-project-card p {
+    font-size: var(--base-font-size);
+    color: #ccc;
+    margin: 10px 0;
+  }
+  .glass-vote-btn {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .glass-vote-btn:hover {
+    background: #b4972a;
+  }
+  .glass-vote-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Voted Badge */
+  .voted-badge {
+    background: #000;
+    color: #d4af37;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-left: 10px;
+    position: relative;
+    display: inline-block;
+  }
+  .voted-badge::after {
+    content: ' ➜';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: #d4af37;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .voted-badge.success::after {
+    opacity: 1;
+    animation: fadeOut 2s forwards;
+    animation-delay: 0.5s;
+  }
+  @keyframes fadeOut {
+    to { opacity: 0; }
+  }
+
+  /* Modal Styling (unchanged) */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    transition: opacity 0.3s;
+  }
+  .modal.show {
+    display: flex;
+  }
+  .modal-content {
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 30px;
+    transition: background 0.3s, transform 0.3s;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  .modal.show .modal-content {
+    animation: popIn 0.4s ease forwards;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+  .modal-header h2 {
+    color: #d4af37;
+    margin: 0;
+  }
+  .close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
+  }
+  .close:hover {
+    color: #fff;
+  }
+  button[type="submit"] {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-weight: 600;
+  }
+  button[type="submit"]:hover {
+    background: #b4972a;
+  }
+  button[type="submit"]:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .vote-announcement {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
+</style>
+
+{% if current_user and (current_user.role == 'FlaskApp' or current_user.role == 'admin') %}
+<div class="glass-project-container">
+  <h2 class="glass-project-header">Projects to Judge</h2>
+  <div class="glass-project-grid">
+    {% for project in projects %}
+    <div class="glass-project-card" style="--index: {{ loop.index0 }};">
+      <h3>{{ project.project_name }}</h3>
+      {% if project.scores | selectattr('judge_id', 'equalto', current_user.id) | list | count > 0 %}
+      <span class="voted-badge tooltip" data-tooltip="You have voted">
+        <i class="fas fa-check"></i> Voted
+      </span>
+      {% endif %}
+      <button class="glass-vote-btn tooltip" data-tooltip="Click to cast or edit your vote" data-project-id="{{ project.project_id }}">
+        {% if project.scores | selectattr('judge_id', 'equalto', current_user.id) | list | count > 0 %}
+          Edit Vote
+        {% else %}
+          Vote
+        {% endif %}
+      </button>
+      <div class="vote-announcement" aria-live="polite"></div>
     </div>
-  </header>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="glass-project-container">
+  <h2>Access Denied</h2>
+  <p>You do not have permission to judge projects.</p>
+</div>
+{% endif %}
 
-  <!-- Main Content -->
-  <main>
-    <section class="welcome">
-      <h1>Vote Casting</h1>
-      <p>This page is designed for judges to review submissions and cast their votes.</p>
-      <!-- (Insert vote casting UI elements here) -->
-    </section>
-  </main>
+<!-- Voting Modal (unchanged) -->
+<div id="voting-modal" class="modal">
+  <div class="modal-content" tabindex="-1">
+    <div class="modal-header">
+      <h2>Vote for Project: <span id="project-name"></span></h2>
+      <span class="close tooltip" data-tooltip="Close"><i class="fas fa-times"></i></span>
+    </div>
+    <div id="success-message" style="display: none; color: #000; margin-bottom: 10px; font-weight: bold; padding: 10px; background: #fff; border: 1px solid #d4af37; border-radius: 6px;" role="alert"></div>
+    <p id="vote-status" style="color: #333;"></p>
+    <form id="voting-form" data-project-id="">
+      <div class="form-group">
+        <label for="innovation">Innovation (1-10)</label>
+        <input type="number" id="innovation" name="innovation" min="1" max="10" required>
+      </div>
+      <div class="form-group">
+        <label for="presentation">Presentation (1-10)</label>
+        <input type="number" id="presentation" name="presentation" min="1" max="10" required>
+      </div>
+      <div class="form-group">
+        <label for="technical_merit">Technical Merit (1-10)</label>
+        <input type="number" id="technical_merit" name="technical_merit" min="1" max="10" required>
+      </div>
+      <button type="submit">Submit Vote</button>
+    </form>
+  </div>
+</div>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2025 OwlJudge. All rights reserved.</p>
-  </footer>
-
-  <script>
-    document.getElementById("menu-toggle").addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "250px";
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Open modal when vote button is clicked
+    document.querySelectorAll('.glass-vote-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const projectId = button.dataset.projectId;
+        const projectName = button.parentElement.querySelector('h3').textContent;
+        openVotingModal(projectId, projectName);
+      });
     });
-    document.getElementById("closebtn").addEventListener("click", function() {
-      document.getElementById("side-menu").style.width = "0";
+
+    // Close modal on clicking close icon or outside modal content
+    document.querySelector('.close').addEventListener('click', () => {
+      document.getElementById('voting-modal').classList.remove('show');
     });
-  </script>
-</body>
-</html>
+    document.getElementById('voting-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('voting-modal')) {
+        document.getElementById('voting-modal').classList.remove('show');
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('voting-modal').classList.contains('show')) {
+        document.getElementById('voting-modal').classList.remove('show');
+      }
+    });
+
+    // Form submission with spinner icon and confetti effect on success
+    document.getElementById('voting-form').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const projectId = this.dataset.projectId;
+      const scores = {};
+      const inputs = this.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => {
+        scores[input.name] = parseInt(input.value);
+      });
+
+      // Client-side validation
+      for (const [category, score] of Object.entries(scores)) {
+        if (isNaN(score) || score < 1 || score > 10) {
+          alert(`Please enter a valid score (1-10) for ${category}`);
+          return;
+        }
+      }
+
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      // Show spinner icon during submission
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+      try {
+        const response = await fetch('/submit_vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_id: projectId, scores: scores })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          // Update project card dynamically
+          const projectCard = document.querySelector(`.glass-project-card button[data-project-id="${projectId}"]`).parentElement;
+          let votedBadge = projectCard.querySelector('.voted-badge');
+          const isNewVote = !votedBadge;
+          if (isNewVote) {
+            votedBadge = document.createElement('span');
+            votedBadge.className = 'voted-badge tooltip';
+            votedBadge.setAttribute('data-tooltip', 'You have voted');
+            votedBadge.innerHTML = '<i class="fas fa-check"></i> Voted';
+            projectCard.insertBefore(votedBadge, projectCard.querySelector('.glass-vote-btn'));
+          }
+          votedBadge.classList.add('success');
+          setTimeout(() => { votedBadge.classList.remove('success'); }, 2500);
+          // Update vote button text
+          const voteBtn = projectCard.querySelector('.glass-vote-btn');
+          voteBtn.textContent = 'Edit Vote';
+          voteBtn.classList.add('tooltip');
+          voteBtn.setAttribute('data-tooltip', 'Click to cast or edit your vote');
+          // Accessibility announcement
+          const announcement = projectCard.querySelector('.vote-announcement');
+          announcement.textContent = isNewVote ? 'Your vote has been submitted successfully.' : 'Your vote has been updated successfully.';
+          setTimeout(() => { announcement.textContent = ''; }, 5000);
+          // Show success message in modal
+          const successMessage = document.getElementById('success-message');
+          successMessage.textContent = isNewVote ? 'Your vote has been submitted successfully.' : 'Your vote has been updated successfully.';
+          successMessage.style.display = 'block';
+
+          // Fire confetti celebration!
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+
+          // Close modal after 300ms for quick confetti visibility
+          setTimeout(() => {
+            document.getElementById('voting-modal').classList.remove('show');
+            successMessage.style.display = 'none';
+          }, 300);
+        } else {
+          alert(data.error || 'Failed to submit vote.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while submitting your vote.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Vote';
+      }
+    });
+  });
+
+  async function openVotingModal(projectId, projectName) {
+    const modal = document.getElementById('voting-modal');
+    document.getElementById('project-name').textContent = projectName;
+    document.getElementById('voting-form').dataset.projectId = projectId;
+    document.getElementById('success-message').style.display = 'none';
+    modal.classList.add('show');
+    document.querySelector('.modal-content').focus();
+    // Fetch existing scores if available
+    try {
+      const response = await fetch(`/get_scores/${projectId}`);
+      const scores = await response.json();
+      let hasScores = false;
+      for (const [category, score] of Object.entries(scores)) {
+        const input = document.getElementById(category.toLowerCase().replace(' ', '_'));
+        if (input && score !== null) {
+          input.value = score;
+          hasScores = true;
+        }
+      }
+      const voteStatus = document.getElementById('vote-status');
+      voteStatus.textContent = hasScores ? 'You have already voted. You can update your scores below.' : '';
+    } catch (error) {
+      console.error('Error fetching scores:', error);
+    }
+  }
+</script>
+{% endblock %}
+
+
