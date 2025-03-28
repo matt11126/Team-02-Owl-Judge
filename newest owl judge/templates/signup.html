@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to signup.html (Highly Interactive) --- */
+    /* (Same styles as the previous interactive version - no changes needed here) */
+
+    .signup-page-main { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - var(--header-height) - 5rem); padding: 3rem 1rem; }
+    .signup-container { max-width: 520px; width: 100%; padding: 2.5rem 3rem 3rem 3rem; background-color: var(--white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); text-align: center; opacity: 0; transform: translateY(30px) scale(0.98); animation: popIn 0.6s 0.2s ease-out forwards; }
+    @keyframes popIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+    .signup-container h1 { font-size: 2.1rem; margin-bottom: 0.5rem; color: var(--ksu-black); }
+    .signup-container .signup-subtitle { font-size: 1rem; color: #666; margin-bottom: 2.5rem; }
+    .signup-form .form-group { margin-bottom: 1.2rem; position: relative; text-align: left; }
+    .signup-form .form-group label { display: block; margin-bottom: 8px; font-size: 0.95rem; color: var(--dark-gray); font-weight: 600; }
+    .signup-form .form-group input { width: 100%; padding: 11px 15px; padding-right: 40px; box-sizing: border-box; border: 2px solid var(--medium-gray); border-radius: 6px; font-size: 1rem; font-family: var(--primary-font); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .signup-form .password-wrapper { position: relative; }
+    .signup-form .form-group input:focus { border-color: var(--ksu-gold); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25); outline: none; }
+    .signup-form .form-group input.invalid { border-color: #e74c3c !important; }
+    .signup-form .form-group input.valid { border-color: #2ecc71 !important; }
+    .validation-message { font-size: 0.85rem; margin-top: 6px; min-height: 18px; display: flex; align-items: center; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.3s ease, max-height 0.3s ease, color 0.3s ease; color: #666; }
+    .validation-message.visible { opacity: 1; max-height: 40px; }
+    .validation-message.invalid { color: #e74c3c; }
+    .validation-message.valid { color: #2ecc71; }
+    .validation-message i { margin-right: 5px; font-size: 0.9em; }
+    #password-requirements { list-style: none; padding: 0; margin: 8px 0 0 0; font-size: 0.85rem; transition: opacity 0.3s ease, max-height 0.3s ease; max-height: 0; opacity: 0; overflow: hidden; }
+    #password-requirements.visible { max-height: 150px; opacity: 1; }
+    #password-requirements li { display: flex; align-items: center; margin-bottom: 4px; color: #e74c3c; transition: color 0.3s ease; }
+    #password-requirements li.met { color: #2ecc71; }
+    #password-requirements li i { margin-right: 6px; width: 12px; text-align: center; }
+    .password-toggle-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #aaa; cursor: pointer; transition: color 0.3s ease; }
+    .password-toggle-icon:hover { color: var(--ksu-black); }
+    .signup-form .btn { width: 100%; padding: 14px 20px; font-size: 1.1rem; margin-top: 2rem; border-radius: 6px; }
+    .signup-form .btn .fa-spinner { margin-right: 8px; }
+    #form-error-message { min-height: 25px; margin-top: 1.5rem; margin-bottom: 0; padding: 10px; border-radius: 5px; font-size: 0.95rem; font-weight: 500; text-align: center; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    #form-error-message.show { opacity: 1; transform: translateY(0); }
+    #form-error-message.error { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
+    #form-error-message.success { background-color: rgba(40, 167, 69, 0.1); color: #28a745; }
+    #form-error-message i { margin-right: 6px; }
+    .login-link { margin-top: 2rem; font-size: 0.95rem; color: #555; }
+    .login-link a { font-weight: 600; color: var(--ksu-dark-gold); text-decoration: none; border-bottom: 1px dotted var(--ksu-dark-gold); }
+    .login-link a:hover { color: var(--ksu-gold); border-bottom-style: solid; }
+    @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+    .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; transform: translateX(0); }
+    .flash-messages-container { position: static; max-width: 500px; margin: 0 auto 1.5rem auto; width: 100%; padding: 0 1rem; z-index: auto; }
+    .flash-message { opacity: 1; animation: none; }
+
+</style>
+
+<div class="signup-page-main">
+    <div class="signup-container">
+        <h1>Create Your OwlJudge Account</h1>
+        <p class="signup-subtitle">Join the KSU CCSE community platform.</p>
+
+        {# --- Display Flashed Messages --- #}
+        <div class="flash-messages-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                        <div class="flash-message {{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {# --- End Flashed Messages --- #}
+
+        <form id="signupForm" class="signup-form" method="POST" novalidate>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Your full name" required aria-required="true" autocomplete="name" aria-describedby="name-validation">
+                 <div id="name-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required aria-required="true" autocomplete="email" aria-describedby="email-validation">
+                <div id="email-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Create a strong password" required aria-required="true" aria-describedby="password-requirements confirm-validation" autocomplete="new-password">
+                    <i class="fas fa-eye password-toggle-icon" id="togglePassword" aria-label="Show password"></i>
+                </div>
+                 <ul id="password-requirements" aria-live="polite">
+                     <li id="req-length"><i class="fas fa-times"></i> Minimum 12 characters</li>
+                     <li id="req-uppercase"><i class="fas fa-times"></i> At least one uppercase letter (A-Z)</li>
+                     <li id="req-lowercase"><i class="fas fa-times"></i> At least one lowercase letter (a-z)</li>
+                     <li id="req-number"><i class="fas fa-times"></i> At least one number (0-9)</li>
+                     <li id="req-symbol"><i class="fas fa-times"></i> At least one symbol (!@#$%^&*)</li>
+                 </ul>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                 <div class="password-wrapper">
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required aria-required="true" aria-describedby="confirm-validation" autocomplete="new-password">
+                     <i class="fas fa-eye password-toggle-icon" id="toggleConfirmPassword" aria-label="Show password"></i>
+                 </div>
+                 <div id="confirm-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+
+            {# Area for OVERALL FORM AJAX success/error messages #}
+            <p id="form-error-message" role="alert" aria-live="assertive"></p>
+
+            <button type="submit" class="btn" disabled> {# Start disabled #}
+                <span class="btn-text">Sign Up</span>
+            </button>
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="{{ url_for('login') }}">Log In Here</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Get Elements ---
+        const signupForm = document.getElementById('signupForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const passwordReqList = document.getElementById('password-requirements');
+        const formErrorDiv = document.getElementById('form-error-message'); // Overall form errors
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+        const submitBtnText = submitBtn.querySelector('.btn-text');
+        const signupContainer = document.querySelector('.signup-container');
+
+        // Validation message divs
+        const nameValidation = document.getElementById('name-validation');
+        const emailValidation = document.getElementById('email-validation');
+        const confirmValidation = document.getElementById('confirm-validation');
+
+        // Password requirement list items
+        const reqItems = {
+            length: document.getElementById('req-length'),
+            uppercase: document.getElementById('req-uppercase'),
+            lowercase: document.getElementById('req-lowercase'),
+            number: document.getElementById('req-number'),
+            symbol: document.getElementById('req-symbol')
+        };
+        const SYMBOL_REGEX = /[!@#$%^&*()_+=\-{}\[\]:;\"'|\\<>,.?/~`]/; // Define symbol regex
+
+        // --- Form Validity State ---
+        let formValidity = {
+             name: false,
+             email: false,
+             password: false, // Represents meeting *all* password criteria
+             confirm: false // Represents matching the valid base password
+         };
+
+        // --- Utility Functions ---
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function setValidationMessage(element, message, isValid) { /* ... (same as previous) ... */
+             if (!element) return;
+             element.innerHTML = message ? `<i class="fas ${isValid ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${message}` : '';
+             element.classList.toggle('visible', !!message);
+             element.classList.toggle('valid', isValid);
+             element.classList.toggle('invalid', !isValid && !!message);
+        }
+        function markInputValidity(inputElement, isValid) { /* ... (same as previous) ... */
+             if (!inputElement) return;
+             inputElement.classList.toggle('valid', isValid);
+             inputElement.classList.toggle('invalid', !isValid);
+        }
+        function checkFormValidity() { /* ... (same as previous) ... */
+            const allValid = Object.values(formValidity).every(status => status === true);
+            submitBtn.disabled = !allValid;
+        }
+        function setupPasswordToggle(inputId, toggleId) { /* ... (same as previous) ... */
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+            if (!input || !toggle) return;
+            toggle.addEventListener('click', function () {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                this.classList.toggle('fa-eye'); this.classList.toggle('fa-eye-slash');
+                this.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+            });
+        }
+        setupPasswordToggle('password', 'togglePassword');
+        setupPasswordToggle('confirm_password', 'toggleConfirmPassword');
+
+
+        // --- Live Validation Event Listeners ---
+
+        // Name Validation (On Blur)
+        nameInput?.addEventListener('blur', () => {
+            const name = nameInput.value.trim();
+            const isValid = name.length > 0;
+            setValidationMessage(nameValidation, isValid ? "Looks good!" : "Full name is required.", isValid);
+            markInputValidity(nameInput, isValid);
+            formValidity.name = isValid;
+            checkFormValidity();
+        });
+
+        // Email Validation (On Input)
+        emailInput?.addEventListener('input', () => {
+            const email = emailInput.value.trim();
+            let isValid = false;
+            let message = "";
+            if (email.length > 0) {
+                 isValid = EMAIL_REGEX.test(email);
+                 message = isValid ? "Email format is valid." : "Please enter a valid email address.";
+            }
+            setValidationMessage(emailValidation, message, isValid);
+            markInputValidity(emailInput, isValid && email.length > 0); // Only mark valid if not empty AND valid format
+            formValidity.email = isValid;
+            checkFormValidity();
+        });
+
+        // Password Validation & Requirements Check (On Input)
+        passwordInput?.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let requirementsMetCount = 0;
+            let isPasswordValid = false;
+
+            if(password.length > 0) {
+                 passwordReqList.classList.add('visible');
+             } else {
+                 passwordReqList.classList.remove('visible');
+             }
+
+            // Check each requirement
+            const checks = {
+                length: password.length >= 12,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                symbol: SYMBOL_REGEX.test(password)
+            };
+
+            // Update list item styles
+            for (const req in checks) {
+                const element = reqItems[req];
+                if (element) {
+                    const met = checks[req];
+                    element.classList.toggle('met', met);
+                    element.querySelector('i').className = `fas ${met ? 'fa-check' : 'fa-times'}`;
+                    if (met) requirementsMetCount++;
+                }
+            }
+
+            // Determine overall password validity
+            isPasswordValid = requirementsMetCount === Object.keys(reqItems).length;
+            markInputValidity(passwordInput, isPasswordValid && password.length > 0); // Mark valid only if not empty AND all reqs met
+            formValidity.password = isPasswordValid;
+
+            // Re-check confirm password validity
+            checkPasswordMatch();
+            checkFormValidity();
+        });
+
+        // Confirm Password Validation (On Input)
+        function checkPasswordMatch() {
+             const password = passwordInput.value;
+             const confirm = confirmPasswordInput.value;
+             let isMatchValid = false;
+
+             if (confirm.length === 0 && password.length === 0) {
+                 setValidationMessage(confirmValidation, "", false);
+                 markInputValidity(confirmPasswordInput, false);
+             } else if (confirm.length === 0) {
+                  setValidationMessage(confirmValidation, "Please re-enter your password.", false);
+                  markInputValidity(confirmPasswordInput, false);
+             } else if (!formValidity.password) { // Base password must be valid first
+                 setValidationMessage(confirmValidation, "Base password requirements not met.", false);
+                 markInputValidity(confirmPasswordInput, false);
+             } else if (password === confirm) {
+                 setValidationMessage(confirmValidation, "Passwords match!", true);
+                 markInputValidity(confirmPasswordInput, true);
+                 isMatchValid = true;
+             } else {
+                 setValidationMessage(confirmValidation, "Passwords do not match.", false);
+                 markInputValidity(confirmPasswordInput, false);
+             }
+             formValidity.confirm = isMatchValid;
+             checkFormValidity(); // Update overall form validity state
+         }
+        confirmPasswordInput?.addEventListener('input', checkPasswordMatch);
+
+
+        // --- AJAX Form Submission ---
+        signupForm?.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+             // Final client validity check
+             checkFormValidity();
+             if (submitBtn.disabled) {
+                 formErrorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please ensure all fields are valid.`;
+                 formErrorDiv.className = 'error show';
+                 signupContainer.classList.add('shake');
+                 setTimeout(() => signupContainer.classList.remove('shake'), 500);
+                 // Focus the first invalid field
+                 const firstInvalid = signupForm.querySelector('.invalid');
+                 firstInvalid?.focus();
+                 return;
+             }
+
+            // --- Loading State ---
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Creating Account...';
+            submitBtn.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin"></i> ');
+            formErrorDiv.textContent = '';
+            formErrorDiv.classList.remove('show', 'success', 'error');
+
+            const formData = new FormData(signupForm);
+
+            try {
+                // --- Send Request ---
+                const response = await fetch("{{ url_for('signup') }}", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json(); // ALWAYS expect JSON now
+
+                if (response.ok && data.status === 'success') {
+                    // --- Success ---
+                    formErrorDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message || 'Account created! Redirecting...'}`;
+                    formErrorDiv.className = 'success show'; // Use specific class
+                    submitBtnText.textContent = 'Success!'; // Keep button disabled
+                    submitBtn.querySelector('.fa-spinner')?.remove();
+
+                    // Redirect to login page
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "{{ url_for('login') }}";
+                    }, 2000);
+
+                } else {
+                    // --- Error from Server (e.g., email exists, backend validation fail) ---
+                    throw new Error(data.message || `Sign up failed.`);
+                }
+
+            } catch (error) {
+                // --- Handle Fetch/Network Errors or Server Errors ---
+                console.error('Signup Error:', error);
+                formErrorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message || 'Sign up failed. Please try again.'}`;
+                formErrorDiv.className = 'error show'; // Use specific class
+                signupContainer.classList.add('shake');
+                setTimeout(() => signupContainer.classList.remove('shake'), 500);
+
+                // Reset button BUT keep disabled state based on current form validity
+                submitBtnText.textContent = 'Sign Up';
+                submitBtn.querySelector('.fa-spinner')?.remove();
+                checkFormValidity(); // Re-evaluate if button should be enabled
+            }
+        });
+
+        // --- Initial Check on Load ---
+         // Trigger validation checks if fields have auto-fill content
+         if (nameInput?.value) nameInput.dispatchEvent(new Event('blur'));
+         if (emailInput?.value) emailInput.dispatchEvent(new Event('input'));
+         if (passwordInput?.value) passwordInput.dispatchEvent(new Event('input'));
+         if (confirmPasswordInput?.value) confirmPasswordInput.dispatchEvent(new Event('input'));
+         // Initial check to set button state correctly on load
+         checkFormValidity();
+
+    }); // End DOMContentLoaded
+</script>
+
+{% endblock %}

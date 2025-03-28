@@ -1,0 +1,3867 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to admin_dashboard.html --- */
+
+    /* --- Variables & Base --- */
+    :root {
+        --header-height: 60px; /* Adjust if your header height differs */
+        --white: #fff;
+        --ksu-gold: #FFC82E; /* Using KSU Gold */
+        --ksu-dark-gold: #EAAA00;
+        --ksu-black: #0A0707;
+        --light-gray: #f8f9fa;
+        --medium-gray: #dee2e6;
+        --dark-gray: #6c757d;
+        --border-color: #e0e0e0;
+        --success-green: #28a745;
+        --success-dark-green: #218838;
+        --error-red: #dc3545;
+        --info-blue: #17a2b8;
+        --warning-orange: #ffc107; /* Consistent with Bootstrap/common patterns */
+        --primary-link: #0056b3; /* Example link color */
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+        --shadow-md: 0 5px 15px rgba(0,0,0,0.1);
+        --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+        --border-radius-sm: 4px;
+        --border-radius-md: 8px;
+        --border-radius-lg: 12px;
+        --transition-speed: 0.3s;
+    }
+
+    body { /* Ensure page background allows sections to stand out */
+        background-color: #f4f6f9; /* Light background for better contrast */
+        color: #333; /* Default text color */
+    }
+
+    /* --- Main Layout --- */
+    .admin-dashboard-main {
+        padding: 2rem 1.5rem;
+        min-height: calc(100vh - var(--header-height)); /* Ensure it fills viewport height */
+    }
+
+    .dashboard-container {
+        max-width: 1400px; /* Wider container for dense data */
+        margin: 0 auto;
+        padding: 0 15px; /* Add horizontal padding if needed */
+    }
+
+    /* --- Dashboard Header --- */
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 1rem 0;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2.8rem;
+        margin-bottom: 0.75rem;
+        color: var(--ksu-black); /* Use KSU Black */
+        font-weight: 600;
+    }
+
+    .dashboard-header p {
+        font-size: 1.15rem;
+        color: #555;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto; /* Center description */
+    }
+
+    /* --- Section Styling --- */
+    .dashboard-section {
+        background-color: var(--white);
+        margin-bottom: 2.5rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden; /* Important for collapsing */
+        transition: box-shadow var(--transition-speed) ease;
+    }
+    .dashboard-section:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+        gap: 1rem;
+        padding: 1.5rem 2rem; /* Consistent padding */
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer; /* Indicate clickable for toggle */
+        transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    }
+    .section-header:hover {
+        background-color: #fafafa; /* Subtle hover */
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.75rem; /* Slightly smaller section titles */
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        color: #333;
+    }
+    .section-header h2 i {
+        color: var(--ksu-gold); /* Icon color */
+        min-width: 25px; /* Ensure icons align nicely */
+        text-align: center;
+    }
+
+    .section-header .toggle-icon {
+        margin-left: auto; /* Pushes icon to the right before controls */
+        font-size: 1.3rem;
+        color: var(--dark-gray);
+        transition: transform var(--transition-speed) ease;
+        padding: 5px; /* Make it easier to click */
+    }
+
+    .section-controls {
+        display: flex;
+        flex-wrap: wrap; /* Allow buttons to wrap */
+        gap: 0.8rem; /* Space between buttons */
+        align-items: center;
+    }
+
+    /* --- General Button Styling --- */
+    .btn {
+        display: inline-flex; /* Align icon and text */
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all var(--transition-speed) ease;
+        white-space: nowrap; /* Prevent wrapping */
+        text-decoration: none; /* Remove underline if used on <a> */
+        line-height: 1.5; /* Ensure consistent height */
+    }
+    .btn:disabled, .btn[disabled] { /* Style disabled state clearly */
+        opacity: 0.65;
+        cursor: not-allowed;
+        background-color: #e9ecef; /* Light gray background */
+        border-color: #ced4da; /* Gray border */
+        color: #6c757d; /* Muted text */
+        box-shadow: none;
+    }
+    .btn i {
+        margin-right: 6px;
+    }
+    /* Specific style for loading spinner */
+    .btn .fa-spinner {
+        margin-right: 6px;
+        animation: spin 1s linear infinite; /* Add spin animation */
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+
+    /* Specific Button Colors */
+    .section-header .btn-add {
+        background-color: var(--ksu-gold);
+        color: var(--ksu-black);
+        border-color: var(--ksu-gold);
+    }
+    .section-header .btn-add:hover:not(:disabled) {
+        background-color: var(--ksu-dark-gold);
+        border-color: var(--ksu-dark-gold);
+    }
+    .section-header .btn-configure {
+        background-color: var(--dark-gray);
+        color: white;
+        border-color: var(--dark-gray);
+    }
+    .section-header .btn-configure:hover:not(:disabled) {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+    .section-header .btn-import {
+        background-color: var(--info-blue);
+        color: white;
+        border-color: var(--info-blue);
+    }
+    .section-header .btn-import:hover:not(:disabled) {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+     .section-header .btn-export {
+         background-color: var(--success-green);
+         color: white;
+         border-color: var(--success-green);
+     }
+     .section-header .btn-export:hover:not(:disabled) {
+         background-color: var(--success-dark-green);
+         border-color: var(--success-dark-green);
+     }
+     /* Added specific style for delete button in custom sections */
+     .section-header .btn-delete {
+         background-color: var(--error-red);
+         color: white;
+         border-color: var(--error-red);
+     }
+     .section-header .btn-delete:hover:not(:disabled) {
+         background-color: #c82333;
+         border-color: #bd2130;
+     }
+
+
+    /* --- Section Content Area (Collapsible) --- */
+    .section-content {
+        padding: 1.5rem 2rem; /* Padding for search and table area */
+        max-height: 6000px; /* Large default max-height */
+        overflow: hidden; /* Needed for transition */
+        transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out, opacity 0.3s ease-in-out 0.1s;
+        opacity: 1;
+    }
+    .dashboard-section.section-collapsed .section-content {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+        overflow: hidden; /* Ensure content is truly hidden */
+        transition: max-height 0.4s cubic-bezier(0, 1, 0, 1), padding 0.4s ease-in-out, opacity 0.2s ease-in-out;
+    }
+    .dashboard-section.section-collapsed .section-header {
+        border-bottom-color: transparent; /* Hide border when collapsed */
+    }
+    .dashboard-section.section-collapsed .section-header .toggle-icon {
+        transform: rotate(-90deg);
+    }
+
+    /* --- Search Bar --- */
+    .search-container {
+        margin-bottom: 1.5rem;
+        position: relative;
+        max-width: 450px; /* Slightly wider */
+    }
+    .search-container input[type="search"] {
+        width: 100%;
+        padding: 10px 15px 10px 45px; /* Increased left padding for icon */
+        border: 1px solid var(--border-color);
+        border-radius: 25px; /* More rounded */
+        font-size: 1rem;
+        transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    }
+    .search-container input[type="search"]:focus {
+        border-color: var(--ksu-gold);
+        box-shadow: 0 0 0 3px rgba(255, 200, 46, 0.3);
+        outline: none;
+    }
+    .search-container .search-icon {
+        position: absolute;
+        left: 18px; /* Position icon */
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+        font-size: 1rem;
+        pointer-events: none; /* Don't let icon interfere with input click */
+    }
+
+    /* --- Table Styling --- */
+    .data-table-wrapper {
+        overflow-x: auto; /* Enable horizontal scrolling on small screens */
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        background-color: var(--white); /* Ensure background */
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+    .data-table th, .data-table td {
+        padding: 12px 15px; /* Consistent padding */
+        text-align: left;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color); /* Use bottom border only */
+        word-wrap: break-word; /* Prevent long text from breaking layout */
+    }
+    .data-table thead th { /* More specific selector for header */
+        background-color: var(--light-gray);
+        font-weight: 600;
+        white-space: nowrap; /* Prevent headers from wrapping */
+        position: sticky; /* Make headers sticky */
+        top: 0; /* Required for sticky */
+        z-index: 10;
+        border-top: 1px solid var(--border-color); /* Add top border for first header row */
+    }
+     .data-table td {
+         color: #444; /* Slightly darker text */
+     }
+    /* Remove border from last row */
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    /* Hover effect */
+    .data-table tbody tr:hover {
+        background-color: #eef5ff; /* Lighter blue hover */
+    }
+    /* Column Hiding */
+    .column-hidden {
+        display: none;
+    }
+
+    /* User Table Specific: Pending Indicator */
+    .pending-indicator {
+        display: inline-block; /* Allows margin */
+        background-color: var(--warning-orange);
+        color: var(--ksu-black);
+        padding: 3px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.78em;
+        margin-left: 10px;
+        white-space: nowrap;
+        font-weight: 500;
+        vertical-align: middle;
+        border: 1px solid #e0a800; /* Darker border */
+    }
+    .pending-indicator i {
+        margin-right: 4px;
+    }
+    /* Style for 'No items' or 'No Results' row */
+    .no-items-row td, .no-search-results td {
+        text-align: center;
+        padding: 20px;
+        color: #777;
+        font-style: italic;
+    }
+
+
+    /* --- Actions Column & Dropdown --- */
+    .data-table td.actions {
+        white-space: nowrap;
+        text-align: center; /* Center the dropdown toggle button */
+        width: 1%; /* Make actions column compact */
+        vertical-align: middle;
+    }
+    .actions-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .btn-actions-toggle {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        background-color: var(--dark-gray);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+    }
+    .btn-actions-toggle:hover:not(:disabled) {
+        background-color: #5a6268;
+    }
+    .btn-actions-toggle i {
+        margin-left: 5px;
+        transition: transform var(--transition-speed) ease;
+    }
+    /* Rotate caret when open */
+    .btn-actions-toggle[aria-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+
+    .actions-menu {
+        display: none; /* Hidden by default */
+        position: absolute;
+        right: 0; /* Align to the right of the toggle */
+        top: 100%; /* Position below the toggle */
+        background-color: var(--white);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-md);
+        min-width: 160px; /* Ensure enough width */
+        z-index: 100;
+        padding: 8px 0; /* Padding top/bottom */
+        margin-top: 4px; /* Small gap */
+        opacity: 0; /* For fade effect */
+        transform: translateY(-10px); /* For slide effect */
+        transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
+    .actions-menu.show {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Action Buttons inside Menu */
+    .actions-menu button {
+        display: flex; /* Use flex for icon alignment */
+        align-items: center;
+        width: 100%;
+        padding: 10px 18px; /* More padding */
+        text-align: left;
+        background: none;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+        white-space: nowrap;
+        color: #333;
+        transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    }
+    .actions-menu button:hover:not(:disabled) {
+        background-color: var(--light-gray);
+        color: var(--ksu-black);
+    }
+    .actions-menu button:disabled, .actions-menu button[disabled] {
+        color: #aaa;
+        cursor: not-allowed;
+        background-color: transparent !important;
+    }
+    .actions-menu button i {
+        margin-right: 10px; /* Space between icon and text */
+        width: 16px; /* Fixed width for alignment */
+        text-align: center;
+        color: var(--dark-gray); /* Default icon color */
+    }
+    /* Specific icon colors */
+    .actions-menu .btn-approve i { color: var(--success-green); }
+    .actions-menu .btn-edit i { color: var(--warning-orange); }
+    .actions-menu .btn-delete i { color: var(--error-red); }
+
+
+    /* --- Modal Styling --- */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1050; /* High z-index */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* Prevent body scroll when modal is open */
+        background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+        /* Use Flexbox for centering */
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity var(--transition-speed) ease;
+    }
+    .modal.visible {
+        display: flex; /* Use flex to enable centering */
+        opacity: 1;
+        overflow-y: auto; /* Allow modal content to scroll if needed */
+    }
+    .modal-content {
+        background-color: var(--white);
+        margin: 2rem auto; /* Auto margins for centering, add top/bottom margin */
+        padding: 30px 35px; /* More padding */
+        border: none;
+        border-radius: var(--border-radius-lg);
+        width: 90%;
+        max-width: 650px; /* Wider modal */
+        position: relative;
+        box-shadow: var(--shadow-lg);
+        transform: scale(0.95) translateY(-20px); /* Initial state for transition */
+        transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Elastic transition */
+        max-height: calc(100vh - 4rem); /* Limit height */
+        overflow-y: auto; /* Allow content scrolling */
+    }
+    .modal.visible .modal-content {
+        transform: scale(1) translateY(0);
+    }
+    .modal-content .close-modal {
+        color: #aaa;
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 2rem; /* Larger close icon */
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        transition: color var(--transition-speed) ease;
+    }
+    .modal-content .close-modal:hover,
+    .modal-content .close-modal:focus { /* Add focus style */
+        color: var(--ksu-black);
+        text-decoration: none;
+        outline: none;
+    }
+    .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 2rem; /* More space below title */
+        font-size: 1.8rem;
+        font-weight: 500;
+        text-align: center;
+        color: #333;
+    }
+
+    /* Modal Form Styling */
+    .modal-form .form-group {
+        margin-bottom: 1.5rem; /* Increased spacing */
+    }
+    .modal-form label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 8px; /* Space between label and input */
+        font-size: 0.95rem;
+        color: #444;
+    }
+    .modal-form input[type="text"],
+    .modal-form input[type="email"],
+    .modal-form input[type="password"],
+    .modal-form input[type="number"],
+    .modal-form select,
+    .modal-form textarea {
+        width: 100%;
+        padding: 12px 14px; /* More padding */
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--border-radius-sm);
+        font-size: 1rem;
+        transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        box-sizing: border-box; /* Ensure padding doesn't increase size */
+    }
+    .modal-form input:focus,
+    .modal-form select:focus,
+    .modal-form textarea:focus {
+        border-color: var(--ksu-gold);
+        box-shadow: 0 0 0 3px rgba(255, 200, 46, 0.3);
+        outline: none;
+    }
+    .modal-form select {
+         appearance: none; /* Custom select arrow */
+         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+         background-repeat: no-repeat;
+         background-position: right 0.75rem center;
+         background-size: 16px 12px;
+         padding-right: 2.5rem; /* Space for arrow */
+    }
+    .modal-form textarea {
+        min-height: 100px; /* Minimum height */
+        resize: vertical; /* Allow vertical resize */
+    }
+    .modal-form .input-hint {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+    }
+    /* Style for fieldset used in custom table modal */
+    .modal-form fieldset {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 15px 20px;
+        margin-bottom: 1.5rem;
+    }
+    .modal-form fieldset legend {
+        font-size: 1rem;
+        font-weight: 500;
+        padding: 0 10px;
+        color: #444;
+        width: auto; /* Allow legend to size based on content */
+        margin-bottom: 0.5rem; /* Add space below legend */
+    }
+    /* Custom filter options alignment */
+    .modal-form .filter-option-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 0.75rem; /* Space between filter options */
+    }
+    .modal-form .filter-option-group input[type="checkbox"] {
+        width: auto; /* Don't force checkbox to full width */
+        margin: 0; /* Reset margin */
+    }
+    .modal-form .filter-option-group label {
+        margin-bottom: 0; /* Reset margin */
+        font-weight: 400; /* Normal weight for options */
+        flex-grow: 1; /* Allow label text to take space */
+    }
+
+
+    /* Modal Actions (Save/Cancel Buttons) */
+    .modal-form .form-actions {
+        margin-top: 2rem; /* More space above buttons */
+        padding-top: 1.5rem; /* Add padding if border is desired */
+        border-top: 1px solid var(--border-color); /* Separator line */
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+        gap: 1rem; /* Space between buttons */
+    }
+    .modal-form .btn {
+        padding: 10px 25px; /* Larger buttons */
+        font-size: 1rem;
+    }
+    .modal-form .btn-save {
+        background-color: var(--success-green);
+        color: white;
+        border-color: var(--success-green);
+    }
+    .modal-form .btn-save:hover:not(:disabled) {
+        background-color: var(--success-dark-green);
+        border-color: var(--success-dark-green);
+    }
+    .modal-form .btn-cancel {
+        background-color: var(--dark-gray);
+        color: white;
+        border-color: var(--dark-gray);
+    }
+    .modal-form .btn-cancel:hover:not(:disabled) {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
+    /* Column Configuration Modal */
+    #column-config-modal .modal-content {
+        max-width: 500px; /* Smaller modal for column config */
+    }
+    #column-config-modal p {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        color: #555;
+        text-align: center;
+    }
+    .column-config-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Responsive grid */
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    .column-config-options label {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space between checkbox and text */
+        font-size: 0.95rem;
+        font-weight: 400;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: var(--border-radius-sm);
+        transition: background-color var(--transition-speed) ease;
+        border: 1px solid transparent;
+    }
+    .column-config-options label:hover {
+        background-color: #f0f0f0;
+        border-color: #ddd;
+    }
+    .column-config-options input[type="checkbox"] {
+        margin-right: 0; /* Remove default margin */
+        cursor: pointer;
+        width: 18px; /* Larger checkboxes */
+        height: 18px;
+        accent-color: var(--ksu-gold); /* Color the checkbox */
+    }
+    #column-config-modal .form-actions {
+        justify-content: center; /* Center the close button */
+        border-top: none; /* No separator line needed */
+        margin-top: 2rem;
+    }
+
+    /* --- Notification Styling --- */
+    #notification-container {
+        position: fixed;
+        top: calc(var(--header-height) + 20px); /* Position below header */
+        right: 25px;
+        z-index: 1100; /* Above modals */
+        width: 380px; /* Wider notifications */
+        max-width: 90%;
+    }
+    .notification {
+        padding: 18px 25px; /* More padding */
+        margin-bottom: 15px;
+        border-radius: var(--border-radius-md);
+        color: white;
+        background-color: #333; /* Default */
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transform: translateX(100%);
+        animation: slideInRightNotif 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        display: flex;
+        align-items: flex-start; /* Align icon to top if text wraps */
+        gap: 15px; /* Space between icon and text */
+        font-size: 1rem;
+        line-height: 1.4;
+        position: relative; /* For potential close button */
+    }
+    @keyframes slideInRightNotif {
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    .notification.success { background-color: var(--success-green); }
+    .notification.error { background-color: var(--error-red); }
+    .notification.info { background-color: var(--info-blue); }
+    .notification.warning { background-color: var(--warning-orange); color: var(--ksu-black); } /* Warning text black */
+
+    .notification i {
+        font-size: 1.5em; /* Larger icon */
+        line-height: 1.2; /* Adjust line height for icon */
+        margin-top: 2px; /* Align icon slightly lower */
+    }
+    .notification span {
+        flex-grow: 1; /* Allow text to take remaining space */
+    }
+    /* Optional: Add a close button to notifications */
+    .notification .close-notif {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 5px;
+        line-height: 1;
+    }
+    .notification .close-notif:hover,
+    .notification .close-notif:focus {
+        color: white;
+        outline: none;
+    }
+    .notification.warning .close-notif { /* Darker close for warning */
+        color: rgba(0, 0, 0, 0.5);
+    }
+     .notification.warning .close-notif:hover,
+     .notification.warning .close-notif:focus {
+        color: rgba(0, 0, 0, 0.8);
+    }
+
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 992px) {
+        .dashboard-container { max-width: 95%; }
+        .section-header h2 { font-size: 1.5rem; }
+        .modal-content { max-width: 90%; padding: 25px 20px; }
+        .modal-content h3 { font-size: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+        .admin-dashboard-main { padding: 1.5rem 1rem; }
+        .dashboard-header h1 { font-size: 2.2rem; }
+        .dashboard-header p { font-size: 1rem; }
+        .section-header { padding: 1rem 1.5rem; flex-direction: column; align-items: flex-start; }
+        .section-header .toggle-icon { margin-left: 0; order: -1; /* Move toggle icon near title */ align-self: flex-end; }
+        .section-controls { width: 100%; justify-content: flex-start; margin-top: 10px; gap: 0.5rem; } /* Start align buttons */
+        .search-container { max-width: 100%; }
+        .data-table th, .data-table td { padding: 10px 12px; font-size: 0.9rem; }
+        .modal-form .form-actions { flex-direction: column; gap: 0.8rem; }
+        .modal-form .btn { width: 100%; }
+        #notification-container { width: 90%; right: 5%; top: calc(var(--header-height) + 10px); }
+    }
+     @media (max-width: 576px) {
+         .dashboard-header h1 { font-size: 1.8rem; }
+         .section-header h2 { font-size: 1.3rem; }
+         .section-controls .btn { padding: 6px 10px; font-size: 0.8rem;} /* Smaller buttons */
+         .data-table { font-size: 0.85rem; }
+         .data-table th, .data-table td { padding: 8px 10px; }
+         .actions-menu { min-width: 140px; }
+         .actions-menu button { padding: 8px 14px; font-size: 0.85rem; }
+         .modal-content { padding: 20px 15px; margin: 1rem auto; }
+         .modal-form .form-actions { padding-top: 1rem; }
+     }
+
+</style>
+
+<main class="admin-dashboard-main">
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <p>Manage users, projects, scores, and settings for OwlJudge C-Day events.</p>
+        </div>
+
+        {# --- Button to Add Custom Table --- #}
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <button class="btn btn-add" onclick="openAddCustomTableModal()">
+                <i class="fas fa-plus-square"></i> Add Custom Table Section
+            </button>
+        </div>
+
+        {# --- All Users Section --- #}
+        <section id="users-section" class="dashboard-section" data-section-id="users">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-users"></i> All Users</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                <div class="section-controls" onclick="event.stopPropagation()"> {# Prevent header click #}
+                    <button class="btn btn-import" onclick="triggerImport('user')">
+                        <i class="fas fa-file-import"></i> Import Users
+                    </button>
+                     <button class="btn btn-export" onclick="exportData('user')">
+                         <i class="fas fa-file-export"></i> Export Users
+                     </button>
+                    <button class="btn btn-configure" onclick="openColumnConfig('users-table')"> {# Pass table ID #}
+                        <i class="fas fa-cog"></i> Columns
+                    </button>
+                    <button class="btn btn-add" onclick="openModal('user', 'add')">
+                        <i class="fas fa-plus-circle"></i> Add User
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                 <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="user-search" class="table-search" data-table="users-table" placeholder="Search by name, email, role..." aria-label="Search all users">
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th data-col="id">ID</th>
+                                <th data-col="name">Name</th>
+                                <th data-col="email">Email</th>
+                                <th data-col="role">Role</th>
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {# Data rows will be rendered by JS initially from initialUsers #}
+                            {# Fallback if JS disabled or initial data empty #}
+                            {% if not users %}
+                             <tr class="no-items-row"><td colspan="5">No users found.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# --- Pending Judge Requests Section --- #}
+        <section id="pending-judges-section" class="dashboard-section" data-section-id="pending-judges">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-user-clock"></i> Pending Judge Requests</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                <div class="section-controls" onclick="event.stopPropagation()">
+                    {# No Add/Import/Export specific to pending #}
+                    <button class="btn btn-configure" onclick="openColumnConfig('pending-judges-table')"> {# Pass table ID #}
+                        <i class="fas fa-cog"></i> Columns
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                 <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="pending-judge-search" class="table-search" data-table="pending-judges-table" placeholder="Search by name, email..." aria-label="Search pending judge requests">
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table" id="pending-judges-table">
+                        <thead>
+                            <tr>
+                                <th data-col="id">ID</th>
+                                <th data-col="name">Name</th>
+                                <th data-col="email">Email</th>
+                                {# Maybe add request date if available? #}
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           {# Data rows will be rendered by JS #}
+                           <tr class="no-items-row"><td colspan="4">No pending judge requests found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# --- Judges Section --- #}
+        <section id="judges-section" class="dashboard-section" data-section-id="judges">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-gavel"></i> Judges</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                <div class="section-controls" onclick="event.stopPropagation()">
+                    {# No Add/Import/Export specific to judges view #}
+                    <button class="btn btn-configure" onclick="openColumnConfig('judges-table')"> {# Pass table ID #}
+                        <i class="fas fa-cog"></i> Columns
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                 <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="judge-search" class="table-search" data-table="judges-table" placeholder="Search by name, email..." aria-label="Search judges">
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table" id="judges-table">
+                        <thead>
+                            <tr>
+                                <th data-col="id">ID</th>
+                                <th data-col="name">Name</th>
+                                <th data-col="email">Email</th>
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {# Data rows will be rendered by JS #}
+                            <tr class="no-items-row"><td colspan="4">No judges found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# --- Regular Users Section --- #}
+        <section id="regular-users-section" class="dashboard-section" data-section-id="regular-users">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-user"></i> Regular Users</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                 <div class="section-controls" onclick="event.stopPropagation()">
+                     {# No Add/Import/Export specific to regular users view #}
+                     <button class="btn btn-configure" onclick="openColumnConfig('regular-users-table')"> {# Pass table ID #}
+                         <i class="fas fa-cog"></i> Columns
+                     </button>
+                 </div>
+            </div>
+            <div class="section-content">
+                 <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="regular-user-search" class="table-search" data-table="regular-users-table" placeholder="Search by name, email..." aria-label="Search regular users">
+                </div>
+                 <div class="data-table-wrapper">
+                    <table class="data-table" id="regular-users-table">
+                        <thead>
+                            <tr>
+                                <th data-col="id">ID</th>
+                                <th data-col="name">Name</th>
+                                <th data-col="email">Email</th>
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {# Data rows will be rendered by JS #}
+                            <tr class="no-items-row"><td colspan="4">No regular users found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        {# --- Projects Section --- #}
+        <section id="projects-section" class="dashboard-section" data-section-id="projects">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-project-diagram"></i> Projects</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                 <div class="section-controls" onclick="event.stopPropagation()">
+                      <button class="btn btn-import" onclick="triggerImport('project')">
+                          <i class="fas fa-file-import"></i> Import Projects
+                      </button>
+                      <button class="btn btn-export" onclick="exportData('project')">
+                          <i class="fas fa-file-export"></i> Export Projects
+                      </button>
+                     <button class="btn btn-configure" onclick="openColumnConfig('projects-table')"> {# Pass table ID #}
+                         <i class="fas fa-cog"></i> Columns
+                     </button>
+                     <button class="btn btn-add" onclick="openModal('project', 'add')">
+                         <i class="fas fa-plus-circle"></i> Add Project
+                     </button>
+                 </div>
+            </div>
+            <div class="section-content">
+                 <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="project-search" class="table-search" data-table="projects-table" placeholder="Search by name, group ID, description..." aria-label="Search projects">
+                </div>
+                 <div class="data-table-wrapper">
+                    <table class="data-table" id="projects-table">
+                        <thead>
+                            <tr>
+                                <th data-col="project_id">ID</th>
+                                <th data-col="project_name">Project Name</th>
+                                <th data-col="group_id">Group ID</th>
+                                <th data-col="description">Description</th>
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {# Data rows will be rendered by JS initially from initialProjects #}
+                             {# Fallback if JS disabled or initial data empty #}
+                             {% if not projects %}
+                              <tr class="no-items-row"><td colspan="5">No projects found.</td></tr>
+                             {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# --- Scores Section --- #}
+        <section id="scores-section" class="dashboard-section" data-section-id="scores">
+             <div class="section-header" onclick="toggleSection(this)">
+                <h2><i class="fas fa-star-half-alt"></i> Scores</h2>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                 <div class="section-controls" onclick="event.stopPropagation()">
+                     <button class="btn btn-export" onclick="exportData('score')">
+                          <i class="fas fa-file-export"></i> Export Scores
+                      </button>
+                     <button class="btn btn-configure" onclick="openColumnConfig('scores-table')"> {# Pass table ID #}
+                         <i class="fas fa-cog"></i> Columns
+                     </button>
+                     <button class="btn btn-add" onclick="openModal('score', 'add')">
+                         <i class="fas fa-plus-circle"></i> Add Score
+                     </button>
+                 </div>
+            </div>
+            <div class="section-content">
+                <div class="search-container">
+                     <i class="fas fa-search search-icon"></i>
+                    <input type="search" id="score-search" class="table-search" data-table="scores-table" placeholder="Search by category, score, project, judge..." aria-label="Search scores">
+                </div>
+                 <div class="data-table-wrapper">
+                    <table class="data-table" id="scores-table">
+                         <thead>
+                            <tr>
+                                <th data-col="score_id">ID</th>
+                                <th data-col="category">Category</th>
+                                <th data-col="score_given">Score</th>
+                                <th data-col="project_name">Project</th>
+                                <th data-col="judge_name">Judge</th>
+                                <th data-col="timestamp">Timestamp</th>
+                                <th data-col="actions" class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {# Data rows will be rendered by JS initially from initialScores #}
+                             {# Fallback if JS disabled or initial data empty #}
+                              {% if not scores %}
+                               <tr class="no-items-row"><td colspan="7">No scores found.</td></tr>
+                              {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# --- Custom Sections Placeholder --- #}
+        <div id="custom-sections-container">
+            <!-- Custom table sections will be dynamically rendered here by JavaScript -->
+        </div>
+
+    </div> {# End dashboard-container #}
+
+    {# --- Modals --- #}
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="user-modal-title">User Form</h3>
+            <form id="user-form" class="modal-form" novalidate>
+                <input type="hidden" id="user-id" name="id"> {# Use 'id' matching the User model #}
+                <div class="form-group">
+                    <label for="user-name">Name</label>
+                    <input type="text" id="user-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password</label>
+                    <input type="password" id="user-password" name="password" placeholder="Required for new user / Optional for update">
+                    <small class="input-hint">Leave blank to keep the current password when editing.</small>
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role</label>
+                    <select id="user-role" name="role" required>
+                        <option value="user">User</option>
+                        <option value="judge">Judge</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save</span></button> {# Spinner added dynamically #}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Student Modal -->
+    <div id="student-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="student-modal-title">Student Form</h3>
+            <form id="student-form" class="modal-form" novalidate>
+                <input type="hidden" id="student-id" name="student_id"> {# Use 'student_id' matching model #}
+                <div class="form-group">
+                    <label for="student-name">Student Name</label>
+                    <input type="text" id="student-name" name="student_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-group-id">Group</label>
+                    <select id="student-group-id" name="group_id">
+                        <option value="">-- No Group --</option> {# Option to unset group #}
+                        {# Options loaded by JS #}
+                    </select>
+                     <small class="input-hint">Assign this student to an existing group.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Group Modal -->
+    <div id="group-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="group-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="group-modal-title">Group Form</h3>
+            <form id="group-form" class="modal-form" novalidate>
+                <input type="hidden" id="group-id" name="group_id"> {# Use 'group_id' matching model #}
+                <div class="form-group">
+                    <label for="group-name">Group Name (Optional)</label>
+                    <input type="text" id="group-name" name="group_name" placeholder="e.g., Team Alpha">
+                </div>
+                <div class="form-group">
+                    <label for="group-project-id">Associated Project</label>
+                    <select id="group-project-id" name="project_id">
+                         <option value="">-- No Project --</option> {# Option to unset project #}
+                         {# Options loaded by JS #}
+                    </select>
+                     <small class="input-hint">Link this group to an existing project.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="project-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="project-modal-title">Project Form</h3>
+            <form id="project-form" class="modal-form" novalidate>
+                <input type="hidden" id="project-id" name="project_id">
+                <div class="form-group">
+                    <label for="project-name">Project Name</label>
+                    <input type="text" id="project-name" name="project_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-group-id">Group ID</label>
+                    <input type="number" id="project-group-id" name="group_id" required>
+                    <small class="input-hint">Enter the numeric ID of the associated group.</small>
+                </div>
+                <div class="form-group">
+                    <label for="project-description">Description</label>
+                    <textarea id="project-description" name="description" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <!-- Score Modal -->
+    <div id="score-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="score-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="score-modal-title">Score Form</h3>
+            <form id="score-form" class="modal-form" novalidate>
+                <input type="hidden" id="score-id" name="score_id"> {# Use 'score_id' matching model #}
+                <div class="form-group">
+                    <label for="score-category">Category</label>
+                    <input type="text" id="score-category" name="category" required placeholder="e.g., Innovation, Presentation">
+                </div>
+                <div class="form-group">
+                    <label for="score-given">Score</label>
+                    <input type="number" id="score-given" name="score_given" min="1" max="100" required placeholder="1-100">
+                </div>
+                <div class="form-group">
+                    <label for="score-project-id">Project</label>
+                    <select id="score-project-id" name="project_id" required>
+                        <option value="">-- Loading Projects --</option> {# Placeholder during load #}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="score-judge-id">Judge</label>
+                    <select id="score-judge-id" name="judge_id" required>
+                        <option value="">-- Loading Judges --</option> {# Placeholder during load #}
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Table Creation Modal -->
+    <div id="custom-table-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="custom-table-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="custom-table-modal-title">Create Custom Table Section</h3>
+            <form id="custom-table-form" class="modal-form" novalidate>
+                <div class="form-group">
+                    <label for="custom-table-name">Section Name</label>
+                    <input type="text" id="custom-table-name" name="name" required placeholder="e.g., Active Judges, Senior Projects">
+                </div>
+                <div class="form-group">
+                    <label for="custom-table-data-type">Data Type</label>
+                    <select id="custom-table-data-type" name="dataType" required onchange="updateCustomTableFilterOptions(this.value)">
+                        <option value="">-- Select Data Type --</option>
+                        <option value="user">Users</option>
+                        <option value="project">Projects</option>
+                        <option value="score">Scores</option>
+                        <option value="student">Students</option>
+                        <option value="group">Groups</option>
+                        <option value="ranking">Rankings</option>
+                        <option value="judge_table">Judges (Table)</option> {# Renamed to avoid conflict with 'judge' role #}
+                        <option value="credential">Credentials</option>
+                        <option value="permission">Permissions</option>
+                    </select>
+                </div>
+
+                <!-- Filter Options Container (Dynamically Populated) -->
+                <fieldset id="custom-table-filter-options" style="display: none;">
+                    <legend>Filter Criteria</legend>
+                    <div id="custom-table-filters-content">
+                        <!-- Filter inputs will be added here by JS -->
+                        <p>Select Data Type to see filter options.</p>
+                    </div>
+                </fieldset>
+                <!-- End Filter Options -->
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Create Section</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Column Config Modal -->
+    <div id="column-config-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="column-config-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="column-config-title">Configure Columns</h3>
+            <p>Select columns to display for the <strong id="config-table-name"></strong> table.</p>
+            <form id="column-config-form">
+                <input type="hidden" id="config-target-table">
+                <div id="column-config-options" class="column-config-options">
+                    <!-- Checkboxes will be loaded here by JS -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Close</button>
+                     {# No save needed, changes apply instantly #}
+                </div>
+            </form>
+        </div>
+    </div>
+
+     {# --- Notification Container --- #}
+    <div id="notification-container"></div>
+
+    {# --- Hidden File Inputs for Import --- #}
+    <input type="file" id="import-file-user" accept=".xlsx" style="display: none;">
+    <input type="file" id="import-file-project" accept=".xlsx" style="display: none;">
+    {# Scores typically aren't imported, but added if needed #}
+    {# <input type="file" id="import-file-score" accept=".xlsx" style="display: none;"> #}
+
+</main> {# End admin-dashboard-main #}
+
+{# --- Data passed from Flask --- #}
+<script>
+    // Make initial data available to JavaScript
+    // Ensure data is properly JSON-escaped by Flask's `tojson` filter
+    let initialUsers = {{ users | tojson }};
+    let initialProjects = {{ projects | tojson }};
+    let initialScores = {{ scores | tojson }};
+    // --- NEW: Add placeholders for data from other tables ---
+    // !! IMPORTANT: Your app.py MUST pass these variables !!
+    let initialStudents = {{ students | default([]) | tojson }};
+    let initialGroups = {{ groups | default([]) | tojson }};
+    let initialRankings = {{ rankings | default([]) | tojson }};
+    let initialJudgesTable = {{ judges_table | default([]) | tojson }}; // Use distinct name
+    let initialCredentials = {{ credentials | default([]) | tojson }};
+    let initialPermissions = {{ permissions | default([]) | tojson }};
+
+    const currentUserId = {{ current_user.id if current_user else 'null' }};
+
+    // Base URL for API calls (useful if deploying under a prefix)
+    const API_BASE_URL = "{{ url_for('index', _external=True) }}".replace(/\/$/, ''); // Get root URL
+
+    // --- Column configurations ---
+    const userBaseColumns = [ // Base columns for all user tables
+            { key: 'id', label: 'ID', alwaysVisible: false },
+            { key: 'name', label: 'Name', alwaysVisible: true },
+            { key: 'email', label: 'Email' },
+    ];
+    const userActionsColumn = { key: 'actions', label: 'Actions', alwaysVisible: true };
+    const noActionsColumn = []; // An empty array signifies no specific actions column needed by default
+
+    // Column configuration definition (keys MUST match data attributes in table headers/cells AND table IDs)
+    // IMPORTANT: This map will be dynamically updated when custom tables are created/deleted
+    let tableColumnsConfig = { // Use 'let' to allow modification
+        'users-table': [ // All Users (Base for 'user' type)
+            ...userBaseColumns,
+            { key: 'role', label: 'Role' },
+            userActionsColumn
+        ],
+         'pending-judges-table': [ // Pending Judges
+             ...userBaseColumns,
+             // No Role column needed here
+             userActionsColumn // Actions still needed (Approve/Edit/Delete)
+         ],
+         'judges-table': [ // Judges (Users with role='judge')
+             ...userBaseColumns,
+             // No Role column needed here
+             userActionsColumn // Actions still needed (Edit/Delete)
+         ],
+         'regular-users-table': [ // Regular Users
+             ...userBaseColumns,
+             // No Role column needed here
+             userActionsColumn // Actions still needed (Edit/Delete)
+         ],
+        'projects-table': [ // Base for 'project' type
+            { key: 'project_id', label: 'ID', alwaysVisible: false },
+            { key: 'project_name', label: 'Project Name', alwaysVisible: true },
+            { key: 'group_id', label: 'Group ID' },
+            { key: 'description', label: 'Description' },
+            userActionsColumn
+        ],
+        'scores-table': [ // Base for 'score' type
+            { key: 'score_id', label: 'ID', alwaysVisible: false },
+            { key: 'category', label: 'Category' },
+            { key: 'score_given', label: 'Score' },
+            { key: 'project_name', label: 'Project', alwaysVisible: true }, // Display name
+            { key: 'judge_name', label: 'Judge', alwaysVisible: true }, // Display name
+            { key: 'timestamp', label: 'Timestamp' },
+            userActionsColumn
+        ],
+        // --- NEW: Base configs for other tables ---
+        'students-table': [ // Base for 'student' type
+            { key: 'student_id', label: 'Student ID', alwaysVisible: false },
+            { key: 'student_name', label: 'Name', alwaysVisible: true },
+            { key: 'group_id', label: 'Group ID' },
+            userActionsColumn // <-- ADDED Actions column for Edit
+        ],
+        'groups-table': [ // Base for 'group' type
+            { key: 'group_id', label: 'Group ID', alwaysVisible: true },
+            { key: 'group_name', label: 'Group Name' },
+            { key: 'project_id', label: 'Project ID' },
+            userActionsColumn // <-- ADDED Actions column for Edit
+        ],
+        'rankings-table': [ // Base for 'ranking' type
+            { key: 'id', label: 'Entry ID', alwaysVisible: false }, // Added primary key 'id'
+            { key: 'ranking', label: 'Rank' },
+            { key: 'project_name', label: 'Project Name', alwaysVisible: true },
+            { key: 'score', label: 'Score' },
+            { key: 'project_id', label: 'Project ID' },
+             ...noActionsColumn // Rankings likely not editable here
+        ],
+        'judges_table-table': [ // Base for 'judge_table' type (Note the double '-table' in the key)
+            { key: 'judge_id', label: 'Judge ID', alwaysVisible: true },
+            { key: 'judge_name', label: 'Name' },
+            { key: 'projects_assigned', label: 'Projects Assigned' },
+            { key: 'perc_complete', label: '% Complete' },
+            { key: 'credential_id', label: 'Credential ID' },
+             ...noActionsColumn // This table is likely derived, not directly editable
+        ],
+        'credentials-table': [ // Base for 'credential' type
+            { key: 'credential_id', label: 'Credential ID', alwaysVisible: true },
+            { key: 'judge_name', label: 'Judge Name' },
+            { key: 'username_encrypted', label: 'Username (Enc)' }, // Displaying encrypted data might not be useful
+            { key: 'password_encrypted', label: 'Password (Enc)' }, // Displaying encrypted data might not be useful
+            { key: 'judge_id', label: 'Judge ID' },
+            { key: 'permission_id', label: 'Permission ID' },
+             ...noActionsColumn // Credentials likely managed elsewhere or not editable directly
+        ],
+        'permissions-table': [ // Base for 'permission' type
+            { key: 'permission_id', label: 'Permission ID', alwaysVisible: true },
+            { key: 'permission_name', label: 'Name' },
+            { key: 'can_read', label: 'Read' },
+            { key: 'can_cast', label: 'Cast Vote' },
+            { key: 'can_modify', label: 'Modify' },
+            { key: 'is_developer', label: 'Developer' },
+             ...noActionsColumn // Permissions likely managed elsewhere or not editable directly
+        ]
+        // Custom table configs will be added here dynamically
+    };
+
+    // LocalStorage keys for persistence
+    const COLUMN_CONFIG_STORAGE_KEY = 'adminDashboardColumnPrefs_v2';
+    const SECTION_COLLAPSE_STORAGE_KEY = 'adminDashboardSectionCollapsePrefs_v2';
+    const CUSTOM_TABLE_DEFS_KEY = 'adminDashboardCustomTables_v1'; // For custom table definitions
+</script>
+
+{# --- Main Dashboard JavaScript --- #}
+<script>
+// Wrap all JS in a DOMContentLoaded listener for safety
+document.addEventListener('DOMContentLoaded', function() {
+    "use strict"; // Enable strict mode
+
+    // --- State & References ---
+    let currentModal = null; // Tracks the currently open modal element
+    const modalMap = {
+        user: document.getElementById('user-modal'),
+        project: document.getElementById('project-modal'),
+        score: document.getElementById('score-modal'),
+        student: document.getElementById('student-modal'), // Added student modal
+        group: document.getElementById('group-modal'),     // Added group modal
+        columnConfig: document.getElementById('column-config-modal'),
+        customTable: document.getElementById('custom-table-modal')
+    };
+    const formMap = {
+        user: document.getElementById('user-form'),
+        project: document.getElementById('project-form'),
+        score: document.getElementById('score-form'),
+        student: document.getElementById('student-form'), // Added student form
+        group: document.getElementById('group-form'),     // Added group form
+        columnConfig: document.getElementById('column-config-form'),
+        customTable: document.getElementById('custom-table-form')
+    };
+    // Retrieve tbody elements robustly
+    const tableBodyMap = {};
+    function registerTableBodies() {
+        Object.keys(tableBodyMap).forEach(key => delete tableBodyMap[key]);
+        // Register bodies from standard and custom tables present in the DOM
+         document.querySelectorAll('.data-table').forEach(table => {
+             const tbody = table.querySelector('tbody');
+             if (table.id && tbody) {
+                 tableBodyMap[table.id] = tbody;
+             } else if(tbody) {
+                 console.warn("Found table tbody without table ID.", table);
+             }
+         });
+         logDebug("Registered table bodies:", Object.keys(tableBodyMap));
+    }
+
+    const notificationContainer = document.getElementById('notification-container');
+    const customSectionsContainer = document.getElementById('custom-sections-container'); // Container for custom sections
+    const fileInputMap = {
+        user: document.getElementById('import-file-user'),
+        project: document.getElementById('import-file-project'),
+        // score: document.getElementById('import-file-score') // Add if score import needed
+    };
+
+    // --- Custom Table Definitions State ---
+    let customTableDefinitions = []; // Array to hold custom table def objects
+
+    // --- Debugging Flag ---
+    const DEBUG = true; // Set to false for production
+
+    // --- Logging Utilities ---
+    function logDebug(...args) { if (DEBUG) { console.log('[ADMIN DEBUG]', ...args); } }
+    function logInfo(...args) { console.info('[ADMIN INFO]', ...args); }
+    function logWarn(...args) { console.warn('[ADMIN WARN]', ...args); }
+    function logError(...args) { console.error('[ADMIN ERROR]', ...args); }
+
+    // --- Utility Functions (showNotification, dismissNotification, getApiEndpoint, etc.) ---
+    // ... (Keep all existing utility functions like showNotification, getApiEndpoint, setButtonLoading, etc.) ...
+        /**
+     * Shows a toast notification.
+     * @param {string} message The message to display.
+     * @param {('info'|'success'|'error'|'warning')} type The type of notification.
+     * @param {number} duration Duration in ms before auto-dismissal (0 for sticky).
+     */
+        function showNotification(message, type = 'info', duration = 5000) {
+        logInfo(`Notification (${type}): ${message}`);
+        if (!notificationContainer) { logError("Notification container not found."); return; }
+
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        let iconClass = 'fa-info-circle';
+        if (type === 'success') iconClass = 'fa-check-circle';
+        else if (type === 'error') iconClass = 'fa-exclamation-triangle';
+        else if (type === 'warning') iconClass = 'fa-exclamation-circle';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-notif';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.setAttribute('aria-label', 'Close notification');
+        closeBtn.onclick = () => dismissNotification(notification);
+
+        notification.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
+        notification.appendChild(closeBtn);
+        notificationContainer.prepend(notification); // Add new notifications at the top
+
+        if (duration > 0) {
+            const timerId = setTimeout(() => dismissNotification(notification), duration);
+            notification.dataset.timerId = timerId;
+        }
+    }
+
+    /**
+     * Dismisses a specific notification element with animation.
+     * @param {HTMLElement} notification The notification element to dismiss.
+     */
+    function dismissNotification(notification) {
+        if (!notification || notification.classList.contains('dismissing')) return; // Prevent double dismissal
+        notification.classList.add('dismissing');
+        clearTimeout(notification.dataset.timerId);
+        notification.style.transition = 'opacity 0.4s ease, transform 0.4s ease, margin-bottom 0.4s ease, padding 0.4s ease, height 0.4s ease';
+        requestAnimationFrame(() => { // Ensure styles apply before transition starts
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(110%)';
+            notification.style.marginBottom = '0';
+            notification.style.paddingTop = '0';
+            notification.style.paddingBottom = '0';
+            notification.style.height = '0px'; // Animate height collapse
+            notification.style.overflow = 'hidden';
+        });
+        setTimeout(() => notification.remove(), 400);
+    }
+
+
+    /**
+     * Generates the correct API endpoint URL using API_BASE_URL.
+     * @param {string} type The type of resource/action (e.g., 'user', 'project', 'student', 'approveJudge', 'importUser').
+     * @param {number|string|null} [id=null] The resource ID (optional).
+     * @returns {string|null} The API endpoint URL or null if type is invalid for endpoint generation.
+     */
+     function getApiEndpoint(type, id = null) {
+         // Base paths for CRUD-like operations
+         const basePathMap = {
+             user: '/admin/users',
+             project: '/admin/projects',
+             score: '/admin/scores',
+             student: '/admin/students', // Added Student base path
+             group: '/admin/groups',     // Added Group base path
+             // Types likely not having standard CRUD endpoints via admin dashboard:
+             // ranking: '/admin/rankings', // Probably GET only or complex generation
+             // judge_table: '/admin/judges_table', // Likely read-only view
+             // credential: '/admin/credentials', // Security sensitive
+             // permission: '/admin/permissions', // Likely read-only or specific config endpoint
+         };
+         // Specific action endpoints
+         const actionEndpoints = {
+             approveJudge: '/admin/approve_judge', // Needs ID appended later
+             importUser: '/admin/import/users',
+             exportUser: '/admin/export/users',
+             importProject: '/admin/import/projects',
+             exportProject: '/admin/export/projects',
+             exportScore: '/admin/export/scores',
+             // Add export/import for student/group if implemented
+             // exportStudent: '/admin/export/students',
+             // importStudent: '/admin/import/students',
+             // exportGroup: '/admin/export/groups',
+             // importGroup: '/admin/import/groups',
+         };
+
+         let path;
+         if (actionEndpoints[type]) {
+             path = actionEndpoints[type];
+             // Append ID only for specific actions that require it in the path itself
+             if (type === 'approveJudge' && id !== null && id !== undefined) {
+                 path += `/${id}`;
+             }
+         } else if (basePathMap[type]) {
+             path = basePathMap[type];
+             // Append ID for standard resource identification (GET one, PUT, DELETE)
+             if (id !== null && id !== undefined) {
+                 path += `/${id}`;
+             }
+         } else {
+             logWarn(`API endpoint type '${type}' not recognized or configured. Cannot generate endpoint.`);
+             return null; // Indicate failure to generate endpoint
+         }
+
+         const endpoint = `${API_BASE_URL}${path}`;
+         logDebug(`Generated API endpoint for type '${type}', id '${id}': ${endpoint}`);
+         return endpoint;
+     }
+
+     /**
+      * Sets a button to its loading state.
+      * @param {HTMLButtonElement} button The button element.
+      * @param {string} [loadingText='Saving...'] Text to display while loading.
+      */
+     function setButtonLoading(button, loadingText = 'Saving...') {
+        if (!button) return;
+        button.disabled = true;
+        const btnTextSpan = button.querySelector('.btn-text');
+        if (btnTextSpan) {
+            button.dataset.originalText = btnTextSpan.textContent; // Store original text
+            btnTextSpan.textContent = loadingText;
+        } else {
+            button.dataset.originalText = button.textContent; // Fallback if no span
+            button.textContent = loadingText;
+        }
+        // Add spinner if not already present
+        if (!button.querySelector('.fa-spinner')) {
+            button.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ');
+        }
+     }
+
+     /**
+      * Restores a button from its loading state.
+      * @param {HTMLButtonElement} button The button element.
+      */
+     function restoreButtonState(button) {
+         if (!button) return;
+         button.disabled = false;
+         const originalText = button.dataset.originalText || 'Save'; // Use stored text or default
+         const btnTextSpan = button.querySelector('.btn-text');
+         if (btnTextSpan) {
+             btnTextSpan.textContent = originalText;
+         } else {
+             button.textContent = originalText; // Fallback
+         }
+         button.querySelector('.fa-spinner')?.remove(); // Remove spinner
+         delete button.dataset.originalText; // Clean up stored text
+     }
+
+
+     /**
+      * Resets a form element to its default state and clears validation/loading states.
+      * @param {HTMLFormElement} formElement The form to reset.
+      */
+     function resetForm(formElement) {
+         if (!formElement) return;
+         logDebug(`Resetting form: ${formElement.id}`);
+         formElement.reset();
+         // Clear any manual validation styles if used (not currently implemented)
+         // formElement.querySelectorAll('.is-invalid, .is-valid').forEach(el => el.classList.remove('is-invalid', 'is-valid'));
+
+         // Clear hidden ID inputs specifically
+         const idInputs = formElement.querySelectorAll('input[type="hidden"][name$="_id"], input[type="hidden"][name="id"]');
+         idInputs.forEach(input => input.value = '');
+         logDebug(`Cleared hidden ID inputs in form ${formElement.id}`);
+
+         // Restore submit button state
+         const submitBtn = formElement.querySelector('button[type="submit"]');
+         if(submitBtn) { restoreButtonState(submitBtn); }
+     }
+
+     /**
+      * Populates a form with data from an object.
+      * @param {HTMLFormElement} formElement The form to populate.
+      * @param {object} data The data object.
+      */
+     function populateForm(formElement, data) {
+          if (!formElement || !data) { logError("populateForm: Invalid arguments"); return; }
+          logDebug(`Populating form '${formElement.id}' with data:`, data);
+
+          for (const key in data) {
+              if (data.hasOwnProperty(key)) {
+                  const input = formElement.elements[key];
+                  if (input) {
+                      const value = data[key] ?? ''; // Use empty string for null/undefined
+                      // Handle different input types
+                      if (input.type === 'checkbox') {
+                          input.checked = !!value; // Boolean conversion
+                      } else if (input.type === 'radio') {
+                          // Find the specific radio button with the matching value
+                          const radioToSelect = formElement.querySelector(`input[name="${key}"][value="${value}"]`);
+                          if (radioToSelect) radioToSelect.checked = true;
+                      } else if (input.tagName === 'SELECT') {
+                          input.value = value;
+                      } else if (input.type === 'password') {
+                           input.value = ''; // Never populate password fields
+                           input.placeholder = "Leave blank to keep current"; // Set placeholder for edits
+                      } else {
+                          input.value = value;
+                      }
+                  } else {
+                      // Handle cases where form key might not directly match data key (e.g., hidden IDs)
+                      // The explicit ID setting below handles common cases.
+                      if (!key.endsWith('_id') && key !== 'id') { // Avoid logging ID fields here
+                         // logWarn(`populateForm: No form element found for data key '${key}' in form '${formElement.id}'.`);
+                      }
+                  }
+              }
+          }
+           // Specifically find and set the hidden ID field based on convention
+           const type = formElement.id.split('-')[0]; // 'user', 'project', 'score', 'student', 'group'
+           // Adjust ID key logic based on type - assuming convention holds for new types
+           const idFieldName = (type === 'user') ? 'id' : `${type}_id`; // Special case for user 'id' instead of 'user_id'
+           const idInput = formElement.elements[idFieldName];
+           const idValue = data[idFieldName] || data['id']; // Handle cases where ID might just be 'id' in user data
+
+           logDebug(`Attempting to set ID field '${idFieldName}' (found: ${!!idInput}) with data ID value: ${idValue}`);
+
+           if (idInput && (idValue !== undefined && idValue !== null)) {
+                idInput.value = idValue;
+                logDebug(`Set hidden ID field '${idFieldName}' to: ${idInput.value}`);
+           } else if (idInput) {
+               logWarn(`populateForm: ID field '${idFieldName}' found, but no corresponding ID in data or data ID is null/undefined.`);
+               idInput.value = ''; // Ensure it's cleared if no ID
+           } else {
+               logError(`populateForm: Hidden ID field with name '${idFieldName}' not found in form '${formElement.id}'`);
+           }
+     }
+
+     /**
+      * Populates select dropdowns in the Score, Student, and Group modals.
+      */
+      function populateSelectOptions() {
+          logDebug("Populating select options for Score, Student, and Group modals");
+          const scoreProjectSelect = document.getElementById('score-project-id');
+          const scoreJudgeSelect = document.getElementById('score-judge-id');
+          const studentGroupSelect = document.getElementById('student-group-id');
+          const groupProjectSelect = document.getElementById('group-project-id');
+
+          // --- Score Modal ---
+          if (scoreProjectSelect) {
+               const currentProjectValue = scoreProjectSelect.value;
+               scoreProjectSelect.innerHTML = '<option value="">-- Select Project --</option>';
+               if(initialProjects && initialProjects.length > 0) {
+                   initialProjects.slice().sort((a, b) => a.project_name.localeCompare(b.project_name))
+                   .forEach(p => {
+                       const option = document.createElement('option');
+                       option.value = p.project_id;
+                       option.textContent = `${p.project_name} (ID: ${p.project_id})`;
+                       scoreProjectSelect.appendChild(option);
+                   });
+                   if (initialProjects.some(p => String(p.project_id) === currentProjectValue)) {
+                        scoreProjectSelect.value = currentProjectValue;
+                   }
+               } else {
+                   scoreProjectSelect.innerHTML = '<option value="">-- No Projects Available --</option>';
+               }
+          } else { logError("Score Project select element 'score-project-id' not found."); }
+
+           if (scoreJudgeSelect) {
+                const currentJudgeValue = scoreJudgeSelect.value;
+                scoreJudgeSelect.innerHTML = '<option value="">-- Select Judge --</option>';
+                const eligibleJudges = initialUsers.filter(u => ['judge', 'admin'].includes(u.role));
+                if(eligibleJudges && eligibleJudges.length > 0) {
+                    eligibleJudges.slice().sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(j => {
+                        const option = document.createElement('option');
+                        option.value = j.id;
+                        option.textContent = `${j.name} (${j.role}, ID: ${j.id})`;
+                        scoreJudgeSelect.appendChild(option);
+                    });
+                    if (eligibleJudges.some(j => String(j.id) === currentJudgeValue)) {
+                        scoreJudgeSelect.value = currentJudgeValue;
+                    }
+                } else {
+                     scoreJudgeSelect.innerHTML = '<option value="">-- No Judges/Admins Available --</option>';
+                }
+            } else { logError("Score Judge select element 'score-judge-id' not found."); }
+
+          // --- Student Modal ---
+          if (studentGroupSelect) {
+              const currentGroupValue = studentGroupSelect.value;
+              studentGroupSelect.innerHTML = '<option value="">-- No Group --</option>';
+              if (initialGroups && initialGroups.length > 0) {
+                  initialGroups.slice().sort((a, b) => (a.group_name || `Group ${a.group_id}`).localeCompare(b.group_name || `Group ${b.group_id}`))
+                  .forEach(g => {
+                      const option = document.createElement('option');
+                      option.value = g.group_id;
+                      option.textContent = `${g.group_name || 'Unnamed Group'} (ID: ${g.group_id})`;
+                      studentGroupSelect.appendChild(option);
+                  });
+                  if (initialGroups.some(g => String(g.group_id) === currentGroupValue)) {
+                      studentGroupSelect.value = currentGroupValue;
+                  }
+              } else {
+                  studentGroupSelect.innerHTML = '<option value="">-- No Groups Available --</option>';
+              }
+          } else { logError("Student Group select element 'student-group-id' not found."); }
+
+          // --- Group Modal ---
+          if (groupProjectSelect) {
+              const currentProjectValue = groupProjectSelect.value;
+              groupProjectSelect.innerHTML = '<option value="">-- No Project --</option>';
+              if(initialProjects && initialProjects.length > 0) {
+                  initialProjects.slice().sort((a, b) => a.project_name.localeCompare(b.project_name))
+                  .forEach(p => {
+                      const option = document.createElement('option');
+                      option.value = p.project_id;
+                      option.textContent = `${p.project_name} (ID: ${p.project_id})`;
+                      groupProjectSelect.appendChild(option);
+                  });
+                  if (initialProjects.some(p => String(p.project_id) === currentProjectValue)) {
+                       groupProjectSelect.value = currentProjectValue;
+                  }
+              } else {
+                  groupProjectSelect.innerHTML = '<option value="">-- No Projects Available --</option>';
+              }
+          } else { logError("Group Project select element 'group-project-id' not found."); }
+      }
+
+    // --- Modal Open/Close Logic ---
+    // ... (Keep existing openGenericModal, closeModal functions) ...
+        /**
+     * Opens a generic modal with transition and focus management.
+     * @param {HTMLElement} modalElement The modal element to open.
+     * @param {string} [title] Optional title to set.
+     */
+    function openGenericModal(modalElement, title) {
+        if (!modalElement) { logError("openGenericModal: Invalid modal element provided."); return; }
+        logDebug(`Opening modal: ${modalElement.id}, Title: ${title}`);
+
+        // Close any currently open modal first
+        closeModal(true); // Pass true to skip transition for immediate close
+
+        currentModal = modalElement;
+        const titleElement = modalElement.querySelector('h3[id$="-modal-title"]');
+        if (titleElement && title) { titleElement.textContent = title; }
+
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+        modalElement.style.display = 'flex'; // Use flex for centering
+        // Force reflow/repaint before adding 'visible' class for transition
+        void modalElement.offsetWidth;
+        modalElement.classList.add('visible');
+
+        // Focus management: focus the first focusable element inside the modal
+        const firstFocusable = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) { setTimeout(() => firstFocusable.focus(), 50); } // Delay slightly
+
+        // Accessibility: Hide background content from screen readers
+        document.querySelector('.admin-dashboard-main')?.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-hidden');
+    }
+
+    /**
+     * Opens a specific modal for adding or editing data.
+     * Handles User, Project, Score, Student, Group types.
+     * @param {('user'|'project'|'score'|'student'|'group')} type The type of data.
+     * @param {('add'|'edit')} mode The mode (add or edit).
+     * @param {number|string|null} [id=null] The ID of the item to edit (required for 'edit' mode).
+     */
+    window.openModal = (type, mode, id = null) => {
+        logDebug(`openModal called: type=${type}, mode=${mode}, id=${id}`);
+        const modalElement = modalMap[type];
+        const form = formMap[type];
+
+        // --- Check if type is supported by this function ---
+        const supportedTypes = ['user', 'project', 'score', 'student', 'group'];
+        if (!supportedTypes.includes(type)) {
+             logWarn(`openModal called for unsupported type '${type}'. No add/edit form exists or handler not implemented.`);
+             showNotification(`Adding/Editing for '${type}' is not supported via this interface.`, 'warning');
+             return;
+        }
+        // Exclude special modal types handled differently
+        if (type === 'columnConfig' || type === 'customTable') {
+            logWarn(`openModal called for '${type}', use specific functions (openColumnConfig() or openAddCustomTableModal()) instead.`);
+            return;
+        }
+
+        if (!modalElement) { logError(`Cannot open modal: Modal element not found for type '${type}'`); return; }
+        if (!form) { logError(`Cannot open modal: Form element not found for type '${type}'`); return; }
+
+        resetForm(form); // Reset form state before population or use
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtnText = submitBtn?.querySelector('.btn-text');
+
+        // Populate dropdowns for relevant types *before* populating form for edit
+        if (['score', 'student', 'group'].includes(type)) { populateSelectOptions(); }
+
+        let modalTitle = '';
+        const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
+        const idKey = (type === 'user') ? 'id' : `${type}_id`; // Determine the ID key based on type
+
+        if (mode === 'add') {
+            modalTitle = `Add New ${typeCapitalized}`;
+            if (submitBtn) restoreButtonState(submitBtn); // Ensure button is in default 'Save' state
+            if (submitBtnText) submitBtnText.textContent = 'Save'; // Explicitly set text
+            if (type === 'user') {
+                const pwInput = form.elements['password'];
+                if (pwInput) pwInput.placeholder = 'Password (Required)';
+            }
+            openGenericModal(modalElement, modalTitle);
+
+        } else if (mode === 'edit' && id !== null && id !== undefined) {
+            modalTitle = `Edit ${typeCapitalized}`;
+            if (submitBtn) {
+                restoreButtonState(submitBtn); // Ensure button is in default state first
+            }
+            if (submitBtnText) submitBtnText.textContent = 'Update'; // Set text to 'Update' for edit
+
+             logDebug(`Attempting to find data for edit: type=${type}, id=${id}`);
+             let dataToEdit = null;
+             try {
+                 let sourceArray;
+                 if (type === 'user') sourceArray = initialUsers;
+                 else if (type === 'project') sourceArray = initialProjects;
+                 else if (type === 'score') sourceArray = initialScores;
+                 else if (type === 'student') sourceArray = initialStudents;
+                 else if (type === 'group') sourceArray = initialGroups;
+                 else { logError(`Invalid type '${type}' for finding edit data.`); return; }
+
+                 if (!sourceArray) { logError(`Source data array 'initial${typeCapitalized}s' is undefined.`); return; }
+
+                 // Robust comparison (string vs number ID)
+                 dataToEdit = sourceArray.find(item => String(item[idKey]) === String(id));
+
+             } catch (e) { logError("Error finding data to edit:", e); }
+
+            if (dataToEdit) {
+                logDebug("Data found for edit:", dataToEdit);
+                populateForm(form, dataToEdit); // Populate form fields
+
+                // Re-check hidden ID field population *after* calling populateForm
+                 const hiddenIdInput = form.elements[idKey];
+                 if (hiddenIdInput && hiddenIdInput.value !== String(id)) {
+                    logWarn(`Hidden ID field '${idKey}' value ('${hiddenIdInput.value}') does not match expected ID ('${id}') after populateForm. Overwriting.`);
+                    hiddenIdInput.value = id; // Force set it
+                 } else if (!hiddenIdInput) {
+                     logError(`Hidden ID field '${idKey}' still not found after populateForm.`);
+                 } else {
+                     logDebug(`Hidden ID field '${idKey}' correctly set to '${hiddenIdInput.value}' during populateForm.`);
+                 }
+
+                if (type === 'user') { // Update password placeholder specifically for user edit
+                    const pwInput = form.elements['password'];
+                    if (pwInput) pwInput.placeholder = 'Leave blank to keep current';
+                }
+                openGenericModal(modalElement, modalTitle);
+            } else {
+                 logError(`Could not find data for edit: type=${type}, id=${id}. Item might have been deleted.`);
+                 showNotification(`Error: Could not find ${type} with ID ${id} to edit. Please refresh.`, 'error');
+                 return;
+            }
+        } else {
+             logError(`Invalid mode ('${mode}') or missing/invalid ID ('${id}') for 'edit' mode in openModal`);
+             return;
+        }
+    };
+
+    /**
+     * Closes the currently open modal.
+     * @param {boolean} [immediate=false] If true, close instantly without transition.
+     */
+    window.closeModal = (immediate = false) => {
+        if (!currentModal) return;
+        logDebug(`Closing modal: ${currentModal.id}`);
+        const modalToClose = currentModal; // Capture current modal in closure
+        currentModal = null; // Clear reference immediately
+
+        modalToClose.classList.remove('visible');
+        document.body.style.overflow = ''; // Restore background scroll
+
+        // Accessibility: Restore background visibility, hide modal
+        document.querySelector('.admin-dashboard-main')?.removeAttribute('aria-hidden');
+        modalToClose.setAttribute('aria-hidden', 'true');
+
+        const cleanup = () => {
+            modalToClose.style.display = 'none';
+            // Reset form only if it's a data entry form (not config etc.)
+            const formType = Object.keys(modalMap).find(key => modalMap[key] === modalToClose);
+            if (formType && formMap[formType] && formType !== 'columnConfig') {
+                resetForm(formMap[formType]); // Reset form after modal is hidden
+            }
+        };
+
+        if (immediate) {
+            cleanup();
+        } else {
+            // Wait for transition to finish before hiding and resetting form
+            const transitionDuration = parseFloat(getComputedStyle(modalToClose).transitionDuration) * 1000;
+            setTimeout(cleanup, transitionDuration || 300); // Use actual duration or fallback
+        }
+    };
+
+     // Add event listeners for closing modals
+     Object.values(modalMap).forEach(modal => {
+        if(modal){
+             // Close button inside modal
+             modal.querySelector('.close-modal')?.addEventListener('click', () => closeModal());
+             // Click outside modal content
+             modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+             // Cancel button inside forms
+             modal.querySelector('.modal-form .btn-cancel')?.addEventListener('click', () => closeModal());
+         }
+     });
+    // Global Escape key listener
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape" && currentModal) closeModal(); });
+
+
+    // --- Custom Table Section Logic ---
+    // ... (Keep existing custom table functions: loadCustomTableDefinitions, saveCustomTableDefinitions, openAddCustomTableModal, updateCustomTableFilterOptions, handleCustomTableFormSubmit, filterData, renderCustomSectionHTML, renderCustomSection, loadAndRenderCustomTables, deleteCustomTable) ...
+    /**
+     * Loads custom table definitions from localStorage.
+     */
+    function loadCustomTableDefinitions() {
+        try {
+            const storedDefs = localStorage.getItem(CUSTOM_TABLE_DEFS_KEY);
+            customTableDefinitions = storedDefs ? JSON.parse(storedDefs) : [];
+            logInfo(`Loaded ${customTableDefinitions.length} custom table definitions.`);
+        } catch (e) {
+            logError("Error loading custom table definitions from localStorage:", e);
+            customTableDefinitions = [];
+            localStorage.removeItem(CUSTOM_TABLE_DEFS_KEY); // Clear potentially corrupted data
+        }
+    }
+
+    /**
+     * Saves the current custom table definitions to localStorage.
+     */
+    function saveCustomTableDefinitions() {
+        try {
+            localStorage.setItem(CUSTOM_TABLE_DEFS_KEY, JSON.stringify(customTableDefinitions));
+            logDebug("Saved custom table definitions:", customTableDefinitions);
+        } catch (e) {
+            logError("Error saving custom table definitions to localStorage:", e);
+            showNotification("Could not save custom table preferences.", "error");
+        }
+    }
+
+    /**
+     * Opens the modal for adding a new custom table section.
+     */
+    window.openAddCustomTableModal = () => {
+        const modal = modalMap.customTable;
+        const form = formMap.customTable;
+        if (!modal || !form) {
+            logError("Custom table modal or form not found!");
+            return;
+        }
+        resetForm(form); // Reset the form
+        document.getElementById('custom-table-filter-options').style.display = 'none'; // Hide filters initially
+        document.getElementById('custom-table-filters-content').innerHTML = '<p>Select Data Type to see filter options.</p>';
+        // Ensure save button text is correct
+        const saveBtnText = form.querySelector('.btn-save .btn-text');
+        if(saveBtnText) saveBtnText.textContent = 'Create Section';
+        openGenericModal(modal, "Create Custom Table Section");
+    }
+
+    /**
+     * Updates the filter options UI in the custom table modal based on selected data type.
+     * @param {string} dataType - The selected value (e.g., 'user', 'project', 'student').
+     */
+    window.updateCustomTableFilterOptions = (dataType) => {
+        const filtersContainer = document.getElementById('custom-table-filters-content');
+        const fieldset = document.getElementById('custom-table-filter-options');
+        if (!filtersContainer || !fieldset) return;
+
+        filtersContainer.innerHTML = ''; // Clear previous options
+        fieldset.style.display = 'none'; // Hide initially
+
+        if (dataType === 'user') {
+            fieldset.style.display = 'block';
+            filtersContainer.innerHTML = `
+                <div class="form-group">
+                    <label for="filter-user-role">Filter by Role:</label>
+                    <select id="filter-user-role" name="filter_role">
+                        <option value="">Any Role</option>
+                        <option value="user">User</option>
+                        <option value="judge">Judge</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group filter-option-group">
+                    <input type="checkbox" id="filter-user-pending" name="filter_pending" value="true">
+                    <label for="filter-user-pending">Only Show Pending Judge Requests?</label>
+                </div>
+            `;
+        } else if (dataType === 'project') {
+            fieldset.style.display = 'block';
+            filtersContainer.innerHTML = `
+                <div class="form-group">
+                    <label for="filter-project-group">Filter by Group ID:</label>
+                    <input type="number" id="filter-project-group" name="filter_group_id" placeholder="Enter Group ID (optional)">
+                </div>
+            `; // Example filter for projects
+        } else if (dataType === 'student') {
+             fieldset.style.display = 'block';
+             // Example: Filter students by group ID
+             filtersContainer.innerHTML = `
+                 <div class="form-group">
+                     <label for="filter-student-group">Filter by Group ID:</label>
+                     <select id="filter-student-group" name="filter_group_id">
+                         <option value="">Any Group</option>
+                         <option value="null">No Group Assigned</option>
+                         <!-- Group options will be loaded dynamically if needed, or use input -->
+                     </select>
+                     <input type="number" name="filter_group_id_input" placeholder="Enter Group ID (optional alternative)">
+                 </div>
+             `;
+             // TODO: Dynamically populate the select options for groups here if desired
+        } else if (dataType === 'group') {
+            fieldset.style.display = 'block';
+            filtersContainer.innerHTML = `
+                <div class="form-group filter-option-group">
+                    <input type="checkbox" id="filter-group-no-project" name="filter_no_project" value="true">
+                    <label for="filter-group-no-project">Only show groups with no associated project?</label>
+                </div>
+            `;
+        } else if (dataType) {
+             // For other types, show a generic message for now, or add specific filters later
+             fieldset.style.display = 'block';
+             filtersContainer.innerHTML = `<p>No specific filters currently available for ${dataType}.</p>`;
+        } else {
+             // No data type selected
+             filtersContainer.innerHTML = '<p>Select Data Type to see filter options.</p>';
+        }
+    }
+
+    /**
+     * Handles the submission of the "Add Custom Table" form.
+     * @param {Event} event - The form submission event.
+     */
+    async function handleCustomTableFormSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const name = formData.get('name')?.trim();
+        const dataType = formData.get('dataType'); // e.g., 'user', 'project', 'student'
+
+        if (!name || !dataType) {
+            showNotification("Section Name and Data Type are required.", "error");
+            return;
+        }
+
+        // Create filter object from form data
+        const filters = {};
+        if (dataType === 'user') {
+            const role = formData.get('filter_role');
+            const pending = formData.get('filter_pending') === 'true'; // Checkbox value is 'true' or null
+            if (role) filters.role = role;
+            if (pending) filters.judge_request_pending = true;
+        } else if (dataType === 'project') {
+            const groupId = formData.get('filter_group_id');
+            if (groupId && !isNaN(parseInt(groupId))) { // Check if it's a valid number
+                filters.group_id = parseInt(groupId);
+            }
+        } else if (dataType === 'student') {
+            const groupIdSelect = formData.get('filter_group_id');
+            const groupIdInput = formData.get('filter_group_id_input');
+            if (groupIdSelect === 'null') {
+                filters.group_id = null; // Filter for students with no group
+            } else if (groupIdSelect && !isNaN(parseInt(groupIdSelect))) {
+                 filters.group_id = parseInt(groupIdSelect);
+            } else if (groupIdInput && !isNaN(parseInt(groupIdInput))) {
+                 filters.group_id = parseInt(groupIdInput); // Use input as fallback/alternative
+            }
+        } else if (dataType === 'group') {
+             const noProject = formData.get('filter_no_project') === 'true';
+             if (noProject) filters.project_id = null; // Filter for groups with no project
+        }
+        // Add parsing for other data types' filters here if implemented
+
+        // Create new definition object
+        const newDefinition = {
+            id: `custom-${Date.now()}`, // Simple unique ID using timestamp
+            name: name,
+            dataType: dataType, // Store the selected data type value
+            filters: filters
+        };
+
+        logDebug("Creating new custom table definition:", newDefinition);
+
+        // Add to state and save to localStorage
+        customTableDefinitions.push(newDefinition);
+        saveCustomTableDefinitions();
+
+        // Render the new section immediately
+        renderCustomSection(newDefinition);
+
+        // Re-register table bodies map to include the new one
+        registerTableBodies();
+        // Re-attach search listeners to include the new one
+        attachSearchListeners();
+
+        // Apply collapse/column state for the new section (defaults)
+        applySectionCollapseStates(); // Re-apply to ensure new section picks up default
+        const newTable = document.getElementById(newDefinition.id + '-table');
+        if (newTable) applyColumnVisibility(newTable);
+
+        showNotification(`Custom section "${name}" created successfully.`, "success");
+        closeModal();
+    }
+
+     // Attach submit listener to the custom table form
+     if (formMap.customTable) {
+         formMap.customTable.addEventListener('submit', handleCustomTableFormSubmit);
+     }
+
+    /**
+     * Filters an array of data based on the provided filter criteria.
+     * @param {Array<object>} dataArray - The array of data (e.g., initialUsers).
+     * @param {object} filters - The filter object (e.g., { role: 'judge', judge_request_pending: true }).
+     * @returns {Array<object>} The filtered array.
+     */
+    function filterData(dataArray, filters) {
+        if (!dataArray) return []; // Handle case where initial data might be missing
+        if (!filters || Object.keys(filters).length === 0) {
+            return dataArray; // No filters, return original array
+        }
+        logDebug("Filtering data with filters:", filters);
+
+        return dataArray.filter(item => {
+            // Check each filter criterion against the item
+            for (const key in filters) {
+                const filterValue = filters[key];
+                const itemValue = item[key];
+
+                // Handle null filter specifically
+                if (filterValue === null) {
+                    if (itemValue !== null && itemValue !== undefined) {
+                        return false; // Doesn't match null filter
+                    }
+                }
+                // Handle boolean filters (like judge_request_pending)
+                else if (typeof filterValue === 'boolean') {
+                    if (!!itemValue !== filterValue) { // Compare boolean values correctly
+                        return false; // Doesn't match boolean filter
+                    }
+                }
+                // Handle string equality filters (like role)
+                else if (typeof filterValue === 'string') {
+                    if (itemValue === null || itemValue === undefined || String(itemValue).toLowerCase() !== filterValue.toLowerCase()) { // Case-insensitive compare for strings like role
+                        return false; // Doesn't match string filter
+                    }
+                }
+                 // Handle number equality filters (like group_id, project_id)
+                 else if (typeof filterValue === 'number') {
+                     // Use == for potential type coercion (e.g., number vs string from form) or === if types are guaranteed
+                     if (itemValue === null || itemValue === undefined || Number(itemValue) !== filterValue) {
+                         return false; // Doesn't match number filter
+                     }
+                 }
+                // Add more filter types here (e.g., contains, range) if needed
+                else {
+                    logWarn(`Unsupported filter type for key '${key}'. Skipping filter.`);
+                }
+            }
+            return true; // Item matches all filters
+        });
+    }
+
+    /**
+     * Generates the HTML structure for a custom dashboard section.
+     * @param {object} definition - The custom table definition object.
+     * @returns {string} - The HTML string for the section.
+     */
+     function renderCustomSectionHTML(definition) {
+         const sectionId = definition.id; // e.g., 'custom-1678886400000'
+         const tableId = `${sectionId}-table`;
+         const dataType = definition.dataType;
+
+         // Determine icon and base config key
+         let iconClass = 'fa-table'; // Default icon
+         let baseConfigKey;
+         switch (dataType) {
+             case 'user': iconClass = 'fa-users'; baseConfigKey = 'users-table'; break;
+             case 'project': iconClass = 'fa-project-diagram'; baseConfigKey = 'projects-table'; break;
+             case 'score': iconClass = 'fa-star-half-alt'; baseConfigKey = 'scores-table'; break;
+             case 'student': iconClass = 'fa-user-graduate'; baseConfigKey = 'students-table'; break;
+             case 'group': iconClass = 'fa-users-cog'; baseConfigKey = 'groups-table'; break;
+             case 'ranking': iconClass = 'fa-trophy'; baseConfigKey = 'rankings-table'; break;
+             case 'judge_table': iconClass = 'fa-gavel'; baseConfigKey = 'judges_table-table'; break; // Note the key name
+             case 'credential': iconClass = 'fa-key'; baseConfigKey = 'credentials-table'; break;
+             case 'permission': iconClass = 'fa-shield-alt'; baseConfigKey = 'permissions-table'; break;
+             default: baseConfigKey = 'users-table'; // Fallback? Or error?
+         }
+
+         const baseColumns = tableColumnsConfig[baseConfigKey];
+         const colspan = baseColumns ? baseColumns.length : 1; // Default colspan if config missing, avoid 0
+
+         // Determine if actions should be available based on base config
+         const hasActions = baseColumns && baseColumns.some(col => col.key === 'actions');
+         // Determine if 'Add' makes sense for this data type in a custom view
+         const canAddDirectly = ['user', 'project', 'score', 'student', 'group'].includes(dataType); // Add 'student' and 'group' if desired
+         const addActionButtonHTML = (hasActions && canAddDirectly) ? `
+             <button class="btn btn-add" onclick="openModal('${dataType}', 'add')" title="Add New ${dataType}">
+                 <i class="fas fa-plus-circle"></i> Add ${dataType}
+             </button>` : '';
+
+         return `
+             <section id="${sectionId}" class="dashboard-section custom-section" data-section-id="${sectionId}">
+                 <div class="section-header" onclick="toggleSection(this)">
+                     <h2><i class="fas ${iconClass}"></i> ${definition.name}</h2>
+                     <i class="fas fa-chevron-down toggle-icon"></i>
+                     <div class="section-controls" onclick="event.stopPropagation()">
+                         ${addActionButtonHTML} {/* Conditionally add Add button */}
+                         <button class="btn btn-configure" onclick="openColumnConfig('${tableId}')">
+                             <i class="fas fa-cog"></i> Columns
+                         </button>
+                         <button class="btn btn-delete" onclick="deleteCustomTable('${sectionId}')">
+                             <i class="fas fa-trash-alt"></i> Delete Section
+                         </button>
+                     </div>
+                 </div>
+                 <div class="section-content">
+                     <div class="search-container">
+                         <i class="fas fa-search search-icon"></i>
+                         <input type="search" id="${sectionId}-search" class="table-search" data-table="${tableId}" placeholder="Search this table..." aria-label="Search ${definition.name}">
+                     </div>
+                     <div class="data-table-wrapper">
+                         <table class="data-table" id="${tableId}">
+                             <thead>
+                                 <!-- Header row will be generated by renderCustomSection -->
+                             </thead>
+                             <tbody>
+                                 <tr class="no-items-row"><td colspan="${colspan}">Loading data...</td></tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </section>
+         `;
+     }
+
+    /**
+     * Renders a single custom section and its table based on its definition.
+     * @param {object} definition - The custom table definition.
+     */
+    function renderCustomSection(definition) {
+        if (!customSectionsContainer) {
+            logError("Cannot render custom section: Container not found.");
+            return;
+        }
+
+        logDebug(`Rendering custom section: ${definition.name} (ID: ${definition.id}, Type: ${definition.dataType})`);
+
+        // 1. Generate Section HTML
+        const sectionHTML = renderCustomSectionHTML(definition);
+        customSectionsContainer.insertAdjacentHTML('beforeend', sectionHTML);
+
+        // 2. Get References to new elements
+        const sectionElement = document.getElementById(definition.id);
+        const tableElement = document.getElementById(`${definition.id}-table`);
+        const tbody = tableElement?.querySelector('tbody');
+        const thead = tableElement?.querySelector('thead'); // Need thead for header rendering
+
+        if (!sectionElement || !tableElement || !tbody || !thead) {
+            logError(`Failed to find elements for newly rendered custom section ${definition.id}`);
+            // Clean up partially rendered section?
+            sectionElement?.remove();
+            return;
+        }
+
+        // 3. Determine Data Source, Render Function, and Base Config Key based on dataType
+        let sourceData;
+        let renderRowFn;
+        let baseConfigKey;
+        const dataType = definition.dataType;
+
+        switch (dataType) {
+            case 'user':
+                sourceData = initialUsers; renderRowFn = renderUserRowContent; baseConfigKey = 'users-table'; break;
+            case 'project':
+                sourceData = initialProjects; renderRowFn = renderProjectRowContent; baseConfigKey = 'projects-table'; break;
+            case 'score':
+                sourceData = initialScores; renderRowFn = renderScoreRowContent; baseConfigKey = 'scores-table'; break;
+            case 'student':
+                sourceData = initialStudents; renderRowFn = renderStudentRowContent; baseConfigKey = 'students-table'; break;
+            case 'group':
+                sourceData = initialGroups; renderRowFn = renderGroupRowContent; baseConfigKey = 'groups-table'; break;
+            case 'ranking':
+                sourceData = initialRankings; renderRowFn = renderRankingRowContent; baseConfigKey = 'rankings-table'; break;
+            case 'judge_table': // The specific 'Judges' table data
+                sourceData = initialJudgesTable; renderRowFn = renderJudgeTableRowContent; baseConfigKey = 'judges_table-table'; break;
+            case 'credential':
+                sourceData = initialCredentials; renderRowFn = renderCredentialRowContent; baseConfigKey = 'credentials-table'; break;
+            case 'permission':
+                sourceData = initialPermissions; renderRowFn = renderPermissionRowContent; baseConfigKey = 'permissions-table'; break;
+            default:
+                logError(`Unsupported dataType '${dataType}' for custom section ${definition.id}`);
+                tbody.innerHTML = `<tr class="no-items-row"><td colspan="1">Error: Unsupported data type</td></tr>`;
+                return;
+        }
+         // Check if source data actually exists
+        if (!sourceData) {
+            logError(`Initial data array for dataType '${dataType}' is missing or undefined. Ensure it's passed from Flask.`);
+            tbody.innerHTML = `<tr class="no-items-row"><td colspan="1">Error: Data not available</td></tr>`;
+            return;
+        }
+
+        // 4. Generate Table Header Dynamically based on base config
+        const baseColumns = tableColumnsConfig[baseConfigKey];
+        if (baseColumns) {
+            thead.innerHTML = `<tr>${baseColumns.map(col => `<th data-col="${col.key}" ${col.key === 'actions' ? 'class="actions"' : ''}>${col.label}</th>`).join('')}</tr>`;
+             // 5. IMPORTANT: Register the new table in the global config map using its specific ID
+             tableColumnsConfig[tableElement.id] = baseColumns;
+             logDebug(`Registered column config for custom table: ${tableElement.id}`);
+        } else {
+             logWarn(`Missing base column config for key '${baseConfigKey}' when rendering ${definition.id}`);
+             thead.innerHTML = '<tr><th>Error: Config Missing</th></tr>'; // Placeholder header
+        }
+        const colspan = baseColumns ? baseColumns.length : 1; // Update colspan based on actual columns rendered
+
+        // 6. Filter Data
+        const filteredData = filterData(sourceData, definition.filters);
+        logDebug(`Filtered data count for ${definition.name}: ${filteredData.length}`);
+
+        // 7. Render Table Body using filtered data
+        renderTable(tableElement.id, filteredData, renderRowFn, colspan); // Pass filtered data and correct colspan
+
+        // Note: Search listener attachment and state application happen globally
+    }
+
+    /**
+     * Loads definitions and renders all custom sections on page load.
+     */
+    function loadAndRenderCustomTables() {
+        if (!customSectionsContainer) {
+            logError("Custom sections container not found. Cannot render custom tables.");
+            return;
+        }
+        customSectionsContainer.innerHTML = ''; // Clear any previous renders
+        loadCustomTableDefinitions(); // Load from localStorage
+        customTableDefinitions.forEach(definition => {
+            renderCustomSection(definition); // Render each defined section
+        });
+        // After rendering, re-register all table bodies
+        registerTableBodies();
+    }
+
+    /**
+    * Deletes a custom table definition and removes its section from the UI.
+    * @param {string} sectionId - The ID of the custom section to delete.
+    */
+    window.deleteCustomTable = (sectionId) => {
+        const definitionIndex = customTableDefinitions.findIndex(def => def.id === sectionId);
+        if (definitionIndex === -1) {
+            logError(`Cannot delete custom section: Definition not found for ID ${sectionId}`);
+            return;
+        }
+        const definition = customTableDefinitions[definitionIndex];
+
+        if (!confirm(`Are you sure you want to delete the custom section "${definition.name}"?\nThis cannot be undone.`)) {
+            return;
+        }
+
+        logInfo(`Deleting custom section: ${definition.name} (ID: ${sectionId})`);
+
+        // 1. Remove from state and save to localStorage
+        customTableDefinitions.splice(definitionIndex, 1);
+        saveCustomTableDefinitions();
+
+        // 2. Remove the section element from the DOM
+        const sectionElement = document.getElementById(sectionId);
+        if (sectionElement) {
+            sectionElement.remove();
+        }
+
+        // 3. Clean up associated preferences and dynamic config
+        const tableId = `${sectionId}-table`;
+        // Remove column prefs
+        const colPrefs = getColumnPrefs();
+        if (colPrefs[tableId]) {
+            delete colPrefs[tableId];
+            saveColumnPrefs(colPrefs);
+            logDebug(`Removed column prefs for ${tableId}`);
+        }
+        // Remove collapse prefs
+        const collapsePrefs = getSectionCollapsePrefs();
+        if (collapsePrefs[sectionId]) {
+            delete collapsePrefs[sectionId];
+            saveSectionCollapsePrefs(collapsePrefs);
+            logDebug(`Removed collapse prefs for ${sectionId}`);
+        }
+        // Remove from dynamic table config map
+        if (tableColumnsConfig[tableId]) {
+            delete tableColumnsConfig[tableId];
+            logDebug(`Removed entry from tableColumnsConfig for ${tableId}`);
+        }
+         // Remove from tbody map
+         if (tableBodyMap[tableId]) {
+            delete tableBodyMap[tableId];
+            logDebug(`Removed entry from tableBodyMap for ${tableId}`);
+         }
+
+        showNotification(`Custom section "${definition.name}" deleted.`, "success");
+    }
+
+
+    // --- API Call Helper ---
+    // ... (Keep existing apiCall function) ...
+    /**
+     * Makes an API call to the backend.
+     * @param {string} endpoint The API URL.
+     * @param {string} [method='GET'] HTTP method.
+     * @param {object|FormData|null} [body=null] Request body.
+     * @param {boolean} [isFormData=false] True if body is FormData.
+     * @returns {Promise<object>} The JSON response data.
+     * @throws {Error} If the request fails or returns an error status.
+     */
+    async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
+        logDebug(`API Call: ${method} ${endpoint}`, body ? (isFormData ? '(FormData)' : 'with body:') : 'without body', isFormData ? body : (body || ''));
+        if (!endpoint) { // Add check for null endpoint
+            const errorMsg = `API Call Failed: Endpoint is null or undefined (Method: ${method}). Check getApiEndpoint logic.`;
+            logError(errorMsg);
+            throw new Error(errorMsg);
+        }
+        const options = {
+            method: method.toUpperCase(),
+            headers: {}
+        };
+
+        // Set Content-Type header unless it's FormData
+        if (body && !isFormData) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        } else if (body && isFormData) {
+            options.body = body; // Body is already FormData, browser sets Content-Type
+        }
+
+        // Add CSRF token header if needed (e.g., using Flask-WTF CSRFProtect)
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        // if (csrfToken) options.headers['X-CSRFToken'] = csrfToken;
+
+        try {
+            const response = await fetch(endpoint, options);
+            logDebug(`API Response Status: ${response.status} (${response.statusText}) for ${method} ${endpoint}`);
+
+            // Try to parse JSON regardless of status code, as errors might be in JSON format
+            let responseData = null;
+            const contentType = response.headers.get("content-type");
+            const responseText = await response.text(); // Get text first to avoid consuming body
+
+            if (responseText) {
+                if (contentType && contentType.includes("application/json")) {
+                    try {
+                        responseData = JSON.parse(responseText);
+                        logDebug("API Response JSON Data:", responseData);
+                    } catch (e) {
+                        logError("Failed to parse JSON response:", responseText);
+                        // If response was supposed to be JSON but failed parsing, throw error
+                        if (response.ok) {
+                            throw new Error(`Received invalid JSON response from server (Status: ${response.status}).`);
+                        }
+                        // Otherwise, let the status code error handling proceed
+                    }
+                } else {
+                    logDebug("API Response: Not JSON:", responseText);
+                    // If response is OK but not JSON, treat text as success message
+                    if (response.ok) {
+                        responseData = { status: 'success', message: responseText };
+                    }
+                }
+            } else if (response.ok) {
+                // Handle empty successful responses (e.g., 204 No Content)
+                 logDebug("API Response: OK with empty body.");
+                 responseData = { status: 'success', message: `${method} operation successful.` };
+            }
+
+            // Check response status AFTER trying to parse body
+            if (!response.ok) {
+                const errorMessage = responseData?.message || response.statusText || `HTTP error ${response.status}`;
+                logError(`API Error Response (${response.status}):`, errorMessage, responseData);
+                throw new Error(errorMessage);
+            }
+
+            // Check for application-level errors even if HTTP status is OK
+            if (responseData && responseData.status === 'error') {
+                logError("API Call successful (HTTP OK), but application returned error:", responseData.message);
+                throw new Error(responseData.message || 'An unspecified application error occurred.');
+            }
+
+            // If we got here, response is OK and parsed (or empty OK)
+            if (!responseData) { // Should only happen if parsing failed on an OK response (handled above)
+                throw new Error("Received empty or unparsable response from server.");
+            }
+
+            return responseData;
+
+        } catch (error) {
+            logError(`API Call Failed (${method} ${endpoint}):`, error);
+            // Improve network error message
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                throw new Error('Network Error: Could not connect to the server. Please check your connection.');
+            }
+            // Re-throw other errors (including custom errors thrown above)
+            throw error;
+        }
+    }
+
+
+     // --- Dynamic Table Row Rendering ---
+
+     /**
+      * Formats an ISO timestamp string into a more readable local format.
+      * @param {string|null} isoString The ISO timestamp string.
+      * @returns {string} Formatted date/time string or 'N/A'.
+      */
+     function formatTimestamp(isoString) {
+        if (!isoString) return 'N/A';
+        try {
+            const date = new Date(isoString);
+            // Check if date is valid
+            if (isNaN(date.getTime())) return 'Invalid Date';
+            // Use Intl for locale-aware formatting
+            return new Intl.DateTimeFormat(navigator.language || 'en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true // Adjust format as needed
+            }).format(date);
+        } catch (e) {
+            logError("Timestamp format error:", isoString, e);
+            return isoString; // Return original string on error
+        }
+     }
+
+    /**
+     * Helper to safely get value or return 'N/A'.
+     * Handles null, undefined.
+     */
+    function safeVal(value, placeholder = 'N/A') {
+        return (value === null || value === undefined || value === '') ? placeholder : value;
+    }
+
+    /** Helper to render boolean values as Yes/No */
+    function formatBoolean(value) {
+        if (value === null || value === undefined) return 'N/A';
+        // Check for common string representations of true/false as well
+        if (typeof value === 'string') {
+            const lowerVal = value.toLowerCase();
+            if (lowerVal === 'true') return 'Yes';
+            if (lowerVal === 'false') return 'No';
+        }
+        return value ? 'Yes' : 'No';
+    }
+
+    // --- Row Render Functions (Existing + New) ---
+
+    function renderUserRowContent(user, tableId) { // Existing - Minor tweak for ARIA ID
+        const isCurrentUser = user.id === currentUserId;
+        const buttonId = `actions-toggle-${tableId}-${user.id}`;
+        const deleteButtonHtml = `
+            <button role="menuitem" class="btn-delete" onclick="deleteItem('user', ${user.id})" ${isCurrentUser ? 'disabled title="Cannot delete your own account"' : ''}>
+                <i class="fas fa-trash-alt" aria-hidden="true"></i> Delete
+            </button>`;
+        const showApproveButton = user.judge_request_pending && (tableId === 'pending-judges-table' || tableId === 'users-table' || document.getElementById(tableId)?.closest('.custom-section')?.dataset.dataType === 'user');
+        const approveButtonHtml = showApproveButton ? `
+            <button role="menuitem" class="btn-approve" onclick="approveJudgeRole(${user.id})">
+                <i class="fas fa-check-circle" aria-hidden="true"></i> Approve Judge
+            </button>` : '';
+        const pendingIndicatorHtml = user.judge_request_pending ? `
+            <span class="pending-indicator" title="Judge Role Requested"><i class="fas fa-star-half-alt" aria-hidden="true"></i> Pending</span>` : '';
+
+        let cells = `
+            <td data-col="id">${safeVal(user.id)}</td>
+            <td data-col="name">${safeVal(user.name)} ${pendingIndicatorHtml}</td>
+            <td data-col="email">${safeVal(user.email)}</td>`;
+
+        // Only add role cell if the column config for *this specific table* includes 'role'
+        const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['users-table'] || [];
+        if (columnConfig.some(col => col.key === 'role')) {
+            cells += `<td data-col="role">${safeVal(user.role)}</td>`;
+        }
+        // Only add actions cell if config includes 'actions'
+        if (columnConfig.some(col => col.key === 'actions')) {
+            cells += `
+                <td data-col="actions" class="actions">
+                    <div class="actions-dropdown">
+                        <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                        <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
+                            ${approveButtonHtml}
+                            <button role="menuitem" class="btn-edit" onclick="openModal('user', 'edit', ${user.id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                            ${deleteButtonHtml}
+                        </div>
+                    </div>
+                </td>`;
+        }
+        return cells;
+     }
+
+     function renderProjectRowContent(project, tableId) { // Existing - Minor tweak for ARIA ID
+        const fullDescription = project.description || '';
+        const truncatedDescription = fullDescription.length > 70 ? fullDescription.substring(0, 70) + '...' : fullDescription;
+        const descriptionText = truncatedDescription || 'N/A';
+        const buttonId = `actions-toggle-${tableId}-${project.project_id}`;
+
+        let cells = `
+            <td data-col="project_id">${safeVal(project.project_id)}</td>
+            <td data-col="project_name">${safeVal(project.project_name)}</td>
+            <td data-col="group_id">${safeVal(project.group_id)}</td>
+            <td data-col="description" title="${fullDescription}">${descriptionText}</td>`;
+
+        const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['projects-table'] || [];
+        if (columnConfig.some(col => col.key === 'actions')) {
+            cells += `
+            <td data-col="actions" class="actions">
+                 <div class="actions-dropdown">
+                    <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                    <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
+                        <button role="menuitem" class="btn-edit" onclick="openModal('project', 'edit', ${project.project_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                        <button role="menuitem" class="btn-delete" onclick="deleteItem('project', ${project.project_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button>
+                    </div>
+                </div>
+            </td>`;
+        }
+        return cells;
+     }
+
+     function renderScoreRowContent(score, tableId) { // Existing - Minor tweak for ARIA ID
+         const projectName = score.project_name || initialProjects.find(p => p.project_id === score.project_id)?.project_name || 'N/A';
+         const judgeName = score.judge_name || initialUsers.find(u => u.id === score.judge_id)?.name || 'N/A';
+         const buttonId = `actions-toggle-${tableId}-${score.score_id}`;
+
+        let cells = `
+            <td data-col="score_id">${safeVal(score.score_id)}</td>
+            <td data-col="category">${safeVal(score.category)}</td>
+            <td data-col="score_given">${safeVal(score.score_given)}</td>
+            <td data-col="project_name">${safeVal(projectName)}</td>
+            <td data-col="judge_name">${safeVal(judgeName)}</td>
+            <td data-col="timestamp">${formatTimestamp(score.timestamp)}</td>`;
+
+        const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['scores-table'] || [];
+        if (columnConfig.some(col => col.key === 'actions')) {
+            cells += `
+            <td data-col="actions" class="actions">
+                 <div class="actions-dropdown">
+                    <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                    <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
+                        <button role="menuitem" class="btn-edit" onclick="openModal('score', 'edit', ${score.score_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                        <button role="menuitem" class="btn-delete" onclick="deleteItem('score', ${score.score_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button>
+                    </div>
+                </div>
+            </td>`;
+        }
+        return cells;
+     }
+
+     // --- NEW/MODIFIED Row Render Functions ---
+     function renderStudentRowContent(item, tableId) {
+         const buttonId = `actions-toggle-${tableId}-${item.student_id}`;
+         let cells = `
+            <td data-col="student_id">${safeVal(item.student_id)}</td>
+            <td data-col="student_name">${safeVal(item.student_name)}</td>
+            <td data-col="group_id">${safeVal(item.group_id)}</td>
+            `;
+         // Check if actions column should be rendered based on config
+         const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['students-table'] || [];
+         if (columnConfig.some(col => col.key === 'actions')) {
+             cells += `
+                 <td data-col="actions" class="actions">
+                      <div class="actions-dropdown">
+                         <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                         <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
+                             <button role="menuitem" class="btn-edit" onclick="openModal('student', 'edit', ${item.student_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                             {# Add delete button if needed, similar to other types #}
+                             {# <button role="menuitem" class="btn-delete" onclick="deleteItem('student', ${item.student_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button> #}
+                         </div>
+                     </div>
+                 </td>`;
+         }
+         return cells;
+     }
+
+     function renderGroupRowContent(item, tableId) {
+         const buttonId = `actions-toggle-${tableId}-${item.group_id}`;
+         let cells = `
+            <td data-col="group_id">${safeVal(item.group_id)}</td>
+            <td data-col="group_name">${safeVal(item.group_name)}</td>
+            <td data-col="project_id">${safeVal(item.project_id)}</td>
+            `;
+         // Check if actions column should be rendered based on config
+         const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['groups-table'] || [];
+         if (columnConfig.some(col => col.key === 'actions')) {
+              cells += `
+                  <td data-col="actions" class="actions">
+                       <div class="actions-dropdown">
+                          <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                          <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
+                              <button role="menuitem" class="btn-edit" onclick="openModal('group', 'edit', ${item.group_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                              {# Add delete button if needed #}
+                              {# <button role="menuitem" class="btn-delete" onclick="deleteItem('group', ${item.group_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button> #}
+                          </div>
+                      </div>
+                  </td>`;
+          }
+         return cells;
+     }
+     function renderRankingRowContent(item, tableId) {
+        // Assuming Rankings are not directly editable from this dashboard
+        return `
+            <td data-col="id">${safeVal(item.id)}</td>
+            <td data-col="ranking">${safeVal(item.ranking)}</td>
+            <td data-col="project_name">${safeVal(item.project_name)}</td>
+            <td data-col="score">${safeVal(item.score)}</td>
+            <td data-col="project_id">${safeVal(item.project_id)}</td>
+            `;
+     }
+     function renderJudgeTableRowContent(item, tableId) { // Renders data from the 'Judges' table model
+        // Assuming JudgeTable is not directly editable
+        return `
+            <td data-col="judge_id">${safeVal(item.judge_id)}</td>
+            <td data-col="judge_name">${safeVal(item.judge_name)}</td>
+            <td data-col="projects_assigned">${safeVal(item.projects_assigned)}</td>
+            <td data-col="perc_complete">${safeVal(item.perc_complete)}%</td>
+            <td data-col="credential_id">${safeVal(item.credential_id)}</td>
+            `;
+     }
+     function renderCredentialRowContent(item, tableId) {
+         // Assuming Credentials are not directly editable
+        return `
+            <td data-col="credential_id">${safeVal(item.credential_id)}</td>
+            <td data-col="judge_name">${safeVal(item.judge_name)}</td>
+            <td data-col="username_encrypted" title="${safeVal(item.username_encrypted, '')}">${safeVal(item.username_encrypted)?.substring(0,15)}...</td>
+            <td data-col="password_encrypted" title="Encrypted">********</td>
+            <td data-col="judge_id">${safeVal(item.judge_id)}</td>
+            <td data-col="permission_id">${safeVal(item.permission_id)}</td>
+            `;
+     }
+     function renderPermissionRowContent(item, tableId) {
+         // Assuming Permissions are not directly editable
+         return `
+            <td data-col="permission_id">${safeVal(item.permission_id)}</td>
+            <td data-col="permission_name">${safeVal(item.permission_name)}</td>
+            <td data-col="can_read">${formatBoolean(item.can_read)}</td>
+            <td data-col="can_cast">${formatBoolean(item.can_cast)}</td>
+            <td data-col="can_modify">${formatBoolean(item.can_modify)}</td>
+            <td data-col="is_developer">${formatBoolean(item.is_developer)}</td>
+            `;
+     }
+
+
+    /**
+     * Renders all standard tables from the current state of the initial data arrays.
+     * NOTE: This does NOT render the raw Student, Group, etc. tables unless they are added as custom sections.
+     */
+    function renderStandardTables() {
+        logDebug("Rendering standard tables from current JS data...");
+
+        // --- Filter User Data ---
+        const pendingJudgesData = initialUsers.filter(u => u.judge_request_pending);
+        const judgesData = initialUsers.filter(u => u.role === 'judge');
+        const regularUsersData = initialUsers.filter(u => u.role === 'user' && !u.judge_request_pending);
+
+        // --- Render Standard Tables ---
+        renderTable('users-table', initialUsers, renderUserRowContent, tableColumnsConfig['users-table']?.length || 5);
+        renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, tableColumnsConfig['pending-judges-table']?.length || 4);
+        renderTable('judges-table', judgesData, renderUserRowContent, tableColumnsConfig['judges-table']?.length || 4);
+        renderTable('regular-users-table', regularUsersData, renderUserRowContent, tableColumnsConfig['regular-users-table']?.length || 4);
+        renderTable('projects-table', initialProjects, renderProjectRowContent, tableColumnsConfig['projects-table']?.length || 5);
+
+        // Enrich and Render Scores Table
+        initialScores.forEach(score => {
+            if (!score.project_name || !score.judge_name) {
+                const project = initialProjects.find(p => p.project_id === score.project_id);
+                const judge = initialUsers.find(u => u.id === score.judge_id);
+                score.project_name = project ? project.project_name : 'N/A';
+                score.judge_name = judge ? judge.name : 'N/A';
+            }
+        });
+        renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+
+        logDebug("Finished rendering standard tables from JS data.");
+    }
+
+    /**
+     * Helper to render data into a specific table body.
+     * @param {string} tableId The ID of the table element.
+     * @param {Array<object>} dataArray The array of data objects.
+     * @param {Function} renderRowContentFn Function that takes (item, tableId) and returns innerHTML for cells.
+     * @param {number} colspan The colspan for the 'no items' row.
+     */
+    function renderTable(tableId, dataArray, renderRowContentFn, colspan) {
+        const tbody = tableBodyMap[tableId];
+        if (!tbody) { logWarn(`renderTable: tbody not found for ${tableId}`); return; }
+
+        // Determine the unique ID key based on convention or specific table type
+        let idKey;
+        if (tableId.includes('user') || tableId.includes('pending') || tableId.includes('judge') || tableId.includes('regular')) idKey = 'id'; // User model based
+        else if (tableId.includes('project')) idKey = 'project_id';
+        else if (tableId.includes('score')) idKey = 'score_id';
+        else if (tableId.includes('student')) idKey = 'student_id';
+        else if (tableId.includes('group')) idKey = 'group_id';
+        else if (tableId.includes('ranking')) idKey = 'id'; // Assuming 'id' is PK for Rankings
+        else if (tableId.includes('judge_table')) idKey = 'judge_id'; // Judges table
+        else if (tableId.includes('credential')) idKey = 'credential_id';
+        else if (tableId.includes('permission')) idKey = 'permission_id';
+        else idKey = 'id'; // Default fallback
+
+        if (!dataArray) { dataArray = []; logWarn(`renderTable: dataArray for ${tableId} was undefined, defaulting to empty.`); }
+
+        if (dataArray.length > 0) {
+            tbody.innerHTML = dataArray.map(item => {
+                const idValue = item[idKey];
+                // Allow rendering even if ID is missing for some tables? Maybe log warning.
+                if (idValue === undefined || idValue === null) {
+                    logWarn(`Item in ${tableId} is missing expected ID ('${idKey}'):`, item);
+                    // return ''; // Option: Skip row if ID is missing
+                }
+                // Use || 0 for ID in data-id if it might be missing but row should still render
+                return `<tr data-id="${idValue || 'no-id-' + Math.random().toString(16).slice(2)}">${renderRowContentFn(item, tableId)}</tr>`;
+            }).join('');
+        } else {
+            // Display a "No items found" message
+            const itemType = tableId.split('-')[0]; // e.g., 'users', 'projects', 'custom'
+            let message = `No ${itemType.replace(/s$/, '')} found.`;
+            if (tableId.startsWith('custom-')) {
+                 const customDef = customTableDefinitions.find(def => tableId.startsWith(def.id));
+                 // Make message more specific based on custom data type
+                 const customDataType = customDef?.dataType?.replace('_table',''); // e.g. 'student', 'judge'
+                 message = `No ${customDataType || 'items'} found for "${customDef?.name || 'this view'}".`;
+            } else if (tableId === 'pending-judges-table') message = 'No pending judge requests found.';
+            // Add more specific messages if needed
+
+            tbody.innerHTML = `<tr class="no-items-row"><td colspan="${colspan || 1}">${message}</td></tr>`;
+        }
+         // After rendering, apply column visibility for this specific table
+         const tableElement = document.getElementById(tableId);
+         if(tableElement) applyColumnVisibility(tableElement);
+    }
+
+    // --- Form Submission Handler (Add/Update) ---
+    // MODIFIED: Now handles User, Project, Score, Student, Group
+    /**
+     * Handles submission of Add/Edit forms in modals (User, Project, Score, Student, Group).
+     * @param {Event} event The form submission event.
+     */
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const type = form.id.split('-')[0]; // 'user', 'project', 'score', 'student', 'group'
+        const supportedTypes = ['user', 'project', 'score', 'student', 'group'];
+
+        // Check if type is supported by this form handler
+        if (!type || !supportedTypes.includes(type)) {
+            logError("handleFormSubmit: Could not determine supported type from form ID:", form.id);
+            showNotification(`Internal error: Form type '${type}' not handled.`, "error");
+            return;
+        }
+        logDebug(`Handling form submit for type: ${type}`);
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        logDebug("Raw form data:", data);
+
+        // Determine ID and Method (POST for add, PUT for update)
+        const idKey = (type === 'user') ? 'id' : `${type}_id`;
+        const idValue = form.elements[idKey]?.value || null;
+
+        const method = (idValue) ? 'PUT' : 'POST';
+        const endpoint = getApiEndpoint(type, idValue);
+        if (!endpoint) {
+             showNotification(`Cannot ${method} ${type}: API endpoint not configured.`, 'error');
+             return;
+        }
+        logDebug(`Form details: Method=${method}, Endpoint=${endpoint}, ID=${idValue}`);
+
+        // --- Basic Client-Side Validation ---
+        if (!data.name && type === 'user') { showNotification('Name is required.', 'error'); return; }
+        if (!data.email && type === 'user') { showNotification('Email is required.', 'error'); return; }
+        if (!data.project_name && type === 'project') { showNotification('Project Name is required.', 'error'); return; }
+        if (!data.group_id && type === 'project') { showNotification('Group ID is required.', 'error'); return; }
+        if (!data.student_name && type === 'student') { showNotification('Student Name is required.', 'error'); return; }
+        // Group name is optional, Project ID is optional for group add/edit
+
+        if (type === 'user' && method === 'POST' && !data.password) { showNotification('Password is required for new users.', 'error'); return; }
+        if (type === 'user' && method === 'PUT' && data.password === '') {
+            delete data.password;
+            logDebug("Removed empty password field for user update.");
+        }
+        if (type === 'score') {
+            const scoreVal = parseInt(data.score_given, 10);
+            if (isNaN(scoreVal) || scoreVal < 1 || scoreVal > 100) {
+                showNotification('Score must be a whole number between 1 and 100.', 'error'); return;
+            }
+            if (!data.project_id) { showNotification('Project selection is required.', 'error'); return; }
+            if (!data.judge_id) { showNotification('Judge selection is required.', 'error'); return; }
+        }
+
+        // Convert numeric fields expected by backend
+        // Handle potentially empty strings from select fields for optional FKs
+        try {
+            if (data.group_id && type === 'project') data.group_id = parseInt(data.group_id, 10);
+            if (data.score_given) data.score_given = parseInt(data.score_given, 10);
+            if (data.project_id && type === 'score') data.project_id = parseInt(data.project_id, 10);
+            if (data.judge_id && type === 'score') data.judge_id = parseInt(data.judge_id, 10);
+            // Student/Group FKs (optional, parse if not empty)
+            if (data.group_id && type === 'student' && data.group_id !== '') data.group_id = parseInt(data.group_id, 10);
+            else if (data.group_id === '' && type === 'student') data.group_id = null; // Send null if unselected
+            if (data.project_id && type === 'group' && data.project_id !== '') data.project_id = parseInt(data.project_id, 10);
+            else if (data.project_id === '' && type === 'group') data.project_id = null; // Send null if unselected
+
+            // Validate parsing results where applicable
+             if (isNaN(data.group_id) && type === 'project') throw new Error("Project Group ID is not a valid number.");
+             if (isNaN(data.project_id) && type === 'score' && data.project_id !== null) throw new Error("Score Project ID is not valid."); // Allow null? No, required.
+             if (isNaN(data.judge_id) && type === 'score' && data.judge_id !== null) throw new Error("Score Judge ID is not valid."); // Allow null? No, required.
+             if (isNaN(data.group_id) && type === 'student' && data.group_id !== null) throw new Error("Student Group ID is not valid."); // Allow null
+             if (isNaN(data.project_id) && type === 'group' && data.project_id !== null) throw new Error("Group Project ID is not valid."); // Allow null
+
+        } catch (e) {
+            logError("Error parsing numeric fields:", e);
+            showNotification(e.message || 'Invalid number format for required fields.', 'error');
+            return;
+        }
+        logDebug("Cleaned data to send:", data);
+
+        // Set button loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        setButtonLoading(submitBtn, method === 'PUT' ? 'Updating...' : 'Saving...');
+
+        try {
+            const result = await apiCall(endpoint, method, data);
+            logDebug("API Call successful:", result);
+            const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
+            showNotification(result.message || `${typeCapitalized} ${method === 'POST' ? 'added' : 'updated'} successfully.`, 'success');
+
+            // Find the returned data object (e.g., result.user, result.project, result.student, result.group)
+            const dataKey = Object.keys(result).find(key => supportedTypes.includes(key));
+
+            if (dataKey && result[dataKey]) {
+                const returnedData = result[dataKey];
+                logDebug("Data object received from backend:", returnedData);
+
+                // --- Update Local Data Array ---
+                 const updateOrAddLocal = (arr, newItem, currentIdKey) => {
+                     if (!arr) { logError(`Local data array for type ${type} is undefined.`); return; }
+                    const index = arr.findIndex(item => String(item[currentIdKey]) === String(newItem[currentIdKey]));
+                    if (index > -1) { // Update existing item
+                        // Enrich score data specifically
+                         if (type === 'score') {
+                             returnedData.project_name = result.score.project_name || initialProjects.find(p => p.project_id === returnedData.project_id)?.project_name || 'N/A';
+                             returnedData.judge_name = result.score.judge_name || initialUsers.find(u => u.id === returnedData.judge_id)?.name || 'N/A';
+                         }
+                         // Ensure user pending flag is handled
+                         else if (type === 'user') {
+                              if(returnedData.judge_request_pending === undefined){
+                                 returnedData.judge_request_pending = arr[index].judge_request_pending;
+                              }
+                         }
+                        arr[index] = { ...arr[index], ...returnedData }; // Overwrite existing with new data
+                        logDebug(`Updated item in local array '${type}' at index ${index}`);
+                    } else { // Add new item
+                         // Enrich score with names on add
+                         if (type === 'score') {
+                             returnedData.project_name = result.score.project_name || initialProjects.find(p => p.project_id === returnedData.project_id)?.project_name || 'N/A';
+                             returnedData.judge_name = result.score.judge_name || initialUsers.find(u => u.id === returnedData.judge_id)?.name || 'N/A';
+                         }
+                        arr.unshift(newItem); // Add to the beginning for visibility
+                        logDebug(`Added new item to local array '${type}'`);
+                    }
+                 };
+
+                 // Select the correct array and ID key
+                 let targetArray, currentIdKey;
+                 if (type === 'user') { targetArray = initialUsers; currentIdKey = 'id'; }
+                 else if (type === 'project') { targetArray = initialProjects; currentIdKey = 'project_id'; }
+                 else if (type === 'score') { targetArray = initialScores; currentIdKey = 'score_id'; }
+                 else if (type === 'student') { targetArray = initialStudents; currentIdKey = 'student_id'; }
+                 else if (type === 'group') { targetArray = initialGroups; currentIdKey = 'group_id'; }
+
+                 if (targetArray) {
+                     updateOrAddLocal(targetArray, returnedData, currentIdKey);
+                 } else {
+                     logError(`Cannot update local data: Target array for type '${type}' not found.`);
+                 }
+
+                 // Re-render affected tables using the updated local arrays
+                 refreshAffectedTables(type, returnedData);
+
+                 // Re-populate selects if data affecting dropdowns changed
+                 if (['user', 'project', 'group'].includes(type)) { populateSelectOptions(); }
+
+            } else {
+                 logWarn(`No specific data object ('${supportedTypes.join("', '")}') found in the successful API response.`, result);
+                 showNotification('Operation successful, but couldn\'t update UI precisely. Consider refreshing.', 'warning');
+                 // fetchAllDataAndRender(); // Fallback to full refresh if needed
+            }
+            closeModal(); // Close modal on success
+        } catch (error) {
+            logError("Form submission failed:", error);
+            // Display more specific error from API if available
+            showNotification(`Error: ${error.message}`, 'error', 8000); // Show error longer
+            if (submitBtn) restoreButtonState(submitBtn); // Restore button on error
+        }
+    }
+    // Attach submit handler to relevant forms
+    Object.values(formMap).forEach(form => {
+        // Exclude column config and custom table forms (handled separately)
+        if (form && form.id !== 'column-config-form' && form.id !== 'custom-table-form') {
+             form.addEventListener('submit', handleFormSubmit);
+        }
+    });
+
+    /**
+     * Re-renders tables potentially affected by a data change.
+     * Includes standard and custom tables.
+     * @param {('user'|'project'|'score'|'student'|'group'|'ranking'|'judge_table'|'credential'|'permission')} type The type of data that changed.
+     * @param {object} changedData The new/updated data object (used mainly for logging).
+     */
+     function refreshAffectedTables(type, changedData) {
+         logDebug(`Refreshing tables affected by ${type} change:`, changedData);
+         const standardTypes = ['user', 'project', 'score']; // Types with dedicated sections
+
+         // --- Refresh Standard Tables (if the changed type is one of them) ---
+         if (standardTypes.includes(type)) {
+             if (type === 'user') {
+                 renderTable('users-table', initialUsers, renderUserRowContent, tableColumnsConfig['users-table']?.length || 5);
+                 const pendingJudgesData = initialUsers.filter(u => u.judge_request_pending);
+                 renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, tableColumnsConfig['pending-judges-table']?.length || 4);
+                 const judgesData = initialUsers.filter(u => u.role === 'judge');
+                 renderTable('judges-table', judgesData, renderUserRowContent, tableColumnsConfig['judges-table']?.length || 4);
+                 const regularUsersData = initialUsers.filter(u => u.role === 'user' && !u.judge_request_pending);
+                 renderTable('regular-users-table', regularUsersData, renderUserRowContent, tableColumnsConfig['regular-users-table']?.length || 4);
+                 // Re-render scores as judge names might have changed
+                 initialScores.forEach(score => {
+                    const judge = initialUsers.find(u => u.id === score.judge_id);
+                    score.judge_name = judge ? judge.name : 'N/A';
+                 });
+                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+                 // Refresh JudgeTable and Credential if User changed
+                 initialJudgesTable.forEach(jt => { if(jt.judge_id === changedData?.id) { jt.judge_name = changedData?.name || 'N/A'; } });
+                 initialCredentials.forEach(cr => { if(cr.judge_id === changedData?.id) { cr.judge_name = changedData?.name || 'N/A'; } });
+
+             } else if (type === 'project') {
+                 renderTable('projects-table', initialProjects, renderProjectRowContent, tableColumnsConfig['projects-table']?.length || 5);
+                 // Re-enrich and render scores as project names might have changed
+                 initialScores.forEach(score => {
+                    const project = initialProjects.find(p => p.project_id === score.project_id);
+                    score.project_name = project ? project.project_name : 'N/A';
+                 });
+                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+                 // Refresh Rankings if Project changed
+                 initialRankings.forEach(rk => { if(rk.project_id === changedData?.project_id) { rk.project_name = changedData?.project_name || 'N/A'; } });
+                 // Refresh Groups if Project changed (if displaying project name in group table)
+                 // initialGroups.forEach(grp => { if (grp.project_id === changedData?.project_id) { /* update related info */ } });
+
+             } else if (type === 'score') {
+                 // Re-enrich score data just in case (if names weren't in the response)
+                 const scoreIdKey = 'score_id';
+                 const scoreIndex = initialScores.findIndex(s => String(s[scoreIdKey]) === String(changedData[scoreIdKey]));
+                 if(scoreIndex > -1){
+                    const score = initialScores[scoreIndex];
+                    const project = initialProjects.find(p => p.project_id === score.project_id);
+                    const judge = initialUsers.find(u => u.id === score.judge_id);
+                    score.project_name = project ? project.project_name : 'N/A';
+                    score.judge_name = judge ? judge.name : 'N/A';
+                 }
+                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+             }
+         }
+         // Refresh if Group changed (affects Student dropdown/table)
+         else if (type === 'group') {
+             // initialStudents might need re-rendering if group name is displayed
+             // Custom tables showing students might need refresh
+         }
+         // Refresh if Student changed (only affects student tables)
+         else if (type === 'student') {
+             // Custom tables showing students might need refresh
+         }
+         else {
+             logInfo(`Refresh requested for non-standard type '${type}'. Standard tables not directly refreshed.`);
+         }
+
+         // --- Refresh Custom Tables ---
+         logDebug("Refreshing custom tables potentially affected...");
+         customTableDefinitions.forEach(definition => {
+             const customTableDataType = definition.dataType;
+             let needsRefresh = false;
+
+             // Direct match: If the custom table shows the type that changed
+             if (customTableDataType === type) {
+                 needsRefresh = true;
+             }
+             // Indirect dependencies:
+             else if (customTableDataType === 'score' && ['user', 'project'].includes(type)) { needsRefresh = true; } // Score depends on User, Project
+             else if (customTableDataType === 'ranking' && type === 'project') { needsRefresh = true; } // Ranking depends on Project
+             else if (customTableDataType === 'judge_table' && type === 'user') { needsRefresh = true; } // JudgeTable depends on User
+             else if (customTableDataType === 'credential' && type === 'user') { needsRefresh = true; } // Credential depends on User
+             else if (customTableDataType === 'student' && type === 'group') { needsRefresh = true; } // Student depends on Group
+             else if (customTableDataType === 'group' && type === 'project') { needsRefresh = true; } // Group depends on Project
+             // Add more dependencies as needed
+
+             if (needsRefresh) {
+                 logDebug(`Re-filtering and rendering custom section: ${definition.name} (ID: ${definition.id})`);
+                 const tableId = `${definition.id}-table`;
+                 const tableElement = document.getElementById(tableId);
+
+                 if (tableElement) {
+                    let sourceData;
+                    let renderRowFn;
+                    let baseConfigKey;
+
+                     // Get source data, render function, and config key
+                     switch (customTableDataType) {
+                         case 'user': sourceData = initialUsers; renderRowFn = renderUserRowContent; baseConfigKey = 'users-table'; break;
+                         case 'project': sourceData = initialProjects; renderRowFn = renderProjectRowContent; baseConfigKey = 'projects-table'; break;
+                         case 'score': sourceData = initialScores; renderRowFn = renderScoreRowContent; baseConfigKey = 'scores-table'; break;
+                         case 'student': sourceData = initialStudents; renderRowFn = renderStudentRowContent; baseConfigKey = 'students-table'; break;
+                         case 'group': sourceData = initialGroups; renderRowFn = renderGroupRowContent; baseConfigKey = 'groups-table'; break;
+                         case 'ranking': sourceData = initialRankings; renderRowFn = renderRankingRowContent; baseConfigKey = 'rankings-table'; break;
+                         case 'judge_table': sourceData = initialJudgesTable; renderRowFn = renderJudgeTableRowContent; baseConfigKey = 'judges_table-table'; break;
+                         case 'credential': sourceData = initialCredentials; renderRowFn = renderCredentialRowContent; baseConfigKey = 'credentials-table'; break;
+                         case 'permission': sourceData = initialPermissions; renderRowFn = renderPermissionRowContent; baseConfigKey = 'permissions-table'; break;
+                         default: logWarn(`Skipping refresh for custom table ${tableId}: Unsupported data type ${customTableDataType}`); return;
+                     }
+
+                    if (!sourceData) { logWarn(`Skipping refresh for ${tableId}: Source data array is undefined.`); return; }
+
+                    // Enrich data if necessary based on the type that triggered the refresh
+                    if (customTableDataType === 'score' && ['user', 'project'].includes(type)) {
+                        sourceData.forEach(score => { score.project_name = initialProjects.find(p => p.project_id === score.project_id)?.project_name || 'N/A'; score.judge_name = initialUsers.find(u => u.id === score.judge_id)?.name || 'N/A'; });
+                    } else if (customTableDataType === 'ranking' && type === 'project') {
+                        sourceData.forEach(rk => { rk.project_name = initialProjects.find(p => p.project_id === rk.project_id)?.project_name || 'N/A'; });
+                    } else if (customTableDataType === 'judge_table' && type === 'user') {
+                        sourceData.forEach(jt => { jt.judge_name = initialUsers.find(u => u.id === jt.judge_id)?.name || 'N/A'; });
+                    } else if (customTableDataType === 'credential' && type === 'user') {
+                        sourceData.forEach(cr => { cr.judge_name = initialUsers.find(u => u.id === cr.judge_id)?.name || 'N/A'; });
+                    } // Add more enrichments if needed (e.g., Student needs Group name, Group needs Project name)
+
+                    const filteredData = filterData(sourceData, definition.filters);
+                    const currentColspan = tableColumnsConfig[tableId]?.length || tableColumnsConfig[baseConfigKey]?.length || 1;
+                    renderTable(tableId, filteredData, renderRowFn, currentColspan);
+                 } else {
+                      logWarn(`Could not find table element '${tableId}' to refresh custom section ${definition.id}`);
+                 }
+             }
+         });
+
+         // --- Reapply Visibility & Search ---
+         applyStatesAfterRender(); // Consolidate state application here
+         logDebug("Finished refreshing affected tables.");
+     }
+
+    /**
+     * Fetches all initial data again from the server (if endpoints exist)
+     * OR simply re-renders from the current `initial*` arrays.
+     */
+     function fetchAllDataAndRender() {
+         logWarn("fetchAllDataAndRender called - Re-rendering from existing JS data.");
+         // TODO: Implement API calls to fetch fresh data for ALL tables if backend endpoints are available
+         // Example:
+         // Promise.all([
+         //     apiCall(getApiEndpoint('user')), // Assume these return {users: [...]} etc.
+         //     apiCall(getApiEndpoint('project')),
+         //     // ... fetch all other data types ...
+         // ]).then(([userData, projectData, ...]) => {
+         //     initialUsers = userData.users || [];
+         //     initialProjects = projectData.projects || [];
+         //     // ... update all initial* arrays ...
+         //     renderStandardTables();
+         //     loadAndRenderCustomTables();
+         //     populateSelectOptions();
+         //     applyStatesAfterRender();
+         //     showNotification("UI refreshed with latest data from server.", "info", 2000);
+         // }).catch(error => {
+         //     showNotification(`Failed to refresh data from server: ${error.message}`, 'error');
+         // });
+
+         // --- Current implementation: Just re-render with local data ---
+         renderStandardTables(); // Render standard tables first
+         loadAndRenderCustomTables(); // Re-render custom tables using current local data and filters
+         populateSelectOptions(); // Repopulate dropdowns
+         applyStatesAfterRender(); // Apply column/collapse states and search
+         showNotification("UI refreshed with current data.", "info", 2000);
+     }
+
+     /** Helper to apply column and collapse states and search filters after rendering */
+     function applyStatesAfterRender() {
+         applySectionCollapseStates(); // Apply collapse first
+         document.querySelectorAll('.data-table').forEach(applyColumnVisibility); // Then apply column visibility
+         // Re-apply existing search filters
+         document.querySelectorAll('.table-search').forEach(input => {
+             if (input.value) { handleSearch({ target: input }); }
+         });
+     }
+
+    // --- Delete Item Handler ---
+    // ... (Keep existing deleteItem - needs extension for Student/Group if required) ...
+    // --- Approve Judge Role Handler ---
+    // ... (Keep existing approveJudgeRole) ...
+    // --- Search Functionality ---
+    // ... (Keep existing handleSearch) ...
+    // --- Actions Dropdown Toggle ---
+    // ... (Keep existing toggleActionsMenu and global click listener) ...
+    // --- Column Visibility Configuration ---
+    // ... (Keep existing getColumnPrefs, saveColumnPrefs, applyColumnVisibility, openColumnConfig, handleColumnToggle) ...
+    // --- Section Collapsing ---
+    // ... (Keep existing getSectionCollapsePrefs, saveSectionCollapsePrefs, toggleSection, applySectionCollapseStates) ...
+    // --- Import/Export ---
+    // ... (Keep existing triggerImport, handleImportFile, exportData) ...
+    /**
+     * Handles the deletion of an item (User, Project, Score).
+     * Needs extension if deleting items from other tables is required.
+     * @param {('user'|'project'|'score')} type The type of item to delete.
+     * @param {number|string} id The ID of the item to delete.
+     */
+    window.deleteItem = async (type, id) => {
+        // Only handle types with existing modals/API endpoints for deletion
+        // TODO: Extend to support 'student', 'group' if delete endpoints are added
+        const deletableTypes = ['user', 'project', 'score'];
+        if (!deletableTypes.includes(type)) {
+            showNotification(`Deletion not implemented for type '${type}'.`, 'warning');
+            logWarn(`Attempted to delete unhandled type: ${type}`);
+            return;
+        }
+
+        const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+        logDebug(`Attempting to delete ${type} with ID: ${id}`);
+
+        // Find item name for confirmation message
+        let itemName = `ID ${id}`;
+        const idKey = type === 'user' ? 'id' : `${type}_id`;
+        let itemToDelete;
+        let sourceArray;
+         if (type === 'user') { sourceArray = initialUsers; itemToDelete = sourceArray.find(item => String(item.id) === String(id)); }
+         else if (type === 'project') { sourceArray = initialProjects; itemToDelete = sourceArray.find(item => String(item.project_id) === String(id)); }
+         else if (type === 'score') { sourceArray = initialScores; itemToDelete = sourceArray.find(item => String(item.score_id) === String(id)); }
+         // else if (type === 'student') { sourceArray = initialStudents; itemToDelete = ... } // Find student
+         // else if (type === 'group') { sourceArray = initialGroups; itemToDelete = ... } // Find group
+
+        if (itemToDelete) {
+             itemName = itemToDelete.name || itemToDelete.project_name || itemToDelete.student_name || itemToDelete.group_name || (type === 'score' ? `${itemToDelete.category} score` : `ID ${id}`);
+        }
+
+        if (!confirm(`Are you sure you want to permanently delete ${typeName}: "${itemName}"?\nThis action cannot be undone.`)) {
+            logDebug("Deletion cancelled by user."); return;
+        }
+
+        const endpoint = getApiEndpoint(type, id);
+        if (!endpoint) {
+             showNotification(`Cannot delete ${type}: API endpoint not configured.`, 'error');
+             return;
+        }
+        const deleteButton = event?.target.closest('button.btn-delete');
+        if (deleteButton) setButtonLoading(deleteButton, 'Deleting...');
+
+        try {
+            const result = await apiCall(endpoint, 'DELETE');
+            logDebug("Delete successful:", result);
+            showNotification(result.message || `${typeName} "${itemName}" deleted successfully.`, 'success');
+
+            // --- Remove from the local data array ---
+             if(sourceArray){
+                const index = sourceArray.findIndex(item => String(item[idKey]) === String(id));
+                if (index > -1) {
+                    sourceArray.splice(index, 1);
+                    logDebug(`Removed item ID ${id} from local array '${type}'.`);
+
+                    // Handle cascading local deletes based on type deleted
+                    if (type === 'project' && initialScores) {
+                        initialScores = initialScores.filter(score => String(score.project_id) !== String(id));
+                        logDebug(`Removed scores associated with deleted project ID ${id} from local cache.`);
+                    }
+                    if (type === 'user' && initialScores) { // Judge deleted
+                        initialScores = initialScores.filter(score => String(score.judge_id) !== String(id));
+                         logDebug(`Removed scores associated with deleted user ID ${id} from local cache.`);
+                    }
+                    if(type === 'user') { // User (judge) deleted
+                        initialJudgesTable = initialJudgesTable.filter(jt => String(jt.judge_id) !== String(id));
+                        initialCredentials = initialCredentials.filter(cr => String(cr.judge_id) !== String(id));
+                    }
+                     if(type === 'project') { // Project deleted
+                        initialRankings = initialRankings.filter(rk => String(rk.project_id) !== String(id));
+                        // Unlink from groups locally if backend uses SET NULL on FK
+                        initialGroups.forEach(grp => { if (String(grp.project_id) === String(id)) grp.project_id = null; });
+                        logDebug(`Unlinked groups associated with deleted project ID ${id}.`);
+                    }
+                    if(type === 'group') { // Group deleted
+                        // Unlink from students locally if backend uses SET NULL on FK
+                        initialStudents.forEach(std => { if (String(std.group_id) === String(id)) std.group_id = null; });
+                        logDebug(`Unlinked students associated with deleted group ID ${id}.`);
+                    }
+
+                } else { logWarn(`Item with ID ${id} not found in local data array for type ${type} after successful delete.`); }
+             } else { logWarn(`Source array for type '${type}' not found.`); }
+
+             // --- Re-render affected tables ---
+             refreshAffectedTables(type, { [idKey]: id });
+
+             // Re-populate selects if a user, project, or group was deleted
+             if (['user', 'project', 'group'].includes(type)) { populateSelectOptions(); }
+
+        } catch (error) {
+            logError(`Failed to delete ${type} ID ${id}:`, error);
+            showNotification(`Error deleting ${typeName}: ${error.message}`, 'error');
+            if (deleteButton) restoreButtonState(deleteButton);
+        } finally {
+             // Close actions menu if open
+             const menu = deleteButton?.closest('.actions-menu');
+             if (menu?.classList.contains('show')) {
+                 menu.classList.remove('show');
+                 menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+             }
+        }
+    };
+
+    // --- Approve Judge Role Handler ---
+    /**
+     * Approves a pending judge role request for a user.
+     * @param {number|string} userId The ID of the user to approve.
+     */
+    window.approveJudgeRole = async (userId) => {
+        logDebug(`Attempting to approve judge role for user ID: ${userId}`);
+        const userToApprove = initialUsers.find(u => String(u.id) === String(userId));
+        const userName = userToApprove ? userToApprove.name : `User ID ${userId}`;
+
+        if (!confirm(`Promote "${userName}" to the Judge role?`)) { logDebug("Judge approval cancelled."); return; }
+
+        const approveButton = event?.target.closest('button.btn-approve'); // Get button clicked
+        if (approveButton) setButtonLoading(approveButton, 'Approving...'); // Set loading state
+
+        const endpoint = getApiEndpoint('approveJudge', userId);
+         if (!endpoint) {
+             showNotification('Cannot approve judge: API endpoint not configured.', 'error');
+             if (approveButton) restoreButtonState(approveButton);
+             return;
+        }
+
+        try {
+            const result = await apiCall(endpoint, 'POST'); // POST request to approve
+            logDebug("Approve judge role successful:", result);
+            showNotification(result.message || `"${userName}" promoted to Judge.`, 'success');
+
+             if (result.user) {
+                 const returnedUser = result.user;
+                 returnedUser.judge_request_pending = false; // Ensure flag is false
+
+                 logDebug("Updating local user data with approved status:", returnedUser);
+                 const userIndex = initialUsers.findIndex(u => String(u.id) === String(userId));
+                 if (userIndex !== -1) {
+                     initialUsers[userIndex] = { ...initialUsers[userIndex], ...returnedUser }; // Update local user
+                 } else { logError("User approved, but not found in local initialUsers array for update."); }
+
+                 refreshAffectedTables('user', returnedUser); // Refresh using updated local data
+                 populateSelectOptions(); // Role change affects judge dropdown in score modal
+
+             } else {
+                 logWarn("Approval successful, but no updated user data object received.", result);
+                 showNotification('Approval successful. Refreshing data might be needed.', 'warning');
+                 fetchAllDataAndRender(); // Refresh all as fallback
+             }
+        } catch (error) {
+            logError(`Failed to approve judge role for user ID ${userId}:`, error);
+            showNotification(`Error approving judge: ${error.message}`, 'error');
+            if (approveButton) restoreButtonState(approveButton); // Restore button on error
+        } finally {
+             // Close actions menu if open
+             const menu = approveButton?.closest('.actions-menu');
+             if (menu?.classList.contains('show')) {
+                 menu.classList.remove('show');
+                 menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+             }
+        }
+    };
+    /**
+     * Filters table rows based on search input.
+     * @param {Event} event The input or search event.
+     */
+    function handleSearch(event) {
+         const input = event.target;
+         const searchTerm = input.value.toLowerCase().trim();
+         const tableId = input.dataset.table;
+         const table = document.getElementById(tableId);
+         const tbody = table?.querySelector('tbody');
+         if (!tbody) { logWarn(`Search target table body not found: ${tableId}`); return; }
+
+         let visibleRowCount = 0;
+         const rows = tbody.querySelectorAll('tr:not(.no-items-row):not(.no-search-results)'); // Select only data rows
+
+         rows.forEach(row => {
+             // Check text content of all non-action cells for a match
+             const match = Array.from(row.querySelectorAll('td'))
+                              .filter(cell => !cell.classList.contains('actions')) // Exclude actions column
+                              .some(cell => cell.textContent.toLowerCase().includes(searchTerm));
+             row.style.display = match ? '' : 'none';
+             if (match) visibleRowCount++;
+         });
+
+         // Handle "No results" message
+         let noResultsRow = tbody.querySelector('.no-search-results');
+         if (visibleRowCount === 0 && searchTerm !== '') {
+             // Show "No results" row if it doesn't exist
+             if (!noResultsRow) {
+                 noResultsRow = document.createElement('tr');
+                 noResultsRow.className = 'no-search-results no-items-row'; // Use both classes
+                 const cell = document.createElement('td');
+                 // Get column count from header (visible columns)
+                 const colCount = table.querySelectorAll('thead tr th:not(.column-hidden)')?.length || table.querySelectorAll('thead tr th')?.length || 1; // Fallback to 1
+                 cell.colSpan = colCount > 0 ? colCount : 1; // Ensure colspan is at least 1
+                 noResultsRow.appendChild(cell);
+                 tbody.appendChild(noResultsRow); // Append to tbody
+             }
+             noResultsRow.querySelector('td').textContent = `No results found for "${input.value}".`;
+             noResultsRow.style.display = ''; // Ensure it's visible
+             // Hide original "No items" row if present
+             const originalNoItemsRow = tbody.querySelector('.no-items-row:not(.no-search-results)');
+             if(originalNoItemsRow) originalNoItemsRow.style.display = 'none';
+
+         } else {
+             // Remove "No results" row if it exists
+             if (noResultsRow) noResultsRow.remove();
+             // If search cleared and table has no visible data rows, show the original "No items" row
+             const originalNoItemsRow = tbody.querySelector('.no-items-row:not(.no-search-results)');
+             if(searchTerm === '' && visibleRowCount === 0 && originalNoItemsRow){
+                 originalNoItemsRow.style.display = '';
+             } else if (originalNoItemsRow) {
+                 originalNoItemsRow.style.display = 'none'; // Keep hidden if there are search results or term isn't empty
+             }
+         }
+    }
+    // Attach search listeners (needs to be done after initial render and after custom tables are added)
+    function attachSearchListeners() {
+        document.querySelectorAll('.table-search').forEach(input => {
+            // Remove existing listeners first to avoid duplicates if called multiple times
+            input.removeEventListener('input', handleSearch);
+            input.removeEventListener('search', handleSearch);
+            // Add fresh listeners
+            input.addEventListener('input', handleSearch); // Live search
+            input.addEventListener('search', handleSearch); // Handle clearing search via 'x' button
+        });
+    }
+    /**
+     * Toggles the visibility of the actions dropdown menu for a table row.
+     * Closes other open menus.
+     * @param {HTMLButtonElement} buttonElement The button clicked to toggle the menu.
+     */
+    window.toggleActionsMenu = (buttonElement) => {
+        const menu = buttonElement.nextElementSibling;
+        if (!menu || !menu.classList.contains('actions-menu')) return;
+
+        const isCurrentlyExpanded = menu.classList.contains('show');
+
+        // Close all other open menus first
+        document.querySelectorAll('.actions-menu.show').forEach(openMenu => {
+            if (openMenu !== menu) {
+                openMenu.classList.remove('show');
+                openMenu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Toggle the current menu
+        menu.classList.toggle('show', !isCurrentlyExpanded);
+        buttonElement.setAttribute('aria-expanded', !isCurrentlyExpanded);
+    }
+    // Global click listener to close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+         // If the click is not inside an actions dropdown, close all menus
+         if (!event.target.closest('.actions-dropdown')) {
+             document.querySelectorAll('.actions-menu.show').forEach(menu => {
+                 menu.classList.remove('show');
+                 menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+             });
+         }
+     }, true); // Use capture phase to catch clicks early
+         /** Gets column visibility preferences from localStorage. */
+    function getColumnPrefs() {
+        try {
+            const prefsString = localStorage.getItem(COLUMN_CONFIG_STORAGE_KEY);
+            return prefsString ? JSON.parse(prefsString) : {};
+        } catch (e) {
+            logError("Error reading column preferences from localStorage:", e);
+            localStorage.removeItem(COLUMN_CONFIG_STORAGE_KEY); // Clear corrupted data
+            return {};
+        }
+    }
+    /** Saves column visibility preferences to localStorage. */
+    function saveColumnPrefs(prefs) {
+        try {
+            localStorage.setItem(COLUMN_CONFIG_STORAGE_KEY, JSON.stringify(prefs));
+            logDebug("Saved column preferences:", prefs);
+        } catch (e) {
+            logError("Error saving column preferences to localStorage:", e);
+            showNotification('Could not save column preferences.', 'error');
+        }
+    }
+
+    /**
+     * Applies column visibility based on saved preferences for a specific table.
+     * @param {HTMLTableElement} tableElement The table element.
+     */
+    function applyColumnVisibility(tableElement) {
+        if (!tableElement || !tableElement.id) return;
+        const tableId = tableElement.id;
+        const allPrefs = getColumnPrefs();
+        const tablePrefs = allPrefs[tableId] || {}; // Get prefs for this specific table
+        const columns = tableColumnsConfig[tableId]; // Get column definitions for THIS table ID
+
+        if (!columns) {
+            logWarn(`No column config found in tableColumnsConfig for table ID: ${tableId}. Cannot apply visibility.`);
+            return;
+        }
+        // logDebug(`Applying column visibility for table '${tableId}'`, tablePrefs);
+
+        let visibleColCount = 0;
+        columns.forEach(colConfig => {
+            const colKey = colConfig.key;
+            const isVisible = colConfig.alwaysVisible || (tablePrefs[colKey] !== false);
+            if (isVisible) visibleColCount++;
+            // Find all header and data cells for this column key IN THIS SPECIFIC TABLE
+            tableElement.querySelectorAll(`th[data-col="${colKey}"], td[data-col="${colKey}"]`).forEach(cell => {
+                 cell.classList.toggle('column-hidden', !isVisible);
+            });
+        });
+         // Adjust colspan for 'no items'/'no results' rows based on *visible* columns
+         const finalColspan = visibleColCount > 0 ? visibleColCount : 1; // Avoid colspan 0
+         tableElement.querySelectorAll('tbody tr.no-items-row td, tbody tr.no-search-results td').forEach(cell => {
+             cell.colSpan = finalColspan;
+         });
+    }
+
+    /**
+     * Opens the column configuration modal for a specific table.
+     * @param {string} tableId The ID of the table to configure columns for.
+     */
+    window.openColumnConfig = (tableId) => {
+        const tableElement = document.getElementById(tableId);
+        const columns = tableColumnsConfig[tableId];
+        const configOptionsDiv = document.getElementById('column-config-options');
+        const configModal = modalMap.columnConfig;
+
+        if (!tableElement || !columns || !configOptionsDiv || !configModal) {
+             logError(`Error opening column config: Missing elements/config for table ID '${tableId}'. Table Config Exists: ${!!columns}`);
+             showNotification("Could not open column configuration.", "error");
+             return;
+        }
+        logDebug(`Opening column config for table: ${tableId}`);
+
+        // Get a user-friendly name for the table (e.g., from section header)
+        const section = tableElement.closest('.dashboard-section');
+        const tableName = section?.querySelector('h2')?.textContent.trim() || tableId; // Use header text or fallback to ID
+
+        configModal.querySelector('#config-target-table').value = tableId; // Store target table ID
+        configModal.querySelector('#config-table-name').textContent = tableName; // Display table name
+        configOptionsDiv.innerHTML = ''; // Clear previous options
+
+        const allPrefs = getColumnPrefs();
+        const tablePrefs = allPrefs[tableId] || {};
+
+        columns.forEach(colConfig => {
+            // Only show checkboxes for columns that are NOT always visible
+            if (colConfig.alwaysVisible) return;
+
+            const colKey = colConfig.key;
+            const isChecked = (tablePrefs[colKey] !== false); // Default to checked (visible) if not explicitly false
+
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = colKey; // Use column key as name
+            checkbox.checked = isChecked;
+            checkbox.dataset.tableId = tableId; // Store target table ID on checkbox
+            checkbox.addEventListener('change', handleColumnToggle); // Attach listener
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${colConfig.label}`)); // Add label text
+            configOptionsDiv.appendChild(label);
+        });
+        openGenericModal(configModal, `Configure Columns for ${tableName}`);
+    }
+
+    /**
+     * Handles toggling a column's visibility via the config modal checkbox.
+     * Saves preferences and updates the table display instantly.
+     * @param {Event} event The change event from the checkbox.
+     */
+    function handleColumnToggle(event) {
+        const checkbox = event.target;
+        const colKey = checkbox.name;
+        const tableId = checkbox.dataset.tableId;
+        const isVisible = checkbox.checked;
+
+        if (!tableId) { logError("handleColumnToggle: Missing table ID on checkbox."); return; }
+
+        logDebug(`Column toggle: Table='${tableId}', Column='${colKey}', Visible=${isVisible}`);
+
+        // Update and save preferences
+        const prefs = getColumnPrefs();
+        if (!prefs[tableId]) { prefs[tableId] = {}; }
+        prefs[tableId][colKey] = isVisible; // Store boolean state
+        saveColumnPrefs(prefs);
+
+        // Apply the change visually to the table
+        const tableElement = document.getElementById(tableId);
+        if (tableElement) {
+             applyColumnVisibility(tableElement); // Re-apply all visibility rules for this table
+             // Re-run search if active to ensure 'no results' colspan is correct
+             const searchInput = document.querySelector(`.table-search[data-table="${tableId}"]`);
+             if (searchInput && searchInput.value) {
+                 handleSearch({ target: searchInput });
+             }
+        } else {
+            logWarn(`handleColumnToggle: Table element not found for ID '${tableId}' during visual update.`);
+        }
+    }
+    /** Gets section collapse preferences from localStorage. */
+    function getSectionCollapsePrefs() {
+        try {
+            const prefsString = localStorage.getItem(SECTION_COLLAPSE_STORAGE_KEY);
+            return prefsString ? JSON.parse(prefsString) : {};
+        } catch (e) {
+            logError("Error reading section collapse preferences:", e);
+            localStorage.removeItem(SECTION_COLLAPSE_STORAGE_KEY);
+            return {};
+        }
+    }
+    /** Saves section collapse preferences to localStorage. */
+    function saveSectionCollapsePrefs(prefs) {
+        try {
+            localStorage.setItem(SECTION_COLLAPSE_STORAGE_KEY, JSON.stringify(prefs));
+            logDebug("Saved section collapse preferences:", prefs);
+        } catch (e) { logError("Error saving section collapse preferences:", e); }
+    }
+    /** Toggles a dashboard section's collapsed state and saves preference. */
+    window.toggleSection = (headerElement) => {
+        const section = headerElement.closest('.dashboard-section');
+        if (!section || !section.dataset.sectionId) {
+            logWarn("toggleSection: Could not find section or section ID."); return;
+        }
+        const sectionId = section.dataset.sectionId;
+        const isCollapsing = !section.classList.contains('section-collapsed'); // Determine *new* state
+        section.classList.toggle('section-collapsed', isCollapsing);
+        logDebug(`Toggling section '${sectionId}', new state: ${isCollapsing ? 'Collapsed' : 'Expanded'}`);
+
+        // Update and save preferences
+        const prefs = getSectionCollapsePrefs();
+        prefs[sectionId] = isCollapsing; // Store boolean state
+        saveSectionCollapsePrefs(prefs);
+    }
+    /** Applies saved section collapse states on page load. */
+    function applySectionCollapseStates() {
+        logDebug("Applying initial section collapse states");
+        const prefs = getSectionCollapsePrefs();
+        document.querySelectorAll('.dashboard-section[data-section-id]').forEach(section => {
+            const sectionId = section.dataset.sectionId;
+            const shouldCollapse = prefs[sectionId] === true; // Check if explicitly saved as collapsed
+            // Ensure class matches saved state
+            section.classList.toggle('section-collapsed', shouldCollapse);
+            // Update toggle icon state (optional, good for initial load consistency)
+            const icon = section.querySelector('.section-header .toggle-icon');
+            if (icon) icon.style.transform = shouldCollapse ? 'rotate(-90deg)' : '';
+        });
+    }
+        /**
+     * Triggers the hidden file input for the specified import type.
+     * @param {('user'|'project')} type The type of data to import.
+     */
+        window.triggerImport = (type) => {
+        const fileInput = fileInputMap[type];
+        if (fileInput) {
+            fileInput.value = ''; // Clear previous selection to allow re-importing same file
+            fileInput.click(); // Open file dialog
+        } else {
+            logError(`No file input found for import type: ${type}`);
+            showNotification(`Import functionality not available for ${type}.`, "error");
+        }
+    }
+
+    /**
+     * Handles the file selection and initiates the import process.
+     * @param {Event} event The change event from the file input.
+     * @param {('user'|'project')} type The type of data being imported.
+     */
+     async function handleImportFile(event, type) {
+         const fileInput = event.target;
+         const file = fileInput.files?.[0]; // Use optional chaining
+         if (!file) { logDebug("No file selected for import."); return; }
+
+         logInfo(`Importing ${type} from file: ${file.name} (Type: ${file.type}, Size: ${file.size} bytes)`);
+
+         // Basic file type check (can be spoofed, backend must validate)
+         if (!file.name.toLowerCase().endsWith('.xlsx') && file.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+             showNotification("Invalid file type. Please upload an XLSX file.", "error");
+             fileInput.value = ''; // Clear invalid selection
+             return;
+         }
+
+         const formData = new FormData();
+         formData.append('file', file); // Backend expects 'file' key
+
+         // Construct endpoint type (e.g., 'importUser', 'importProject')
+         const endpointType = `import${type.charAt(0).toUpperCase() + type.slice(1)}`;
+         const endpoint = getApiEndpoint(endpointType);
+          if (!endpoint) {
+             showNotification(`Cannot import ${type}: API endpoint not configured.`, 'error');
+             return;
+         }
+
+         // Find the corresponding import button to show loading state
+         const importButton = document.querySelector(`.btn-import[onclick="triggerImport('${type}')"]`);
+         if (importButton) setButtonLoading(importButton, 'Importing...');
+
+         try {
+             const result = await apiCall(endpoint, 'POST', formData, true); // isFormData = true
+             logDebug("Import result:", result);
+
+             let message = result.message || `Import for ${type} completed.`;
+             let notificationType = result.status === 'success' ? 'success' : (result.status === 'warning' ? 'warning' : 'info');
+
+             // Append error details if present
+             if (result.errors && result.errors.length > 0) {
+                 const errorCount = result.errors.length;
+                 message += ` ${errorCount} row(s) had errors or were skipped.`;
+                 notificationType = 'warning'; // Treat as warning if there were errors
+                 logWarn(`Import errors/skipped rows (${errorCount}):`, result.errors);
+                 // Optionally display detailed errors in console or a dedicated log area
+                 console.groupCollapsed(`Import Errors (${type}) - Check console for details`);
+                 result.errors.forEach(err => console.warn(err));
+                 console.groupEnd();
+                 message += " Check browser console (F12) for details."
+             }
+
+             showNotification(message, notificationType, notificationType === 'warning' ? 10000 : 5000); // Show warnings longer
+
+             // Refresh data after import completes (successfully or with warnings)
+             if (result.status !== 'error') { // Avoid refresh on total failure reported by apiCall
+                 showNotification("Refreshing data...", "info", 2000);
+                 // IMPORTANT: Need to re-fetch data from backend if import modified DB
+                 // For now, we just re-render the frontend state, which won't reflect DB changes from import
+                 // Replace with fetchAllDataAndRender() if backend provides fetch endpoints
+                 fetchAllDataAndRender(); // Assuming this fetches fresh data or user understands limitation
+             }
+
+         } catch (error) {
+             logError(`Import failed for ${type}:`, error);
+             showNotification(`Import Error: ${error.message}`, 'error', 8000);
+         } finally {
+             if (importButton) restoreButtonState(importButton); // Restore button state
+             fileInput.value = ''; // Clear file input regardless of outcome
+         }
+     }
+
+     // Attach file input listeners using the map
+     Object.keys(fileInputMap).forEach(type => {
+        const input = fileInputMap[type];
+        if (input) {
+            input.addEventListener('change', (e) => handleImportFile(e, type));
+        }
+     });
+
+     /**
+      * Initiates data export by redirecting to the backend download endpoint.
+      * @param {('user'|'project'|'score')} type The type of data to export.
+      */
+     window.exportData = (type) => {
+         // Construct endpoint type (e.g., 'exportUser', 'exportProject')
+         const endpointType = `export${type.charAt(0).toUpperCase() + type.slice(1)}`;
+         try {
+            // Check if export is supported for this type
+            if (!['user', 'project', 'score'].includes(type)) {
+                showNotification(`Export not currently supported for ${type}.`, 'warning');
+                return;
+            }
+            const endpoint = getApiEndpoint(endpointType);
+             if (!endpoint) {
+                 showNotification(`Cannot export ${type}: API endpoint not configured.`, 'error');
+                 return;
+             }
+            logInfo(`Initiating export for ${type} via endpoint: ${endpoint}`);
+            // Simple redirect triggers the file download
+            window.location.href = endpoint;
+            // Optionally provide user feedback
+            showNotification(`Export started for ${type}s...`, 'info', 3000);
+         } catch (error) {
+            logError(`Failed to get export endpoint for ${type}:`, error);
+            showNotification(`Cannot start export: ${error.message}`, 'error');
+         }
+     }
+
+
+    // --- Initial Dashboard Setup ---
+    /**
+     * Initializes the admin dashboard on page load.
+     */
+   function initializeDashboard() {
+        logInfo("Initializing dashboard...");
+
+        // 1. Register initial STANDARD table bodies
+        registerTableBodies();
+
+        // 2. Render STANDARD tables from initial JS data
+        renderStandardTables();
+
+        // 3. Populate static dropdowns (Score, Student, Group modals)
+        populateSelectOptions();
+
+        // 4. Load definitions and render CUSTOM tables from localStorage
+        // This will also register custom table bodies
+        loadAndRenderCustomTables();
+
+        // 5. Attach search listeners AFTER all tables (incl. custom) are rendered
+        attachSearchListeners();
+
+        // 6. Apply persistent states (collapse & columns) AFTER all sections are rendered
+        applyStatesAfterRender();
+
+        logInfo("Dashboard initialization complete.");
+    }
+
+    // --- Run Initialization ---
+    initializeDashboard();
+
+}); // End DOMContentLoaded
+</script>
+
+{% endblock %}
