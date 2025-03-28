@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact KSU CCSE - OwlJudge Support{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to contact_us.html --- */
+    /* (Move to style.css for production) */
+
+    .contact-page-main {
+        padding: 3rem 1rem;
+        background-color: #f9fafb; /* Very light background */
+    }
+
+    .contact-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        overflow: hidden; /* Contain elements */
+        display: grid;
+        grid-template-columns: 1fr 1.2fr; /* Adjust column ratio as needed */
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s 0.2s ease-out forwards;
+    }
+
+    /* --- Left Column: Info & Map --- */
+    .contact-info-column {
+        padding: 3rem 2.5rem;
+        background-color: var(--ksu-black); /* KSU Black */
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .contact-info-column h2 {
+        color: var(--ksu-gold);
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid rgba(255, 193, 7, 0.3); /* Faint gold line */
+        padding-bottom: 0.8rem;
+    }
+
+    .contact-details li {
+        display: flex;
+        align-items: flex-start; /* Align icon top */
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.85);
+    }
+    .contact-details li i {
+        color: var(--ksu-gold);
+        font-size: 1.2rem;
+        margin-right: 15px;
+        margin-top: 4px; /* Align with first line of text */
+        width: 20px; /* Ensure alignment */
+        text-align: center;
+    }
+    .contact-details li strong { /* Make labels slightly bolder */
+        font-weight: 500;
+        display: block; /* Ensure line breaks correctly */
+        margin-bottom: 2px;
+        color: var(--white);
+    }
+     .contact-details li a { /* Style links within info */
+         color: var(--ksu-gold);
+         text-decoration: none;
+         transition: color 0.3s ease;
+     }
+      .contact-details li a:hover {
+          color: var(--ksu-dark-gold);
+          text-decoration: underline;
+      }
+
+
+    .map-container {
+        margin-top: 2.5rem;
+        border-radius: 8px;
+        overflow: hidden; /* Clip iframe corners */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        height: 250px; /* Adjust height */
+        border: 2px solid var(--ksu-gold);
+    }
+    .map-container iframe {
+        border: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* --- Right Column: Form --- */
+    .contact-form-column {
+        padding: 3rem 2.5rem;
+    }
+    .contact-form-column h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: var(--ksu-black);
+    }
+    .contact-form-column p {
+         font-size: 1rem;
+         color: #555;
+         margin-bottom: 2rem;
+         line-height: 1.6;
+     }
+
+    .contact-form .form-group { /* Reusing styles from signup */
+        margin-bottom: 1.2rem;
+        position: relative;
+        text-align: left;
+    }
+    .contact-form .form-group label {
+        display: block; margin-bottom: 8px; font-size: 0.95rem;
+        color: var(--dark-gray); font-weight: 600;
+    }
+    .contact-form .form-group input,
+    .contact-form .form-group textarea {
+        width: 100%; padding: 12px 15px; box-sizing: border-box;
+        border: 2px solid var(--medium-gray); border-radius: 6px;
+        font-size: 1rem; font-family: var(--primary-font);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .contact-form .form-group textarea {
+        min-height: 140px; /* Taller text area */
+        resize: vertical;
+    }
+    .contact-form .form-group input:focus,
+    .contact-form .form-group textarea:focus {
+        border-color: var(--ksu-gold);
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25);
+        outline: none;
+    }
+
+    /* Live Validation Styling */
+    .contact-form .form-group input.invalid,
+    .contact-form .form-group textarea.invalid { border-color: #e74c3c !important; }
+    .contact-form .form-group input.valid,
+    .contact-form .form-group textarea.valid { border-color: #2ecc71 !important; }
+
+    .validation-message { /* Reusing from signup */
+        font-size: 0.85rem; margin-top: 6px; min-height: 18px; display: flex;
+        align-items: center; opacity: 0; max-height: 0; overflow: hidden;
+        transition: opacity 0.3s ease, max-height 0.3s ease, color 0.3s ease; color: #666;
+    }
+    .validation-message.visible { opacity: 1; max-height: 40px; }
+    .validation-message.invalid { color: #e74c3c; }
+    .validation-message.valid { color: #2ecc71; }
+    .validation-message i { margin-right: 5px; font-size: 0.9em; }
+
+    /* Submit Button */
+    .contact-form .btn {
+        width: 100%; padding: 14px 20px; font-size: 1.1rem;
+        margin-top: 1rem; border-radius: 6px;
+        background-color: var(--ksu-black); /* Black button */
+        color: var(--ksu-gold);
+    }
+     .contact-form .btn:hover {
+          background-color: #333; /* Darker black */
+          color: var(--white);
+     }
+     .contact-form .btn .fa-spinner { margin-right: 8px; }
+
+    /* Form Status Message Area */
+    #form-status-message {
+        min-height: 25px; margin-top: 1.5rem; margin-bottom: 0; padding: 12px;
+        border-radius: 5px; font-size: 1rem; font-weight: 500; text-align: center;
+        opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #form-status-message.show { opacity: 1; transform: translateY(0); }
+    #form-status-message.error { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
+    #form-status-message.success { background-color: rgba(40, 167, 69, 0.1); color: #28a745; }
+    #form-status-message i { margin-right: 6px; }
+
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .contact-container { grid-template-columns: 1fr; }
+        .contact-info-column { padding: 2.5rem 2rem; }
+        .contact-form-column { padding: 2.5rem 2rem; }
+    }
+    @media (max-width: 768px) {
+         .contact-info-column { padding: 2rem 1.5rem; }
+         .contact-form-column { padding: 2rem 1.5rem; }
+         .contact-container h2 { font-size: 1.6rem; }
+         .contact-form .form-group input,
+         .contact-form .form-group textarea { padding: 10px 12px; }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+</style>
+
+<main class="contact-page-main">
+    <div class="contact-container">
+        {# --- Left Column: Info & Map --- #}
+        <div class="contact-info-column">
+            <h2>Get In Touch</h2>
+            <ul class="contact-details">
+                <li>
+                    <i class="fas fa-map-marker-alt fa-fw"></i>
+                    <div>
+                        <strong>Address:</strong>
+                        Kennesaw State University<br>
+                        College of Computing and Software Engineering<br>
+                        (Atrium Building J)<br>
+                        1100 South Marietta Pkwy SE, Marietta, GA 30060
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-phone-alt fa-fw"></i>
+                    <div>
+                        <strong>Phone:</strong>
+                        <a href="tel:470-578-3803">(470) 578-3803</a>
+                    </div>
+                </li>
+                 <li>
+                    <i class="fas fa-envelope fa-fw"></i>
+                    <div>
+                        <strong>Email:</strong>
+                        <a href="mailto:ccse@kennesaw.edu">ccse@kennesaw.edu</a><br>
+                        <small>(For general CCSE inquiries)</small>
+                        {# Add specific OwlJudge support email if available #}
+                        {# <a href="mailto:owljudge-support@kennesaw.edu">owljudge-support@kennesaw.edu</a> <br>
+                        <small>(For OwlJudge platform support)</small> #}
+                    </div>
+                </li>
+                 <li>
+                    <i class="fas fa-clock fa-fw"></i>
+                    <div>
+                        <strong>Office Hours:</strong>
+                        Monday - Friday, 8:00 AM - 5:00 PM
+                    </div>
+                </li>
+            </ul>
+            <div class="map-container">
+                 {# --- Replace with actual KSU CCSE Google Maps Embed --- #}
+                 <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.802051496299!2d-84.52085768478855!3d33.9199559806414!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f5110f5405b359%3A0x4a0c550d5c3c5522!2sKennesaw%20State%20University%20-%20College%20of%20Computing%20and%20Software%20Engineering!5e0!3m2!1sen!2sus!4v1678886000000!5m2!1sen!2sus"
+                    width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade" title="KSU CCSE Location Map">
+                </iframe>
+                 {# --- End Map Embed --- #}
+            </div>
+        </div>
+
+        {# --- Right Column: Form --- #}
+        <div class="contact-form-column">
+             <h2>Send Us a Message</h2>
+             <p>Have specific questions about C-Day judging or the OwlJudge platform? Fill out the form below, and we'll get back to you as soon as possible.</p>
+
+              {# --- Display Flashed Messages --- #}
+              <div class="flash-messages-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                                <div class="flash-message {{ category }}" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+              {# --- End Flashed Messages --- #}
+
+             <form id="contactForm" class="contact-form" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="contact-name">Your Name</label>
+                    <input type="text" id="contact-name" name="name" placeholder="e.g., Hootie Owl" required aria-required="true" aria-describedby="contact-name-validation">
+                    <div id="contact-name-validation" class="validation-message" aria-live="polite"></div>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Your Email</label>
+                    <input type="email" id="contact-email" name="email" placeholder="e.g., hootie@students.kennesaw.edu" required aria-required="true" aria-describedby="contact-email-validation">
+                    <div id="contact-email-validation" class="validation-message" aria-live="polite"></div>
+                </div>
+                 <div class="form-group">
+                    <label for="contact-subject">Subject (Optional)</label>
+                    <input type="text" id="contact-subject" name="subject" placeholder="e.g., C-Day Judging Question">
+                    {# No validation message needed for optional field #}
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" name="message" placeholder="Please type your question or comment here..." required aria-required="true" aria-describedby="contact-message-validation"></textarea>
+                    <div id="contact-message-validation" class="validation-message" aria-live="polite"></div>
+                </div>
+
+                {# Overall form status message area #}
+                <p id="form-status-message" role="alert" aria-live="assertive"></p>
+
+                <button type="submit" class="btn">
+                    <span class="btn-text">Send Message</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Scroll Animation Observer ---
+    const contactContainer = document.querySelector('.contact-container');
+    if (contactContainer) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1'; // Start fade in
+                    entry.target.style.transform = 'translateY(0)';
+                    // observer.unobserve(entry.target); // Optional: stop observing
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(contactContainer);
+    }
+
+    // --- Form Elements ---
+    const contactForm = document.getElementById('contactForm');
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const messageInput = document.getElementById('contact-message');
+    const subjectInput = document.getElementById('contact-subject'); // Optional field
+    const formStatusDiv = document.getElementById('form-status-message');
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const submitBtnText = submitBtn.querySelector('.btn-text');
+
+    // Validation Message Divs
+    const nameValidation = document.getElementById('contact-name-validation');
+    const emailValidation = document.getElementById('contact-email-validation');
+    const messageValidation = document.getElementById('contact-message-validation');
+
+    // --- Utility Functions (Reused) ---
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    function setValidationMessage(element, message, isValid) { /* ... (same as previous) ... */
+        if (!element) return;
+        element.innerHTML = message ? `<i class="fas ${isValid ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${message}` : '';
+        element.classList.toggle('visible', !!message);
+        element.classList.toggle('valid', isValid);
+        element.classList.toggle('invalid', !isValid && !!message);
+    }
+    function markInputValidity(inputElement, isValid) { /* ... (same as previous) ... */
+        if (!inputElement) return;
+        inputElement.classList.toggle('valid', isValid);
+        inputElement.classList.toggle('invalid', !isValid);
+    }
+
+    // --- Live Validation ---
+    nameInput?.addEventListener('blur', () => {
+        const isValid = nameInput.value.trim().length > 0;
+        setValidationMessage(nameValidation, isValid ? "" : "Name is required.", isValid); // Show only error
+        markInputValidity(nameInput, isValid);
+    });
+    emailInput?.addEventListener('input', () => {
+        const email = emailInput.value.trim();
+        let isValid = false;
+        let message = "";
+        if (email.length > 0) {
+            isValid = EMAIL_REGEX.test(email);
+            message = isValid ? "" : "Please enter a valid email."; // Show only error
+        }
+        setValidationMessage(emailValidation, message, isValid);
+        markInputValidity(emailInput, isValid && email.length > 0);
+    });
+     messageInput?.addEventListener('blur', () => {
+        const isValid = messageInput.value.trim().length > 0;
+        setValidationMessage(messageValidation, isValid ? "" : "Message cannot be empty.", isValid); // Show only error
+        markInputValidity(messageInput, isValid);
+    });
+
+
+    // --- AJAX Form Submission ---
+    contactForm?.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        // --- Final Validation Check ---
+        const isNameValid = nameInput.value.trim().length > 0;
+        const isEmailValid = EMAIL_REGEX.test(emailInput.value.trim());
+        const isMessageValid = messageInput.value.trim().length > 0;
+
+        // Manually trigger blur/input to show messages if fields were skipped
+        if (!isNameValid) nameInput.dispatchEvent(new Event('blur'));
+        if (!isEmailValid) emailInput.dispatchEvent(new Event('input'));
+        if (!isMessageValid) messageInput.dispatchEvent(new Event('blur'));
+
+
+        if (!isNameValid || !isEmailValid || !isMessageValid) {
+            formStatusDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please fill out all required fields correctly.`;
+            formStatusDiv.className = 'error show'; // Use specific class
+            return; // Stop submission
+        }
+
+        // --- Loading State ---
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'Sending...';
+        submitBtn.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin"></i> ');
+        formStatusDiv.textContent = '';
+        formStatusDiv.classList.remove('show', 'success', 'error');
+
+        // --- Prepare Data ---
+        const formData = new FormData(contactForm);
+
+        try {
+            // --- Send Request (Simulated - Replace with actual fetch) ---
+            // const response = await fetch("{{ url_for('contact') }}", { // Send to the POST handler
+            //     method: 'POST',
+            //     body: formData
+            // });
+
+            // ** SIMULATED RESPONSE ** (REMOVE IN PRODUCTION)
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+             const simulatedSuccess = Math.random() > 0.1; // 90% success rate for demo
+             if (!simulatedSuccess) throw new Error("Simulated server error. Please try again.");
+             // ** END SIMULATION **
+
+             // Check actual response if using fetch
+             // if (!response.ok) {
+             //     // Try to get error message from backend if possible
+             //     let errorMsg = 'Failed to send message. Please try again later.';
+             //     try { const errorData = await response.json(); errorMsg = errorData.message || errorMsg; } catch(e){}
+             //     throw new Error(errorMsg);
+             // }
+
+
+            // --- Success ---
+            formStatusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Thank you! Your message has been sent.`;
+            formStatusDiv.className = 'success show';
+            submitBtnText.textContent = 'Message Sent!'; // Keep disabled after success
+            submitBtn.querySelector('.fa-spinner')?.remove();
+            contactForm.reset(); // Clear form
+             // Clear validation states
+             [nameInput, emailInput, messageInput].forEach(input => {
+                 input?.classList.remove('valid', 'invalid');
+             });
+              [nameValidation, emailValidation, messageValidation].forEach(div => {
+                  setValidationMessage(div, "", false); // Clear messages
+              });
+
+
+        } catch (error) {
+            // --- Handle Errors ---
+            console.error('Contact Form Error:', error);
+            formStatusDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message || 'Could not send message. Please try again.'}`;
+            formStatusDiv.className = 'error show';
+
+            // Reset button state on error
+            submitBtn.disabled = false;
+            submitBtnText.textContent = 'Send Message';
+            submitBtn.querySelector('.fa-spinner')?.remove();
+        }
+    }); // End form submit listener
+
+}); // End DOMContentLoaded
+</script>
+
+{% endblock %}

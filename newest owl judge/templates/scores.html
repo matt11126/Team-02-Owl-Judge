@@ -1,0 +1,167 @@
+<!-- templates/scores.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scores</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scores</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Score ID</th>
+                <th>Score Given</th>
+                <th>Project Name</th>
+                <th>Judge Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in scores %}
+            <tr>
+                <td>{{ score.score_id }}</td>
+                <td>{{ score.score_given }}</td>
+                <td>
+                    {% for project in projects %}
+                        {% if project.project_id == score.project_id %}
+                            {{ project.project_name }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for judge in judges %}
+                        {% if judge.judge_id == score.judge_id %}
+                            {{ judge.judge_name }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    <button onclick="openEditModal({{ score.score_id }})">Edit</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Modal for editing scores -->
+    <div id="editScoreModal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h2>Edit Score</h2>
+            <form id="editScoreForm">
+                <input type="hidden" id="scoreId" name="score_id">
+                <label for="scoreGiven">Score Given:</label>
+                <input type="number" id="scoreGiven" name="score_given" min="0" max="100" required>
+                <label for="projectId">Project:</label>
+                <select id="projectId" name="project_id" required>
+                    <!-- Options populated dynamically -->
+                </select>
+                <label for="judgeId">Judge:</label>
+                <select id="judgeId" name="judge_id" required>
+                    <!-- Options populated dynamically -->
+                </select>
+                <button type="submit">Update Score</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const projects = {{ projects|tojson }};
+        const judges = {{ judges|tojson }};
+
+        function openEditModal(scoreId) {
+            fetch(`/api/scores/${scoreId}`)
+                .then(response => response.json())
+                .then(score => {
+                    document.getElementById('scoreId').value = score.score_id;
+                    document.getElementById('scoreGiven').value = score.score_given;
+
+                    const projectSelect = document.getElementById('projectId');
+                    projectSelect.innerHTML = '';
+                    projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.project_id;
+                        option.textContent = project.project_name;
+                        if (project.project_id === score.project_id) option.selected = true;
+                        projectSelect.appendChild(option);
+                    });
+
+                    const judgeSelect = document.getElementById('judgeId');
+                    judgeSelect.innerHTML = '';
+                    judges.forEach(judge => {
+                        const option = document.createElement('option');
+                        option.value = judge.judge_id;
+                        option.textContent = judge.judge_name;
+                        if (judge.judge_id === score.judge_id) option.selected = true;
+                        judgeSelect.appendChild(option);
+                    });
+
+                    document.getElementById('editScoreModal').style.display = 'block';
+                })
+                .catch(error => console.error('Error fetching score:', error));
+        }
+
+        document.getElementById('editScoreForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const scoreId = document.getElementById('scoreId').value;
+            const data = {
+                score_given: parseInt(document.getElementById('scoreGiven').value),
+                project_id: parseInt(document.getElementById('projectId').value),
+                judge_id: parseInt(document.getElementById('judgeId').value)
+            };
+            fetch(`/api/scores/${scoreId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.message) {
+                    alert('Score updated successfully');
+                    document.getElementById('editScoreModal').style.display = 'none';
+                    location.reload();
+                } else {
+                    alert('Error updating score');
+                }
+            })
+            .catch(error => console.error('Error updating score:', error));
+        });
+
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('editScoreModal').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}About OwlJudge for KSU CCSE C-Day{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to about_us.html --- */
+    /* (Move to style.css for production) */
+
+    .about-page-main {
+        /* Base styling inherited */
+    }
+
+    /* --- Hero Section --- */
+    .about-hero {
+        background: linear-gradient(rgba(10, 7, 7, 0.75), rgba(40, 40, 40, 0.65)), url("{{ url_for('static', filename='images/cday_presentation_blur.jpg') }}") center/cover no-repeat; /* !! ADD C-DAY IMAGE !! */
+        color: var(--white);
+        padding: 5rem 1rem;
+        text-align: center;
+        margin-top: calc(-1 * (var(--header-height) + 1rem)); /* Pull up under header */
+        min-height: 45vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .about-hero h1 {
+        font-size: 2.8rem;
+        color: var(--white);
+        margin-bottom: 0.5rem;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        animation: slideInDown 0.8s ease-out;
+    }
+    .about-hero p {
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 700px;
+        margin: 0 auto;
+        animation: fadeIn 1s 0.3s ease-out forwards;
+        opacity: 0;
+    }
+
+    /* --- General Section Styling --- */
+    .about-section {
+        padding: 4rem 1rem;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+     .about-section.visible {
+         opacity: 1;
+         transform: translateY(0);
+     }
+    .about-section:nth-of-type(even) { /* Alternate background */
+        background-color: var(--light-gray);
+    }
+    .about-section h2 {
+        text-align: center;
+        font-size: 2.2rem;
+        margin-bottom: 3rem;
+        color: var(--ksu-black);
+        position: relative;
+    }
+    .about-section h2::after { /* Heading accent */
+        content: ''; position: absolute; bottom: -10px; left: 50%;
+        transform: translateX(-50%); width: 60px; height: 3px;
+        background: var(--ksu-gold); border-radius: 2px;
+    }
+    .about-section .container { /* Inherits max-width from base */
+        /* Specific layout styles */
+    }
+
+    /* --- Two Column Layout Helper --- */
+    .two-col-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+    .two-col-layout .text-content p {
+        font-size: 1.05rem;
+        color: #444;
+        line-height: 1.7;
+        margin-bottom: 1rem;
+    }
+     .two-col-layout .text-content ul {
+         list-style: none;
+         padding-left: 0;
+     }
+      .two-col-layout .text-content li {
+          position: relative;
+          padding-left: 25px;
+          margin-bottom: 0.8rem;
+          font-size: 1.05rem;
+       }
+       .two-col-layout .text-content li::before {
+           content: '\f00c'; /* Font Awesome check icon */
+           font-family: 'Font Awesome 6 Free';
+           font-weight: 900;
+           position: absolute;
+           left: 0;
+           top: 2px;
+           color: var(--ksu-gold);
+       }
+
+    .two-col-layout .image-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* --- Benefits Section (Cards) --- */
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    .benefit-card {
+        background-color: var(--white);
+        padding: 2rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--medium-gray);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .benefit-card:hover {
+         transform: translateY(-5px);
+         box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+     }
+    .benefit-card i {
+        font-size: 2.5rem;
+        color: var(--ksu-gold);
+        margin-bottom: 1rem;
+    }
+    .benefit-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
+    }
+    .benefit-card p {
+        font-size: 0.95rem;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    /* --- CTA Section --- */
+    .about-cta {
+        background-color: var(--ksu-black);
+        color: var(--white);
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .about-cta h2 { color: var(--ksu-gold); margin-bottom: 1rem; }
+    .about-cta h2::after { background: var(--ksu-gold); }
+    .about-cta p {
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 600px;
+        margin: 0 auto 1.5rem auto;
+        font-size: 1.1rem;
+    }
+    .about-cta .btn {
+         background-color: var(--ksu-gold);
+         color: var(--ksu-black);
+         padding: 12px 28px;
+         font-size: 1.1rem;
+     }
+      .about-cta .btn:hover {
+         background-color: var(--ksu-dark-gold);
+     }
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 992px) {
+        .two-col-layout { grid-template-columns: 1fr; }
+        .two-col-layout .image-content { order: -1; margin-bottom: 2rem; } /* Image first on mobile */
+         .about-hero h1 { font-size: 2.4rem; }
+         .about-hero p { font-size: 1.1rem; }
+         .about-section h2 { font-size: 2rem; }
+    }
+
+    @media (max-width: 768px) {
+         .about-hero { padding: 4rem 1rem; min-height: 35vh;}
+         .about-section { padding: 3rem 1rem; }
+         .benefits-grid { grid-template-columns: 1fr; } /* Stack cards */
+    }
+
+    /* --- Animations --- */
+    @keyframes slideInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+</style>
+
+{# --- Hero Section --- #}
+<section class="about-hero" aria-labelledby="about-hero-heading">
+    <div class="container">
+        <h1 id="about-hero-heading">About OwlJudge</h1>
+        <p>The Official Judging Platform for KSU CCSE C-Day</p>
+    </div>
+</section>
+
+{# --- Mission/Purpose Section --- #}
+<section id="purpose" class="about-section container" aria-labelledby="purpose-heading">
+    <div class="two-col-layout">
+        <div class="text-content">
+            <h2 id="purpose-heading">Our Mission for C-Day</h2>
+            <p>C-Day is the culmination of countless hours of innovation, dedication, and hard work by KSU's CCSE students. OwlJudge was developed to support this vital event by providing a modern, fair, and efficient platform for evaluating these outstanding capstone projects.</p>
+            <p>Our goals are to:</p>
+            <ul>
+                <li>Ensure a consistent and transparent judging experience for all participants.</li>
+                <li>Streamline the scoring process for judges, saving valuable time.</li>
+                <li>Accurately capture and calculate results to reliably recognize student achievement.</li>
+                <li>Enhance engagement for the entire KSU CCSE community during C-Day.</li>
+            </ul>
+        </div>
+        <div class="image-content">
+            {# !! Replace with a relevant, high-quality image !! #}
+            <img src="{{ url_for('static', filename='images/ksu_ccse_students.jpg') }}" alt="KSU CCSE students collaborating on a project">
+        </div>
+    </div>
+</section>
+
+{# --- How OwlJudge Enhances C-Day --- #}
+<section id="benefits" class="about-section" aria-labelledby="benefits-heading">
+    <div class="container">
+        <h2 id="benefits-heading">Enhancing the C-Day Experience</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <i class="fas fa-users"></i>
+                <h3>For Students</h3>
+                <p>Receive structured feedback based on clear criteria. Gain visibility for your hard work and understand how your project is evaluated.</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fas fa-gavel"></i>
+                <h3>For Judges</h3>
+                <p>Access project details easily, submit scores digitally using defined rubrics, and contribute to a fair evaluation process efficiently.</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h3>For Faculty & Staff</h3>
+                <p>Manage C-Day judging seamlessly, assign judges, track progress, and generate results with greater accuracy and less manual effort.</p>
+            </div>
+             <div class="benefit-card">
+                <i class="fas fa-binoculars"></i>
+                <h3>For The Community</h3>
+                <p>Engage with student innovation through features like the public leaderboard (if enabled) and gain insights into CCSE's talent pool.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# --- Optional: Technology/Team Section --- #}
+{# <section id="technology" class="about-section container" aria-labelledby="tech-heading">
+    <div class="two-col-layout">
+        <div class="image-content">
+             <img src="{{ url_for('static', filename='images/code_screen.jpg') }}" alt="Screenshot of code or platform interface">
+        </div>
+        <div class="text-content">
+            <h2 id="tech-heading">Built with Modern Tech</h2>
+             <p>OwlJudge leverages robust technologies like Python (Flask), SQLAlchemy, and modern JavaScript frameworks to deliver a reliable and responsive experience for C-Day.</p>
+             <p>Developed [mention if by students, faculty, etc.], it represents CCSE's commitment to practical, impactful software solutions.</p>
+        </div>
+    </div>
+</section> #}
+
+{# --- Call to Action Section --- #}
+<section class="about-cta" aria-labelledby="cta-heading">
+    <div class="container">
+        <h2 id="cta-heading">Get Involved with C-Day</h2>
+        <p>Whether you're presenting, judging, or exploring, OwlJudge helps make KSU CCSE C-Day a success. Log in or sign up to participate.</p>
+         {% if not current_user %}
+            <a href="{{ url_for('login') }}" class="btn">Login / Sign Up <i class="fas fa-sign-in-alt"></i></a>
+        {% elif current_user.role in ['judge', 'admin'] %}
+             <a href="{{ url_for('vote_casting') }}" class="btn">Go to Judging <i class="fas fa-gavel"></i></a>
+         {% else %}
+              <a href="{{ url_for('profile') }}" class="btn">View My Profile <i class="fas fa-user"></i></a>
+         {% endif %}
+         {# Optionally add a link to the main KSU C-Day page #}
+         {# <p style="margin-top: 1.5rem; font-size: 0.9rem;"><a href="[Link to KSU C-Day Info Page]" target="_blank" style="color: var(--ksu-gold);">Learn more about KSU CCSE C-Day</a></p> #}
+    </div>
+</section>
+
+<script>
+// --- Simple Scroll Animation Trigger ---
+// (Reusing observer logic from index.html - ensure it doesn't conflict if combined)
+document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('.about-section');
+    if (!sections.length) return;
+
+    const observerOptions = { threshold: 0.15 }; // Trigger when 15% visible
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // obs.unobserve(entry.target); // Optional: Stop observing once visible
+            }
+            // Optional: Remove 'visible' class if element scrolls out of view
+            // else { entry.target.classList.remove('visible'); }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
+});
+</script>
+
+{% endblock %}

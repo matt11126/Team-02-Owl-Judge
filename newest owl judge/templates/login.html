@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to login.html --- */
+    /* (Move to style.css for production) */
+
+    .login-page-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - var(--header-height) - 5rem); /* Adjust based on footer height */
+        padding: 2rem 1rem;
+         /* Subtle background pattern or gradient */
+         /* background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); */
+    }
+
+    .login-container {
+        max-width: 450px;
+        width: 100%;
+        padding: 2.5rem 3rem; /* Generous padding */
+        background-color: var(--white);
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        /* Entry animation */
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+        animation: popIn 0.6s 0.2s ease-out forwards;
+    }
+
+    @keyframes popIn {
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .login-container h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        color: var(--ksu-black);
+    }
+    .login-container .login-subtitle {
+         font-size: 1rem;
+         color: #666;
+         margin-bottom: 2.5rem;
+     }
+
+    .login-form .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
+        text-align: left;
+    }
+
+    .login-form .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1rem;
+        color: var(--dark-gray);
+        font-weight: 500;
+    }
+
+    .login-form .form-group input {
+        width: 100%;
+        padding: 12px 15px; /* Comfortable padding */
+        padding-right: 40px; /* Space for icon */
+        box-sizing: border-box;
+        border: 1px solid var(--medium-gray);
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: var(--primary-font);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+     /* Style for password input specifically to position icon */
+     .login-form .password-wrapper {
+         position: relative;
+     }
+
+    .login-form .form-group input:focus {
+        border-color: var(--ksu-gold);
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2); /* Gold glow */
+        outline: none;
+    }
+
+    /* Input Validation Styles (Optional - add via JS) */
+    .login-form .form-group input.invalid {
+        border-color: #dc3545; /* Error color */
+    }
+    .login-form .form-group input.valid {
+         border-color: #28a745; /* Success color */
+     }
+
+    .password-toggle-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .password-toggle-icon:hover {
+         color: var(--ksu-black);
+     }
+
+    .login-form .btn { /* Button styling from base, can override */
+        width: 100%;
+        padding: 14px 20px; /* Larger button */
+        font-size: 1.1rem;
+        margin-top: 1rem; /* Space above button */
+        border-radius: 6px;
+    }
+     .login-form .btn .fa-spinner { /* Loading spinner */
+         margin-right: 8px;
+     }
+
+    /* Error Message Area */
+    #error-message {
+        min-height: 25px; /* Prevent layout shifts */
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #error-message.show {
+         opacity: 1;
+         transform: translateY(0);
+     }
+    #error-message.error {
+        background-color: rgba(220, 53, 69, 0.1); /* Light red background */
+        color: #dc3545; /* Red text */
+    }
+    #error-message.success {
+         background-color: rgba(40, 167, 69, 0.1); /* Light green background */
+         color: #28a745; /* Green text */
+     }
+     #error-message i { margin-right: 6px; }
+
+    /* Signup Link */
+    .signup-link {
+        margin-top: 2rem;
+        font-size: 0.95rem;
+        color: #555;
+    }
+    .signup-link a {
+         font-weight: 500;
+         color: var(--ksu-dark-gold);
+         text-decoration: underline;
+     }
+     .signup-link a:hover {
+          color: var(--ksu-gold);
+      }
+
+    /* --- Shake Animation --- */
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-4px); }
+      40%, 60% { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+      transform: translateX(0);
+    }
+
+    /* --- Flashed Messages --- */
+    /* Inherit styling from base.html */
+    /* Position them above the login box if needed */
+    .flash-messages-container {
+         position: static; /* Override fixed positioning */
+         max-width: 450px; /* Match login box width */
+         margin: 0 auto 1.5rem auto; /* Center above box */
+         width: 100%;
+         padding: 0 1rem; /* Add padding */
+         z-index: auto; /* Reset z-index */
+    }
+    .flash-message {
+         opacity: 1; /* Ensure they are visible */
+         animation: none; /* Disable base animation if needed */
+     }
+
+
+</style>
+
+<div class="login-page-main">
+    <div class="login-container">
+        <h1>Welcome Back!</h1>
+        <p class="login-subtitle">Log in to access your OwlJudge dashboard.</p>
+
+        {# --- Display Flashed Messages --- #}
+        {# This container is now styled to appear above the login box #}
+        <div class="flash-messages-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                        <div class="flash-message {{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {# --- End Flashed Messages --- #}
+
+        <form id="loginForm" class="login-form" method="POST" novalidate> {# Use POST, novalidate prevents browser validation #}
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required aria-required="true" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required aria-required="true" autocomplete="current-password">
+                    <i class="fas fa-eye password-toggle-icon" id="togglePassword" aria-label="Show password"></i>
+                </div>
+            </div>
+
+            {# Area for AJAX success/error messages #}
+            <p id="error-message" role="alert" aria-live="assertive"></p>
+
+            <button type="submit" class="btn">
+                <span class="btn-text">Login</span> {# Span for easy text swap #}
+            </button>
+            <!-- Inside the login form in templates/login.html -->
+            <div style="text-align: right; margin-top: 10px; font-size: 0.9em;">
+                <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+            </div>
+        </form>
+
+        <p class="signup-link">
+            Don't have an account? <a href="{{ url_for('signup') }}">Sign Up Here</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorDiv = document.getElementById('error-message');
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const submitBtnText = submitBtn.querySelector('.btn-text');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginContainer = document.querySelector('.login-container');
+
+        // --- Password Toggle Functionality ---
+        if (togglePassword) {
+            togglePassword.addEventListener('click', function () {
+                // Toggle the type attribute
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                // Toggle the icon
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+                this.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+            });
+        }
+
+        // --- AJAX Form Submission ---
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent traditional form submission
+
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                // --- Reset UI states ---
+                errorDiv.textContent = '';
+                errorDiv.classList.remove('show', 'success', 'error');
+                loginContainer.classList.remove('shake');
+                emailInput.classList.remove('invalid');
+                passwordInput.classList.remove('invalid');
+
+                // --- Basic Client-Side Validation ---
+                let isValid = true;
+                if (!email) {
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter your email address.';
+                    emailInput.classList.add('invalid');
+                    isValid = false;
+                }
+                if (!password) {
+                    // Add error message only if email was provided, otherwise the first message is enough
+                    if (isValid) {
+                         errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter your password.';
+                    }
+                    passwordInput.classList.add('invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    errorDiv.classList.add('error', 'show');
+                    loginContainer.classList.add('shake');
+                    setTimeout(() => loginContainer.classList.remove('shake'), 500);
+                    return; // Stop submission
+                }
+
+                // --- Show Loading State ---
+                submitBtn.disabled = true;
+                submitBtnText.textContent = 'Logging In...';
+                submitBtn.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin"></i> '); // Add spinner
+
+
+                // --- Prepare Data for Server ---
+                // Use FormData for compatibility with Flask's request.form
+                // const formData = new FormData(); // <<< COMMENTED OUT
+                // formData.append('email', email);
+                // formData.append('password', password);
+
+                try {
+                    // --- Send Request ---
+                    const response = await fetch("{{ url_for('login') }}", { // Use Flask's url_for
+                        method: 'POST',
+                        // body: formData // <<< COMMENTED OUT
+                        // If sending JSON:
+                        headers: { 'Content-Type': 'application/json' }, // <<< UNCOMMENTED
+                        body: JSON.stringify({ email: email, password: password }) // <<< UNCOMMENTED
+                    });
+
+                    // --- Process Response ---
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 'success') {
+                        // Success
+                        errorDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message || 'Login successful! Redirecting...'}`;
+                        errorDiv.classList.add('success', 'show');
+                        // Disable button permanently on success before redirect
+                        submitBtn.disabled = true;
+                        submitBtnText.textContent = 'Success!';
+                        submitBtn.querySelector('.fa-spinner')?.remove();
+
+
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url || "{{ url_for('index') }}"; // Redirect to URL from server or fallback
+                        }, 1500); // 1.5 second delay
+
+                    } else {
+                        // Error from server (using status code check is robust, but checking data.status works too if always present)
+                        throw new Error(data.message || 'Invalid credentials or server error.');
+                    }
+
+                } catch (error) {
+                    // --- Handle Fetch/Network Errors or Server Errors ---
+                    console.error('Login Error:', error);
+                    errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message || 'Login failed. Please try again.'}`;
+                    errorDiv.classList.add('error', 'show');
+                    loginContainer.classList.add('shake');
+                    setTimeout(() => loginContainer.classList.remove('shake'), 500);
+
+                    // Reset button state only on error
+                    submitBtn.disabled = false;
+                    submitBtnText.textContent = 'Login';
+                    submitBtn.querySelector('.fa-spinner')?.remove(); // Remove spinner
+                }
+            }); // End form submit listener
+        } // End if(loginForm)
+
+    }); // End DOMContentLoaded
+</script>
+
+{% endblock %}
