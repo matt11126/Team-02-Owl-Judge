@@ -3,808 +3,439 @@
 {% block title %}Project Leaderboard - OwlJudge{% endblock %}
 
 {% block head_extra %}
-{# Recommend moving these styles to a dedicated CSS file (e.g., style.css or leaderboard.css) in production #}
 <style>
-    /* --- Styles specific to audience.html --- */
-    /* Consider moving these to a global or component-specific CSS file */
+  :root {
+    --white: #fff;
+    --light-gray: #f8f9fa;
+    --medium-gray: #dee2e6;
+    --dark-gray: #6c757d;
+    --ksu-black: #231F20;
+    --ksu-gold: #FDB927;
+    --ksu-dark-gold: #c79100;
+    --error-color: #e74c3c;
+    --primary-font: 'Montserrat', sans-serif;
+  }
 
-    :root {
-        /* Define CSS variables if not already in base.css */
-        /* --white: #fff; */
-        /* --light-gray: #f8f9fa; */
-        /* --medium-gray: #dee2e6; */
-        /* --dark-gray: #6c757d; */
-        /* --ksu-black: #231F20; /* Assuming official KSU black */
-        /* --ksu-gold: #FDB927; /* Assuming official KSU gold */
-        /* --ksu-dark-gold: #c79100; /* Example darker gold */
-        /* --success-color: #28a745; */
-        /* --error-color: #dc3545; */
-    }
+  /* Overall container to center content on the page */
+  .flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--light-gray);
+    padding: 1rem;
+  }
 
-    .leaderboard-page-main {
-        padding: 2rem 1rem;
-    }
+  .leaderboard-page-main {
+    width: 100%;
+    padding: 2rem 1rem;
+  }
 
-    .leaderboard-container {
-        max-width: 900px;
-        margin: 0 auto;
-        background-color: var(--white, #fff);
-        padding: 2rem 2.5rem;
-        border-radius: 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    }
+  /* Leaderboard container styled like a card */
+  .leaderboard-container {
+    max-width: 900px;
+    width: 100%;
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
 
-    .leaderboard-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-    }
-    .leaderboard-header h1 {
-        font-size: 2.3rem;
-        margin-bottom: 0.5rem;
-        color: var(--ksu-black, #231F20);
-    }
-    .leaderboard-header p {
-        font-size: 1.05rem;
-        color: var(--dark-gray, #666);
-        max-width: 600px;
-        margin: 0 auto;
-    }
+  .leaderboard-header {
+    padding: 1.5rem;
+    background-color: var(--ksu-black);
+    color: var(--ksu-gold);
+    text-align: center;
+  }
+  .leaderboard-header h1 {
+    font-family: var(--primary-font);
+    font-size: 2rem;
+    margin: 0;
+  }
+  .leaderboard-header p {
+    font-size: 1rem;
+    margin: 0.5rem 0 0;
+  }
 
-    .leaderboard-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        padding: 1rem;
-        background-color: var(--light-gray, #f8f9fa);
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--medium-gray, #dee2e6);
-    }
-    .sort-controls label {
-        font-weight: 500;
-        margin-right: 0.5rem;
-        color: var(--dark-gray, #6c757d);
-    }
-    .sort-controls select {
-        padding: 8px 12px;
-        border: 1px solid var(--medium-gray, #dee2e6);
-        border-radius: 5px;
-        font-size: 0.95rem;
-        min-width: 150px;
-        cursor: pointer;
-    }
-    .refresh-btn {
-        /* Using base .btn styles */
-        padding: 8px 15px;
-        font-size: 0.95rem;
-    }
-    .refresh-btn i { margin-right: 5px; }
-    .refresh-btn.loading i { animation: spin 1s linear infinite; }
+  /* Leaderboard controls styling remains similar */
+  .leaderboard-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background-color: var(--light-gray);
+    padding: 1rem;
+    border-bottom: 1px solid var(--medium-gray);
+  }
+  .sort-controls label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+    color: var(--dark-gray);
+  }
+  .sort-controls select {
+    padding: 8px 12px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 5px;
+    font-size: 0.95rem;
+    min-width: 150px;
+    cursor: pointer;
+  }
+  .refresh-btn {
+    padding: 8px 15px;
+    font-size: 0.95rem;
+  }
+  .refresh-btn i {
+    margin-right: 5px;
+  }
+  .refresh-btn.loading i {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
+  /* Leaderboard content now uses a grid layout */
+  .leaderboard-content {
+    position: relative;
+    padding: 1rem;
+    background-color: var(--white);
+  }
+  .leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
 
-    /* Leaderboard Content Area */
-    .leaderboard-content {
-        position: relative; /* For loading overlay */
-        min-height: 200px; /* Prevent collapse when loading/empty */
-        border: 1px solid var(--medium-gray, #dee2e6); /* Optional border */
-        border-radius: 8px;
-        overflow: hidden; /* Contain overlay */
-        background-color: var(--white, #fff);
-    }
+  /* Each leaderboard block (card) */
+  .leaderboard-block {
+    background-color: #fafafa;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+  }
+  .leaderboard-block:hover {
+    background-color: #f1f1f1;
+    transform: translateY(-3px);
+  }
 
-    .leaderboard-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+  /* Rank circle on each block */
+  .rank-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--ksu-gold);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ksu-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  /* Highlight top three ranks with different colors */
+  .leaderboard-block[data-rank="1"] .rank-circle {
+    background-color: var(--ksu-gold);
+  }
+  .leaderboard-block[data-rank="2"] .rank-circle {
+    background-color: #a0a0a0;
+  }
+  .leaderboard-block[data-rank="3"] .rank-circle {
+    background-color: #cd7f32;
+  }
 
-    /* Loading State Overlay */
-    #loading-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(255, 255, 255, 0.85);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        border-radius: 8px; /* Match container */
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0s 0.3s;
-    }
-    #loading-overlay.visible {
-        opacity: 1;
-        visibility: visible;
-        transition-delay: 0s;
-    }
-    #loading-overlay i {
-        font-size: 2.5rem;
-        color: var(--ksu-gold, #FDB927);
-        animation: spin 1.5s linear infinite;
-    }
+  /* Info section inside each block */
+  .info-section {
+    flex-grow: 1;
+  }
+  .project-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ksu-black);
+  }
+  .project-score {
+    font-size: 0.95rem;
+    color: #555;
+    margin-top: 5px;
+  }
+  .project-score strong {
+    color: var(--ksu-dark-gold);
+    font-weight: 700;
+  }
 
-    /* Error/No Data Message */
-    #leaderboard-status-message {
-        text-align: center;
-        padding: 3rem 1rem;
-        font-weight: 500;
-        display: none; /* Hidden by default */
-    }
-    #leaderboard-status-message.visible { display: block; }
-    #leaderboard-status-message.error { color: var(--error-color, #e74c3c); }
-    #leaderboard-status-message.info { color: var(--dark-gray, #6c757d); }
-    #leaderboard-status-message i { margin-right: 8px; font-size: 1.2em; }
+  /* Loading overlay styling */
+  #loading-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255,255,255,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+    z-index: 10;
+  }
+  #loading-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+  #loading-overlay i {
+    font-size: 2.5rem;
+    color: var(--ksu-gold);
+    animation: spin 1.5s linear infinite;
+  }
 
+  /* Status message */
+  #leaderboard-status-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    font-weight: 500;
+    display: none;
+  }
+  #leaderboard-status-message.visible { display: block; }
+  #leaderboard-status-message.error { color: var(--error-color); }
+  #leaderboard-status-message.info { color: var(--dark-gray); }
+  #leaderboard-status-message i { margin-right: 8px; font-size: 1.2em; }
 
-    /* Individual Leaderboard Item Card */
-    .leaderboard-item {
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid var(--medium-gray, #dee2e6); /* Use border between items */
-        padding: 1rem 1.5rem;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.5s ease forwards;
-        transition: background-color 0.3s ease; /* Smoother hover */
+  @media (max-width: 768px) {
+    .leaderboard-container { padding: 1.5rem; }
+    .leaderboard-header h1 { font-size: 1.8rem; }
+    .leaderboard-header p { font-size: 1rem; }
+    .leaderboard-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
     }
-    .leaderboard-item:last-child {
-        border-bottom: none; /* Remove border from last item */
-    }
-    .leaderboard-item:hover {
-        background-color: var(--light-gray, #f8f9fa);
-    }
-
-    /* Stagger animation delay - applied via JS */
-
-    .leaderboard-item .rank {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--ksu-black, #231F20);
-        min-width: 40px;
-        text-align: center;
-        margin-right: 1.5rem;
-        line-height: 1;
-        flex-shrink: 0; /* Prevent rank from shrinking */
-    }
-    /* Highlight top ranks */
-     .leaderboard-item[data-rank="1"] .rank { color: var(--ksu-gold, #FDB927); font-size: 1.8rem; }
-     .leaderboard-item[data-rank="2"] .rank { color: #a0a0a0; font-size: 1.7rem; } /* Silver */
-     .leaderboard-item[data-rank="3"] .rank { color: #cd7f32; font-size: 1.6rem; } /* Bronze */
-
-    .leaderboard-item .project-info {
-        flex-grow: 1;
-        margin-right: 1rem; /* Space before button */
-    }
-    .leaderboard-item .project-name {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 0 0 4px 0;
-        color: var(--ksu-black, #231F20);
-    }
-    .leaderboard-item .project-score {
-        font-size: 0.95rem;
-        color: #555;
-    }
-     .leaderboard-item .project-score strong { color: var(--ksu-dark-gold, #c79100); font-weight: 700;}
-
-    .leaderboard-item .feedback-btn {
-        background-color: var(--ksu-gold, #FDB927);
-        color: var(--ksu-black, #231F20);
-        border: none;
-        padding: 6px 12px;
-        font-size: 0.85rem;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-        white-space: nowrap;
-        flex-shrink: 0; /* Prevent button shrinking */
-    }
-    .leaderboard-item .feedback-btn:hover,
-    .leaderboard-item .feedback-btn:focus { /* Add focus style */
-        background-color: var(--ksu-dark-gold, #c79100);
-        transform: scale(1.05);
-        outline: 2px solid var(--ksu-gold, #FDB927); /* Focus outline */
-        outline-offset: 2px;
-    }
-    .leaderboard-item .feedback-btn i { margin-right: 4px; }
-
-
-    /* Feedback Modal Styling */
-    .modal {
-        display: none; /* Use display instead of visibility for better AX */
-        position: fixed; z-index: 1050;
-        left: 0; top: 0; width: 100%; height: 100%;
-        overflow-y: auto; /* Allow scrolling if content overflows */
-        background-color: rgba(0,0,0,0.6);
-        align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease;
-    }
-    .modal.visible {
-        display: flex;
-        opacity: 1;
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 25px 30px;
-        border: none;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        position: relative;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        transform: scale(0.95);
-        transition: transform 0.3s ease;
-    }
-    .modal.visible .modal-content { transform: scale(1); }
-
-    .modal-content .close-modal {
-        color: #aaa; position: absolute; top: 10px; right: 15px;
-        font-size: 1.8rem; font-weight: bold; cursor: pointer; line-height: 1;
-        padding: 0 5px; /* Easier click target */
-        border: none; background: none; /* Make it a button */
-    }
-    .modal-content .close-modal:hover,
-    .modal-content .close-modal:focus {
-        color: black; text-decoration: none; outline: none;
-        background-color: #eee; border-radius: 50%; /* Visual feedback */
-     }
-
-    .modal-content h3 {
-        margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center;
-    }
-    #feedback-form .form-group { margin-bottom: 1rem; } /* Consistent spacing */
-    #feedback-form label {
-        display: block; font-weight: 500; margin-bottom: 8px;
-    }
-    #feedback-form textarea {
-        width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;
-        min-height: 120px; font-size: 1rem; resize: vertical;
-    }
-    #feedback-form textarea:focus { /* Enhance focus */
-         border-color: var(--ksu-gold, #FDB927);
-         box-shadow: 0 0 0 3px rgba(253, 185, 39, 0.3);
-         outline: none;
-    }
-    #feedback-form .feedback-note {
-        color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;
-    }
-    #feedback-form button[type="submit"] { /* Style submit button */
-        display: block;
-        width: 100%;
-        padding: 12px 20px;
-        font-size: 1.05rem;
-    }
-    #feedback-form button[type="submit"]:disabled {
-        opacity: 0.6; cursor: not-allowed;
-    }
-
-    /* Feedback Status Message Styling */
-    #feedback-status {
-        margin-top: 1rem; padding: 0.75rem; border-radius: 5px;
-        text-align: center; font-weight: 500;
-        display: none; /* Hidden initially */
-    }
-    #feedback-status.visible { display: block; }
-    #feedback-status.success {
-        background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
-    }
-    #feedback-status.error {
-        background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
-    }
-    #feedback-status.submitting { /* Optional style for submitting state */
-         background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db;
-    }
-
-
-    /* Keyframes for fadeInUp animation */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-        .leaderboard-container { padding: 1.5rem; }
-        .leaderboard-header h1 { font-size: 1.8rem; }
-        .leaderboard-header p { font-size: 1rem; }
-        .leaderboard-controls { flex-direction: column; align-items: stretch; }
-        .leaderboard-item { flex-direction: column; align-items: flex-start; padding: 1rem; }
-        .leaderboard-item .rank { margin-right: 0; margin-bottom: 0.5rem; font-size: 1.3rem !important; /* Override rank highlight */ }
-        .leaderboard-item .project-info { margin-right: 0; margin-bottom: 0.8rem; }
-        .leaderboard-item .feedback-btn { align-self: flex-start;}
-        .modal-content { width: 95%; padding: 20px; }
-        .modal-content h3 { font-size: 1.3rem; }
-    }
+    .project-name { font-size: 1rem; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="leaderboard-page-main">
+  <div class="flex-center">
     <div class="leaderboard-container">
-        <div class="leaderboard-header">
-            <h1>Project Leaderboard</h1>
-            <p>View the current standings of projects based on judge evaluations. Rankings update periodically.</p>
-            {# Example: Conditionally show message based on role passed from Flask/Jinja context #}
-            {# {% if current_user and current_user.role == 'user' %}
-               <p><small>Feedback option is available for judges and administrators.</small></p>
-            {% endif %} #}
+      <div class="leaderboard-header">
+        <h1>Project Leaderboard</h1>
+        <p>View current standings based on judge evaluations. Rankings update periodically.</p>
+      </div>
+
+      <div class="leaderboard-controls">
+        <div class="sort-controls">
+          <label for="sort-select">Sort by:</label>
+          <select id="sort-select" aria-label="Sort leaderboard">
+            <option value="rank">Rank</option>
+            <option value="score">Average Score (High-Low)</option>
+            <option value="name_asc">Name (A-Z)</option>
+            <option value="name_desc">Name (Z-A)</option>
+          </select>
+        </div>
+        <button id="refresh-btn" class="btn refresh-btn" aria-label="Refresh leaderboard data">
+          <i class="fas fa-sync-alt"></i> Refresh Now
+        </button>
+      </div>
+
+      <div class="leaderboard-content">
+        <div id="leaderboard-grid" class="leaderboard-grid" aria-live="polite" aria-atomic="true">
+          {# Leaderboard blocks will be injected here by JavaScript #}
         </div>
 
-        <div class="leaderboard-controls">
-            <div class="sort-controls">
-                <label for="sort-select">Sort by:</label>
-                <select id="sort-select" aria-label="Sort leaderboard">
-                    <option value="rank">Rank</option>
-                    <option value="score">Average Score (High-Low)</option>
-                    <option value="name_asc">Name (A-Z)</option>
-                    <option value="name_desc">Name (Z-A)</option>
-                </select>
-            </div>
-            <button id="refresh-btn" class="btn refresh-btn" aria-label="Refresh leaderboard data">
-                <i class="fas fa-sync-alt"></i> Refresh Now
-            </button>
+        <div id="loading-overlay">
+          <i class="fas fa-spinner" aria-hidden="true"></i>
+          <span class="sr-only">Loading leaderboard data...</span>
         </div>
 
-        {# Container for list and status messages/overlay #}
-        <div class="leaderboard-content">
-            <ul id="leaderboard-list" class="leaderboard-list" aria-live="polite" aria-atomic="true">
-                {# Items will be injected here by JavaScript #}
-            </ul>
-            {# Loading Overlay #}
-            <div id="loading-overlay">
-                <i class="fas fa-spinner" aria-hidden="true"></i>
-                <span class="sr-only">Loading leaderboard data...</span> {# For screen readers #}
-            </div>
-             {# Status Message Area (Error or No Data) #}
-            <p id="leaderboard-status-message" role="status">
-                 {# Content set by JavaScript #}
-             </p>
-        </div>
-
-    </div> {# End leaderboard-container #}
+        <p id="leaderboard-status-message" role="status"></p>
+      </div>
+    </div>
+  </div>
 </main>
 
-<!-- Feedback Modal -->
+<!-- Feedback Modal (kept as is) -->
 <div id="feedback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title" aria-describedby="feedback-modal-description" tabindex="-1">
-    <div class="modal-content">
-        <button class="close-modal" aria-label="Close feedback modal">×</button>
-        <h3 id="feedback-modal-title">Submit Feedback for <span id="feedback-project-name">Project</span></h3>
-        <form id="feedback-form" novalidate> {# Use novalidate to allow custom JS validation messages #}
-            <div class="form-group">
-                <label for="feedback-text" id="feedback-modal-description">Your Feedback:</label> {# Added ID for aria-describedby #}
-                <textarea id="feedback-text" rows="5" required placeholder="Provide constructive feedback..." aria-required="true"></textarea>
-                 <small class="feedback-note">Your feedback will be associated with your user account.</small>
-                 {# Optional: Add character count if needed #}
-            </div>
-            <input type="hidden" id="feedback-project-id"> {# Use ID for submission #}
-            <button type="submit" class="btn">Submit Feedback</button>
-             {# Feedback Status Message Area within Modal #}
-             <p id="feedback-status" role="status"></p>
-        </form>
-    </div>
+  <div class="modal-content">
+    <button class="close-modal" aria-label="Close feedback modal">×</button>
+    <h3 id="feedback-modal-title">Submit Feedback for <span id="feedback-project-name">Project</span></h3>
+    <form id="feedback-form" novalidate>
+      <div class="form-group">
+        <label for="feedback-text" id="feedback-modal-description">Your Feedback:</label>
+        <textarea id="feedback-text" rows="5" required placeholder="Provide constructive feedback..." aria-required="true"></textarea>
+        <small class="feedback-note">Your feedback will be associated with your user account.</small>
+      </div>
+      <input type="hidden" id="feedback-project-id">
+      <button type="submit" class="btn">Submit Feedback</button>
+      <p id="feedback-status" role="status"></p>
+    </form>
+  </div>
 </div>
 
-<!-- JavaScript for Leaderboard -->
-{# Include Socket.IO only if used, otherwise remove #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
 
-        // --- Configuration ---
-        const API_LEADERBOARD_URL = '/api/leaderboard'; // Replace with your actual API endpoint
-        const API_FEEDBACK_URL = '/api/submit_feedback'; // Replace with your actual API endpoint
-        const USE_MOCK_DATA = true; // Set to false to use API_LEADERBOARD_URL
-        const POLLING_INTERVAL_MS = 60000; // Optional: Refresh interval if Socket.IO is not used (e.g., 60 seconds)
+    const API_LEADERBOARD_URL = '/api/leaderboard';
+    const USE_MOCK_DATA = true;  // Set to false for real data
+    const POLLING_INTERVAL_MS = 60000;
 
-        // --- DOM Elements ---
-        const listElement = document.getElementById('leaderboard-list');
-        const sortSelect = document.getElementById('sort-select');
-        const refreshButton = document.getElementById('refresh-btn');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const statusMessageElement = document.getElementById('leaderboard-status-message');
-        const contentContainer = document.querySelector('.leaderboard-content'); // Parent container
+    const leaderboardGrid = document.getElementById('leaderboard-grid');
+    const sortSelect = document.getElementById('sort-select');
+    const refreshButton = document.getElementById('refresh-btn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const statusMessageElement = document.getElementById('leaderboard-status-message');
 
-        // Modal Elements
-        const modal = document.getElementById('feedback-modal');
-        const closeModalBtn = modal.querySelector('.close-modal');
-        const feedbackForm = document.getElementById('feedback-form');
-        const feedbackProjectName = document.getElementById('feedback-project-name');
-        const feedbackProjectIdInput = document.getElementById('feedback-project-id');
-        const feedbackText = document.getElementById('feedback-text');
-        const feedbackStatus = document.getElementById('feedback-status');
-        const feedbackSubmitButton = feedbackForm.querySelector('button[type="submit"]');
+    let currentLeaderboardData = [];
+    let currentSort = 'rank';
+    let isLoading = false;
+    let pollingIntervalId = null;
 
-        // --- State Variables ---
-        let currentLeaderboardData = [];
-        let currentSort = 'rank'; // Default sort
-        let isLoading = false;
-        let pollingIntervalId = null;
-        let lastFocusedElement = null; // For modal accessibility
+    // --- Mock Data (for testing; remove in production) ---
+    const MOCK_LEADERBOARD_DATA = [
+      { rank: 1, project_id: 1, project_name: "Project Alpha", average_score: 92.5 },
+      { rank: 2, project_id: 3, project_name: "Project Gamma", average_score: 88.0 },
+      { rank: 3, project_id: 2, project_name: "Project Beta", average_score: 85.7 },
+      { rank: 4, project_id: 4, project_name: "Project Delta", average_score: 79.2 },
+      { rank: 5, project_id: 5, project_name: "Project Epsilon", average_score: 75.0 },
+      { rank: 6, project_id: 6, project_name: "Project Zeta", average_score: null }
+    ];
 
-        // --- Mock Data (Remove or guard in production) ---
-        const MOCK_LEADERBOARD_DATA = [
-             { rank: 1, project_id: 1, project_name: "Project Alpha", average_score: 92.5 },
-             { rank: 2, project_id: 3, project_name: "Project Gamma", average_score: 88.0 },
-             { rank: 3, project_id: 2, project_name: "Project Beta", average_score: 85.7 },
-             { rank: 4, project_id: 4, project_name: "Project Delta", average_score: 79.2 },
-             { rank: 5, project_id: 5, project_name: "Project Epsilon", average_score: 75.0 },
-             { rank: 6, project_id: 6, project_name: "Project Zeta", average_score: null }, // Example with null score
-        ];
+    function setUIState(state) {
+      isLoading = (state === 'loading');
+      loadingOverlay.classList.toggle('visible', isLoading);
+      refreshButton.disabled = isLoading;
+      refreshButton.classList.toggle('loading', isLoading);
+      if (isLoading) {
+        refreshButton.querySelector('i').classList.add('fa-spin');
+        statusMessageElement.classList.remove('visible', 'error', 'info');
+        leaderboardGrid.innerHTML = '';
+      } else {
+        refreshButton.querySelector('i').classList.remove('fa-spin');
+      }
+    }
 
-        // --- UI Update Functions ---
+    function showStatusMessage(message, type = 'info', iconClass = 'fa-info-circle') {
+      leaderboardGrid.innerHTML = '';
+      statusMessageElement.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${message}`;
+      statusMessageElement.className = 'visible';
+      statusMessageElement.classList.add(type);
+      setUIState('idle');
+    }
 
-        function setUIState(state) {
-            isLoading = (state === 'loading');
-            loadingOverlay.classList.toggle('visible', isLoading);
-            refreshButton.disabled = isLoading;
-            refreshButton.classList.toggle('loading', isLoading);
-            if (isLoading) refreshButton.querySelector('i').classList.add('fa-spin');
-            else refreshButton.querySelector('i').classList.remove('fa-spin');
+    function renderLeaderboard() {
+      if (isLoading) return;
+      statusMessageElement.classList.remove('visible', 'error', 'info');
+      leaderboardGrid.innerHTML = '';
 
-            // Hide status message when loading starts
-            if (isLoading) {
-                statusMessageElement.classList.remove('visible', 'error', 'info');
-                listElement.innerHTML = ''; // Clear list immediately on load start
-            }
+      if (!currentLeaderboardData.length) {
+        showStatusMessage('No project data available currently.', 'info', 'fa-info-circle');
+        return;
+      }
+
+      const sortedData = sortData([...currentLeaderboardData], currentSort);
+      sortedData.forEach(item => {
+        const block = document.createElement('div');
+        block.classList.add('leaderboard-block');
+        block.setAttribute('data-rank', item.rank ?? 'N/A');
+
+        const scoreDisplay = (typeof item.average_score === 'number')
+          ? item.average_score.toFixed(2)
+          : 'N/A';
+
+        block.innerHTML = `
+          <div class="rank-circle">${item.rank ?? '-'}</div>
+          <div class="info-section">
+            <h4 class="project-name">${escapeHTML(item.project_name || 'Unnamed Project')}</h4>
+            <p class="project-score">Average Score: <strong>${scoreDisplay}</strong></p>
+          </div>
+        `;
+        leaderboardGrid.appendChild(block);
+      });
+    }
+
+    function sortData(data, sortType) {
+      switch (sortType) {
+        case 'score':
+          data.sort((a, b) => {
+            const scoreA = typeof a.average_score === 'number' ? a.average_score : -Infinity;
+            const scoreB = typeof b.average_score === 'number' ? b.average_score : -Infinity;
+            return scoreB - scoreA;
+          });
+          break;
+        case 'name_asc':
+          data.sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''));
+          break;
+        case 'name_desc':
+          data.sort((a, b) => (b.project_name || '').localeCompare(a.project_name || ''));
+          break;
+        case 'rank':
+        default:
+          data.sort((a, b) => {
+            const rankA = typeof a.rank === 'number' ? a.rank : Infinity;
+            const rankB = typeof b.rank === 'number' ? b.rank : Infinity;
+            return rankA - rankB;
+          });
+          break;
+      }
+      return data;
+    }
+
+    async function fetchLeaderboard() {
+      if (isLoading) return;
+      setUIState('loading');
+      try {
+        let data;
+        if (USE_MOCK_DATA) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+          data = MOCK_LEADERBOARD_DATA;
+        } else {
+          const response = await fetch(API_LEADERBOARD_URL);
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+          data = await response.json();
         }
+        if (!Array.isArray(data)) throw new Error('Invalid data format received from server.');
+        currentLeaderboardData = data;
+        renderLeaderboard();
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        showStatusMessage(`Could not load leaderboard data. ${error.message}`, 'error', 'fa-exclamation-triangle');
+        currentLeaderboardData = [];
+      } finally {
+        setUIState('idle');
+      }
+    }
 
-        function showStatusMessage(message, type = 'info', iconClass = 'fa-info-circle') {
-            listElement.innerHTML = ''; // Clear list when showing status
-            statusMessageElement.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${message}`;
-            statusMessageElement.className = 'visible'; // Remove previous type classes
-            statusMessageElement.classList.add(type); // Add new type class
-            setUIState('idle'); // Ensure loading overlay is hidden
-        }
+    function bindEventListeners() {
+      sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderLeaderboard();
+      });
 
-        function renderLeaderboard() {
-            if (isLoading) return; // Don't render while loading
+      refreshButton.addEventListener('click', fetchLeaderboard);
+    }
 
-            statusMessageElement.classList.remove('visible', 'error', 'info'); // Hide status message
-            listElement.innerHTML = ''; // Clear previous items
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      const p = document.createElement('p');
+      p.textContent = str;
+      return p.innerHTML;
+    }
 
-            if (currentLeaderboardData.length === 0) {
-                 showStatusMessage('No project data available currently.', 'info', 'fa-info-circle');
-                 return;
-            }
+    function init() {
+      bindEventListeners();
+      fetchLeaderboard();
+      // Uncomment below to enable Socket.IO or polling if desired:
+      // initSocketIO();
+      // startPolling();
+    }
 
-            const sortedData = sortData([...currentLeaderboardData], currentSort);
+    init();
 
-            const fragment = document.createDocumentFragment(); // Efficient batch DOM updates
-            sortedData.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.classList.add('leaderboard-item');
-                li.style.animationDelay = `${index * 0.05}s`; // Stagger animation
-                li.setAttribute('data-rank', item.rank ?? 'N/A'); // Use provided rank or N/A
-
-                // Determine score display
-                const scoreDisplay = (typeof item.average_score === 'number')
-                    ? item.average_score.toFixed(2)
-                    : 'N/A';
-
-                li.innerHTML = `
-                    <div class="rank">#${item.rank ?? '-'}</div>
-                    <div class="project-info">
-                        <h4 class="project-name">${escapeHTML(item.project_name || 'Unnamed Project')}</h4>
-                        <p class="project-score">Average Score: <strong>${scoreDisplay}</strong></p>
-                    </div>
-                    {# Conditionally show button based on user role if needed - requires backend support #}
-                    {# {% if current_user and current_user.role in ['judge', 'admin'] %} #}
-                    <button class="feedback-btn" data-project-id="${item.project_id}" data-project-name="${escapeHTML(item.project_name || 'Unnamed Project')}" aria-label="Submit Feedback for ${escapeHTML(item.project_name || 'Unnamed Project')}">
-                       <i class="fas fa-comment-dots" aria-hidden="true"></i> Feedback
-                    </button>
-                    {# {% endif %} #}
-                `;
-                fragment.appendChild(li);
-            });
-            listElement.appendChild(fragment);
-        }
-
-        function sortData(data, sortType) {
-            switch (sortType) {
-                case 'score':
-                    // Sort by score descending, handle nulls/N/A (place them lower)
-                    data.sort((a, b) => {
-                        const scoreA = typeof a.average_score === 'number' ? a.average_score : -Infinity;
-                        const scoreB = typeof b.average_score === 'number' ? b.average_score : -Infinity;
-                        return scoreB - scoreA;
-                    });
-                    break;
-                case 'name_asc':
-                    data.sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''));
-                    break;
-                 case 'name_desc':
-                    data.sort((a, b) => (b.project_name || '').localeCompare(a.project_name || ''));
-                    break;
-                case 'rank':
-                default:
-                     // Sort by rank ascending, handle nulls/N/A (place them lower)
-                    data.sort((a, b) => {
-                        const rankA = typeof a.rank === 'number' ? a.rank : Infinity;
-                        const rankB = typeof b.rank === 'number' ? b.rank : Infinity;
-                        return rankA - rankB;
-                    });
-                    break;
-            }
-            return data;
-        }
-
-        // --- Data Fetching ---
-        async function fetchLeaderboard() {
-            if (isLoading) return; // Prevent concurrent fetches
-            setUIState('loading');
-
-            try {
-                let data;
-                if (USE_MOCK_DATA) {
-                    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
-                    // Simulate potential errors randomly for testing
-                    // if (Math.random() < 0.1) throw new Error("Mock fetch failed!");
-                    // if (Math.random() < 0.2) {data = [];} else {data = MOCK_LEADERBOARD_DATA;} // Simulate no data
-                     data = MOCK_LEADERBOARD_DATA;
-                } else {
-                    const response = await fetch(API_LEADERBOARD_URL);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status} ${response.statusText || ''}`);
-                    }
-                    data = await response.json();
-                }
-
-                // Basic data validation (ensure it's an array)
-                if (!Array.isArray(data)) {
-                     console.warn('Received non-array data from leaderboard API:', data);
-                     throw new Error('Invalid data format received from server.');
-                }
-
-                currentLeaderboardData = data;
-                renderLeaderboard(); // Render sorted data
-
-            } catch (error) {
-                console.error('Error fetching leaderboard:', error);
-                showStatusMessage(`Could not load leaderboard data. ${error.message}`, 'error', 'fa-exclamation-triangle');
-                currentLeaderboardData = []; // Clear data on error
-            } finally {
-                setUIState('idle'); // Ensure loading state is cleared even on error
-            }
-        }
-
-        // --- Feedback Modal Logic ---
-        function openFeedbackModal(projectId, projectName) {
-            lastFocusedElement = document.activeElement; // Store element that triggered modal
-
-            feedbackProjectName.textContent = projectName;
-            feedbackProjectIdInput.value = projectId;
-            feedbackText.value = ''; // Clear previous feedback
-            feedbackStatus.textContent = ''; // Clear status message
-            feedbackStatus.className = ''; // Clear status classes
-            feedbackSubmitButton.disabled = false; // Enable button
-
-            modal.classList.add('visible');
-            feedbackText.focus(); // Focus textarea for accessibility
-        }
-
-        function closeFeedbackModal() {
-            modal.classList.remove('visible');
-            // Return focus to the element that opened the modal
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-                lastFocusedElement = null; // Clear reference
-            }
-        }
-
-        function updateFeedbackStatus(message, type = 'info') {
-             feedbackStatus.textContent = message;
-             feedbackStatus.className = 'visible'; // Base class + type
-             feedbackStatus.classList.add(type);
-        }
-
-        async function handleFeedbackSubmit(event) {
-            event.preventDefault();
-            const projectId = feedbackProjectIdInput.value;
-            const feedbackContent = feedbackText.value.trim();
-
-            if (!feedbackContent) {
-                 updateFeedbackStatus('Please enter your feedback before submitting.', 'error');
-                 feedbackText.focus();
-                 return;
-            }
-
-            updateFeedbackStatus('Submitting...', 'submitting');
-            feedbackSubmitButton.disabled = true;
-
-            try {
-                let responseData;
-                // *** Replace MOCK with your actual feedback submission fetch ***
-                if (USE_MOCK_DATA) { // Using same flag for simplicity, adjust if needed
-                     await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-                     // Simulate potential errors randomly for testing
-                     if (Math.random() < 0.1) throw new Error("Mock submission failed!");
-                     responseData = { status: "success", message: "Feedback submitted successfully!" };
-                } else {
-                     const response = await fetch(API_FEEDBACK_URL, {
-                         method: 'POST',
-                         headers: {
-                            'Content-Type': 'application/json',
-                            // Include CSRF token header if needed by your backend
-                            // 'X-CSRFToken': getCsrfToken()
-                         },
-                         body: JSON.stringify({
-                            project_id: projectId,
-                            feedback: feedbackContent
-                            // Include judge_id if backend cannot infer from session
-                         })
-                     });
-
-                     if (!response.ok) {
-                        let errorMsg = `HTTP error! Status: ${response.status}`;
-                        try {
-                            const errData = await response.json();
-                            errorMsg = errData.message || errorMsg;
-                        } catch (e) { /* Ignore if response body is not JSON */ }
-                        throw new Error(errorMsg);
-                     }
-                     responseData = await response.json();
-                 }
-                 // *** END MOCK / REAL FETCH ***
-
-                if (responseData.status === 'success') {
-                    updateFeedbackStatus(responseData.message || 'Feedback submitted!', 'success');
-                    setTimeout(closeFeedbackModal, 1800); // Close modal after success delay
-                } else {
-                    // Handle cases where the API returns 200 OK but indicates failure in the JSON
-                    throw new Error(responseData.message || 'Feedback submission failed.');
-                }
-
-            } catch (error) {
-                console.error("Feedback submission error:", error);
-                updateFeedbackStatus(`Error: ${error.message || 'Could not submit feedback.'}`, 'error');
-                feedbackSubmitButton.disabled = false; // Re-enable button on error
-            }
-        }
-
-
-        // --- Event Listeners Setup ---
-        function bindEventListeners() {
-            sortSelect.addEventListener('change', (e) => {
-                currentSort = e.target.value;
-                renderLeaderboard(); // Re-render with new sort order
-            });
-
-            refreshButton.addEventListener('click', fetchLeaderboard);
-
-            // Event Delegation for Feedback Buttons
-            listElement.addEventListener('click', (event) => {
-                const feedbackButton = event.target.closest('.feedback-btn');
-                if (feedbackButton) {
-                    const projectName = feedbackButton.dataset.projectName;
-                    const projectId = feedbackButton.dataset.projectId;
-                    if (projectId && projectName) {
-                         openFeedbackModal(projectId, projectName);
-                    } else {
-                        console.warn('Feedback button clicked but missing data attributes.');
-                    }
-                }
-            });
-
-            // Modal Listeners
-            closeModalBtn.addEventListener('click', closeFeedbackModal);
-            modal.addEventListener('click', (event) => { // Close on overlay click
-                if (event.target === modal) {
-                    closeFeedbackModal();
-                }
-            });
-            // Close modal on Escape key
-            modal.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeFeedbackModal();
-                }
-            });
-
-            feedbackForm.addEventListener('submit', handleFeedbackSubmit);
-        }
-
-        // --- Socket.IO for Real-time Updates (Optional) ---
-        function initSocketIO() {
-            try {
-                // Connects to the server hosting the page, or specify URL: const socket = io('http://yourserver.com');
-                const socket = io();
-
-                socket.on('connect', () => {
-                    console.log('Socket.IO connected for leaderboard updates.');
-                    // Optional: Clear polling if socket connects successfully
-                    if (pollingIntervalId) {
-                         clearInterval(pollingIntervalId);
-                         pollingIntervalId = null;
-                         console.log('Polling disabled, using Socket.IO.');
-                    }
-                    // Optional: Maybe fetch initial data via socket? Or rely on first HTTP fetch.
-                });
-
-                socket.on('leaderboard_update', (updatedData) => {
-                    console.log('Received leaderboard update via Socket.IO:', updatedData);
-                    if (!Array.isArray(updatedData)) {
-                         console.warn('Received invalid leaderboard update data format via Socket.IO.');
-                         return;
-                     }
-                    currentLeaderboardData = updatedData;
-                    renderLeaderboard(); // Re-render the list with new data
-
-                    // Add a subtle visual indicator that data updated
-                    const headerP = document.querySelector('.leaderboard-header p');
-                    if(headerP){
-                        headerP.style.transition = 'none';
-                        headerP.style.color = 'var(--ksu-dark-gold, #c79100)'; // Flash briefly
-                        headerP.style.fontWeight = 'bold';
-                        setTimeout(() => {
-                             headerP.style.transition = 'color 0.5s ease, font-weight 0.5s ease';
-                             headerP.style.color = ''; // Revert to stylesheet color
-                             headerP.style.fontWeight = ''; // Revert to normal weight
-                        }, 200);
-                    }
-                });
-
-                socket.on('disconnect', (reason) => {
-                     console.log(`Socket.IO disconnected: ${reason}.`);
-                     // Optional: Fallback to polling if needed and not already polling
-                     // if (!pollingIntervalId && POLLING_INTERVAL_MS > 0) {
-                     //     console.log('Socket disconnected, falling back to polling.');
-                     //     startPolling();
-                     // }
-                 });
-
-                 socket.on('connect_error', (err) => {
-                     console.error('Socket.IO connection error:', err);
-                     // Optional: Fallback to polling if connection fails
-                     // if (!pollingIntervalId && POLLING_INTERVAL_MS > 0) {
-                     //     console.log('Socket connection failed, falling back to polling.');
-                     //     startPolling();
-                     // }
-                 });
-
-            } catch (e) {
-                 console.warn("Socket.IO client library not found or failed to initialize. Real-time updates disabled.", e);
-                 // Optional: start polling if socket failed
-                 // startPolling();
-            }
-        }
-
-        // --- Polling Fallback (Optional) ---
-        function startPolling() {
-            if (pollingIntervalId) clearInterval(pollingIntervalId); // Clear existing interval
-
-            if (POLLING_INTERVAL_MS > 0) {
-                 pollingIntervalId = setInterval(fetchLeaderboard, POLLING_INTERVAL_MS);
-                 console.log(`Polling for leaderboard updates every ${POLLING_INTERVAL_MS / 1000} seconds.`);
-            }
-        }
-
-        // --- Utility Functions ---
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            const p = document.createElement('p');
-            p.textContent = str;
-            return p.innerHTML;
-        }
-
-        // --- Initialization ---
-        function init() {
-            bindEventListeners();
-            fetchLeaderboard(); // Initial data load
-            // Uncomment to enable Socket.IO
-             // initSocketIO();
-            // Uncomment to enable polling (useful if Socket.IO is disabled or fails)
-            // startPolling();
-        }
-
-        init();
-
-    }); // End DOMContentLoaded
+  });
 </script>
 {% endblock %}

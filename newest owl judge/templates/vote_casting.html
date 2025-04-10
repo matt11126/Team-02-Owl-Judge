@@ -1,7 +1,121 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-  /* Modal Styling */
+  /* Animated Background: Run animation once for 3s, then remain static */
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(-45deg, #fff, #d4af37, #000, #fff);
+    background-size: 400% 400%;
+    animation: gradient 3s ease 1 forwards;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  /* Tooltip Styling */
+  .tooltip {
+    position: relative;
+    cursor: pointer;
+  }
+  .tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -1.5em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .tooltip:hover::after {
+    opacity: 1;
+  }
+
+  /* Glassmorphism Voting Cubes */
+  .glass-project-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.5); /* Dark translucent backdrop */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .glass-project-header {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: #d4af37;
+  }
+  .glass-project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .glass-project-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.5s ease forwards;
+    animation-delay: calc(var(--index) * 0.1s);
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .glass-project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+  }
+  .glass-project-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 15px;
+    color: #d4af37;
+  }
+  .glass-project-card p {
+    font-size: 1rem;
+    color: #ccc;
+    margin: 10px 0;
+  }
+  .glass-vote-btn {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .glass-vote-btn:hover {
+    background: #b4972a;
+  }
+  .glass-vote-btn:active {
+    transform: scale(0.95);
+  }
+  .voted-badge {
+    background: green;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.8em;
+  }
+
+  /* Modal Styling with Subtle Glassmorphism on Modal */
   .modal {
     display: none;
     position: fixed;
@@ -18,9 +132,13 @@
     display: flex;
   }
   .modal-content {
-    background: white;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    color: #000;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 8px;
     width: 400px;
     transform: translateY(-50px);
     opacity: 0;
@@ -34,6 +152,26 @@
     float: right;
     font-size: 1.5rem;
     cursor: pointer;
+    position: relative;
+  }
+  .close.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    right: 0;
+    transform: translateY(0.5em);
+    background: #000;
+    color: #fff;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .close.tooltip:hover::after {
+    opacity: 1;
   }
   .form-group {
     margin-bottom: 15px;
@@ -48,65 +186,47 @@
     box-sizing: border-box;
   }
 
-  /* Project List Styling */
-  .project-list ul {
-    list-style: none;
-    padding: 0;
-  }
-  .project-list li {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 5px;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.5s ease forwards;
-  }
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .voted-badge {
-    background: green;
-    color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 0.8em;
-  }
-  .vote-btn {
-    background: #007bff;
-    color: white;
+  /* Modern Submit Vote Button */
+  button[type="submit"] {
+    background: linear-gradient(45deg, #d4af37, #b4972a);
     border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.3s;
+    border-radius: 8px;
+    color: #000;
+    font-weight: 600;
+    padding: 12px 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .vote-btn:hover {
-    background: #0056b3;
+  button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  button[type="submit"]:active {
+    transform: scale(0.98);
   }
 </style>
 
-<div class="project-list">
-  <h2>Projects to Judge</h2>
-  <ul>
+<div class="glass-project-container">
+  <h2 class="glass-project-header">Projects to Judge</h2>
+  <div class="glass-project-grid">
     {% for project in projects %}
-    <li>
+    <div class="glass-project-card" style="--index: {{ loop.index0 }};">
       <h3>{{ project.project_name }}</h3>
       {% if project.scores | selectattr('judge_id', 'equalto', current_user.id) | list | count > 0 %}
         <span class="voted-badge">Voted</span>
       {% endif %}
-      <button class="vote-btn" data-project-id="{{ project.project_id }}">Vote</button>
-    </li>
+      <button class="glass-vote-btn tooltip" data-tooltip="Click to cast your vote" data-project-id="{{ project.project_id }}">
+        Vote
+      </button>
+    </div>
     {% endfor %}
-  </ul>
+  </div>
 </div>
 
 <div id="voting-modal" class="modal">
   <div class="modal-content">
-    <span class="close">&times;</span>
+    <span class="close tooltip" data-tooltip="Close this window">&times;</span>
     <h2>Vote for Project: <span id="project-name"></span></h2>
     <form id="voting-form" data-project-id="">
       <div class="form-group">
@@ -128,13 +248,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Stagger animations for project list items
-    document.querySelectorAll('.project-list li').forEach((li, index) => {
-      li.style.animationDelay = `${index * 0.1}s`;
-    });
-
-    // Open modal
-    document.querySelectorAll('.vote-btn').forEach(button => {
+    // Open modal when vote button is clicked
+    document.querySelectorAll('.glass-vote-btn').forEach(button => {
       button.addEventListener('click', () => {
         const projectId = button.dataset.projectId;
         const projectName = button.parentElement.querySelector('h3').textContent;
@@ -146,7 +261,6 @@
     document.querySelector('.close').addEventListener('click', () => {
       document.getElementById('voting-modal').classList.remove('show');
     });
-
     document.getElementById('voting-modal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('voting-modal')) {
         document.getElementById('voting-modal').classList.remove('show');
@@ -162,28 +276,23 @@
       inputs.forEach(input => {
         scores[input.name] = parseInt(input.value);
       });
-
-      // Client-side validation
       for (const [category, score] of Object.entries(scores)) {
         if (isNaN(score) || score < 1 || score > 10) {
           alert(`Please enter a valid score (1-10) for ${category}`);
           return;
         }
       }
-
       try {
         const response = await fetch('/submit_vote', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_id: projectId, scores: scores })
         });
         const data = await response.json();
         if (response.ok) {
           alert(data.message);
           document.getElementById('voting-modal').classList.remove('show');
-          location.reload(); // Refresh to update "Voted" badges
+          location.reload();
         } else {
           alert(data.error);
         }
@@ -199,8 +308,6 @@
     document.getElementById('project-name').textContent = projectName;
     document.getElementById('voting-form').dataset.projectId = projectId;
     modal.classList.add('show');
-
-    // Fetch existing scores
     try {
       const response = await fetch(`/get_scores/${projectId}`);
       const scores = await response.json();

@@ -1,653 +1,653 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}OwlJudge{% endblock %}</title> {# Default title #}
-
-    {# Link to external CSS - IMPORTANT: Create and link this file if moving styles! #}
-    {# <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> #}
-
-    {# Google Fonts #}
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    {# Font Awesome #}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <style>
-        /* --- Base Styles (Ideally in style.css) --- */
-        :root {
-            --ksu-gold: #FFC107;
-            --ksu-black: #0A0707;
-            --ksu-dark-gold: #FFA000;
-            --light-gray: #f4f7f6;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #333;
-            --white: #ffffff;
-            --primary-font: 'Roboto', sans-serif;
-            --heading-font: 'Montserrat', sans-serif;
-            --transition-speed: 0.3s;
-            --header-height: 70px; /* Adjust as needed */
-        }
-
-        html {
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
-
-        body {
-            font-family: var(--primary-font);
-            color: var(--dark-gray);
-            line-height: 1.6;
-            margin: 0;
-            background-color: var(--light-gray);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--heading-font);
-            font-weight: 700;
-            margin-top: 0;
-            color: var(--ksu-black);
-        }
-
-        a {
-            color: var(--ksu-dark-gold);
-            text-decoration: none;
-            transition: color var(--transition-speed) ease;
-        }
-        a:hover {
-            color: var(--ksu-gold);
-        }
-
-        main {
-            flex: 1; /* Allows main content to fill space */
-            padding-top: calc(var(--header-height) + 1rem); /* Space below header */
-            padding-bottom: 2rem;
-        }
-
-        .container {
-             max-width: 1100px;
-             margin: 0 auto;
-             padding: 0 1rem;
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>{% block title %}OwlJudge{% endblock %}</title> {# Default title #}
+ 
+     {# Link to external CSS - IMPORTANT: Create and link this file if moving styles! #}
+     {# <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> #}
+ 
+     {# Google Fonts #}
+     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+     {# Font Awesome #}
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+ 
+     <style>
+         /* --- Base Styles (Ideally in style.css) --- */
+         :root {
+             --ksu-gold: #FFC107;
+             --ksu-black: #0A0707;
+             --ksu-dark-gold: #FFA000;
+             --light-gray: #f4f7f6;
+             --medium-gray: #e0e0e0;
+             --dark-gray: #333;
+             --white: #ffffff;
+             --primary-font: 'Roboto', sans-serif;
+             --heading-font: 'Montserrat', sans-serif;
+             --transition-speed: 0.3s;
+             --header-height: 70px; /* Adjust as needed */
          }
-
-        /* --- Header Styles --- */
-        .site-header {
-            background-color: var(--ksu-black);
-            color: var(--ksu-gold);
-            padding: 0 1rem;
-            position: fixed; /* Fixed header */
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            height: var(--header-height);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 100%;
-            max-width: 1300px; /* Wider container for header */
-            margin: 0 auto;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-        }
-        .logo-link {
-             display: inline-block; /* Prevents layout shifts */
-             margin-left: 10px; /* Space between hamburger and logo */
+ 
+         html {
+             box-sizing: border-box;
+             scroll-behavior: smooth;
          }
-        .logo-img {
-            max-height: calc(var(--header-height) - 20px); /* Adjust padding */
-            width: auto;
-            display: block; /* Removes bottom space */
-            transition: transform var(--transition-speed) ease;
-        }
-        .logo-img:hover {
-            transform: scale(1.05);
-        }
-
-        /* Desktop Navigation */
-        .main-navigation {
-            display: none; /* Hidden on mobile by default */
-        }
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 25px;
-            padding: 0;
-            margin: 0;
-        }
-        .nav-links a { /* Shared style for desktop and mobile nav-item */
-            text-decoration: none;
-            color: var(--ksu-gold);
-            font-family: var(--heading-font);
-            font-weight: 600;
-            transition: color var(--transition-speed) ease;
-            position: relative;
-            padding: 5px 0;
-        }
-        /* Desktop underline effect */
-        .nav-links > li > a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--ksu-gold);
-            transition: width var(--transition-speed) ease;
-        }
-        .nav-links a:hover,
-        .nav-links a.active { /* Active state for desktop links */
-            color: var(--white);
-        }
-        .nav-links > li > a:hover::after,
-        .nav-links > li > a.active::after { /* Underline on hover/active for desktop */
-            width: 100%;
-        }
-
-        /* Header Right (Auth links for Desktop) */
-        .header-right {
-            display: none; /* Hidden on mobile */
-            align-items: center;
-            gap: 15px;
-        }
-        .header-right .btn {
-            margin-left: 10px;
-        }
-        .header-right span { /* Welcome message */
-             color: var(--white);
-             font-size: 0.9em;
+         *, *:before, *:after {
+             box-sizing: inherit;
          }
-
-
-        /* Hamburger Button (Mobile Only) */
-        .hamburger-toggle {
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: var(--ksu-gold);
-            padding: 10px;
-            display: block; /* Visible on mobile */
-            transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
-            z-index: 1101; /* Above side menu overlay */
-            line-height: 1; /* Ensure button height is consistent */
-        }
-        .hamburger-toggle:hover {
-            color: var(--white);
-            transform: rotate(90deg);
-        }
-
-
-        /* --- Side Menu Styles --- */
-        .side-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 280px; /* Width of the side menu */
-            background: var(--ksu-black);
-            transform: translateX(-100%); /* Start hidden off-screen */
-            transition: transform var(--transition-speed) ease-in-out;
-            overflow-y: auto; /* Scroll if content exceeds height */
-            z-index: 1100; /* Above main content, below hamburger if open */
-            padding-top: var(--header-height); /* Space for fixed header */
-            display: flex; /* Use flex for footer positioning */
-            flex-direction: column;
-        }
-        .side-menu.open {
-            transform: translateX(0); /* Slide in */
-            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
-        }
-
-        /* Optional: Header within the side menu */
-        .side-menu-header {
-             padding: 1rem 1.5rem;
+ 
+         body {
+             font-family: var(--primary-font);
+             color: var(--dark-gray);
+             line-height: 1.6;
+             margin: 0;
+             background-color: var(--light-gray);
              display: flex;
-             justify-content: space-between;
-             align-items: center;
-             border-bottom: 1px solid rgba(255, 193, 7, 0.2); /* Faint gold line */
+             flex-direction: column;
+             min-height: 100vh;
          }
-        .side-menu-title {
-            font-family: var(--heading-font);
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--ksu-gold);
-            margin: 0;
-        }
-        .close-menu-btn {
-            font-size: 2rem;
-            color: var(--ksu-gold);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            line-height: 1;
-             transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
-        }
-         .close-menu-btn:hover {
-             color: var(--white);
-             transform: rotate(180deg);
+ 
+         h1, h2, h3, h4, h5, h6 {
+             font-family: var(--heading-font);
+             font-weight: 700;
+             margin-top: 0;
+             color: var(--ksu-black);
          }
-
-        /* Navigation within side menu */
-        .side-menu nav {
-             flex-grow: 1; /* Allows nav to take available space pushing footer down */
-             padding: 1rem 0;
+ 
+         a {
+             color: var(--ksu-dark-gold);
+             text-decoration: none;
+             transition: color var(--transition-speed) ease;
          }
-        /* Styling for links inside the side menu */
-        .side-menu a.nav-item { /* Target specific links */
-            display: block;
-            padding: 0.9rem 1.5rem;
-            font-size: 1.1rem;
-            color: var(--ksu-gold);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255, 193, 7, 0.1); /* Subtle separator */
-            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-            font-family: var(--primary-font); /* Consistent font */
-            font-weight: 500;
-        }
-        .side-menu a.nav-item:hover,
-        .side-menu a.nav-item.active { /* Active/hover state for side menu links */
-            color: var(--ksu-black);
-            background-color: var(--ksu-gold);
-        }
-         .side-menu a.nav-item i { /* Optional icon styling */
-            margin-right: 10px;
-             width: 20px; /* Align icons if used */
-             text-align: center;
+         a:hover {
+             color: var(--ksu-gold);
          }
-
-        /* Footer section within side menu for Auth links */
-        .side-menu-footer {
-             padding: 1.5rem;
-             margin-top: auto; /* Pushes footer to bottom */
-             border-top: 1px solid rgba(255, 193, 7, 0.2);
+ 
+         main {
+             flex: 1; /* Allows main content to fill space */
+             padding-top: calc(var(--header-height) + 1rem); /* Space below header */
+             padding-bottom: 2rem;
          }
-         /* Style buttons within side menu footer */
-         .side-menu-footer .btn {
-             display: block; /* Stack buttons vertically */
-             width: 100%;
-             text-align: center;
-             margin-bottom: 0.8rem;
-         }
-         .side-menu-footer .btn:last-child {
-              margin-bottom: 0;
+ 
+         .container {
+              max-width: 1100px;
+              margin: 0 auto;
+              padding: 0 1rem;
           }
-
-        /* Side Menu Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
-            z-index: 1099; /* Below side menu, above content */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity var(--transition-speed) ease-in-out, visibility 0s var(--transition-speed); /* Delay visibility transition */
-        }
-        .overlay.show {
-            opacity: 1;
-            visibility: visible;
-            transition-delay: 0s; /* Show immediately on adding class */
-        }
-
-
-        /* --- Button Styles --- */
-        .btn {
-            display: inline-block;
-            background-color: var(--ksu-gold);
-            color: var(--ksu-black);
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 1em;
-            font-weight: 500;
-            font-family: var(--primary-font);
-            text-align: center;
-            transition: background-color var(--transition-speed) ease, transform 0.2s ease, box-shadow var(--transition-speed) ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn:hover {
-            background-color: var(--ksu-dark-gold);
-            color: var(--ksu-black);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .btn:disabled {
-            background-color: var(--medium-gray);
-            color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-
-        /* --- Flash Message Styles --- */
-        .flash-messages-container {
-            position: fixed;
-            top: calc(var(--header-height) + 10px); /* Below header */
-            right: 15px;
-            z-index: 1050; /* Above overlay */
-            width: 90%;
-            max-width: 400px;
-        }
-        .flash-message {
-            padding: 15px; margin-bottom: 10px; border-radius: 5px; color: var(--white);
-            opacity: 0.95; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative;
-            animation: slideInRight 0.5s ease forwards;
-        }
-         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 0.95; } }
-        .flash-message.success { background-color: #4CAF50; }
-        .flash-message.error { background-color: #f44336; }
-        .flash-message.info { background-color: #2196F3; }
-        .flash-message.warning { background-color: #ff9800; }
-        .flash-close-btn {
-            position: absolute; top: 5px; right: 10px; background: none; border: none;
-            color: inherit; font-size: 1.2rem; cursor: pointer; opacity: 0.7;
-            transition: opacity var(--transition-speed);
-        }
-         .flash-close-btn:hover { opacity: 1; }
-
-
-        /* --- Footer Styles --- */
-        .site-footer {
-            background-color: var(--ksu-black); color: var(--ksu-gold); text-align: center;
-            padding: 1.5rem 1rem; margin-top: auto; /* Pushes footer to bottom */ font-size: 0.9rem;
-        }
-        .site-footer p { margin: 0; color: #ccc; }
-
-
-        /* --- Responsive Design --- */
-        /* Desktop Styles (Large Screens) */
-        @media (min-width: 992px) {
-            .hamburger-toggle {
-                display: none; /* Hide hamburger on desktop */
-            }
-            .main-navigation {
-                display: block; /* Show desktop nav */
-            }
-            .header-right {
-                display: flex; /* Show desktop auth links */
-            }
-             .side-menu {
-                 /* Ensure side menu is hidden on desktop even if JS fails or class is stuck */
-                 transform: translateX(-100%);
-             }
-             .overlay {
-                  /* Ensure overlay is hidden on desktop */
-                  opacity: 0;
-                  visibility: hidden;
-              }
-        }
-
-        /* Mobile/Tablet Styles (Smaller Screens) - Default is mobile-first */
-        @media (max-width: 991px) {
-            /* Styles already set up for mobile-first (hamburger visible, nav hidden) */
-            .header-container {
-                 padding: 0 0.5rem; /* Slightly less padding on smaller screens */
-             }
-            /* Explicitly hide desktop nav and right section if they weren't display:none by default */
-             .main-navigation { display: none; }
-             .header-right { display: none; }
-        }
-
-         /* Reduced Motion Preference */
-         @media (prefers-reduced-motion: reduce) {
-           html { scroll-behavior: auto; }
-           *, *::before, *::after {
-             animation-duration: 0.01ms !important;
-             animation-iteration-count: 1 !important;
-             transition-duration: 0.01ms !important;
-             scroll-behavior: auto !important;
-           }
+ 
+         /* --- Header Styles --- */
+         .site-header {
+             background-color: var(--ksu-black);
+             color: var(--ksu-gold);
+             padding: 0 1rem;
+             position: fixed; /* Fixed header */
+             top: 0;
+             left: 0;
+             width: 100%;
+             z-index: 1000;
+             height: var(--header-height);
+             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
          }
-
-    </style>
-</head>
-<body>
-    <!-- Side Sliding Menu (Mobile) -->
-    <aside id="side-menu" class="side-menu" role="navigation" aria-label="Mobile navigation" aria-hidden="true">
-        <div class="side-menu-header">
-             <h2 class="side-menu-title">Menu</h2>
-             <button id="close-menu-btn" class="close-menu-btn" aria-label="Close menu">×</button>
-        </div>
-        <nav>
-            {# Navigation Links - Duplicated for mobile #}
-            {# Apply 'nav-item' class for consistent targeting and styling #}
-            <a href="{{ url_for('index') }}" class="nav-item">Home</a>
-            <a href="{{ url_for('audience') }}" class="nav-item">Audience</a>
-            <a href="{{ url_for('about') }}" class="nav-item">About Us</a>
-            <a href="{{ url_for('contact') }}" class="nav-item">Contact Us</a>
-            {% if current_user and current_user.role == 'judge' %}
-                <a href="{{ url_for('vote_casting') }}" class="nav-item">Voting</a>
-            {% endif %}
-            {% if current_user and current_user.role == 'admin' %}
-                 <a href="{{ url_for('admin_dashboard') }}" class="nav-item">Admin Dashboard</a>
-            {% endif %}
-             {% if current_user %}
-                  <a href="{{ url_for('profile') }}" class="nav-item">Profile</a>
-             {% endif %}
-        </nav>
-        <div class="side-menu-footer">
-            {# Authentication Links - Based on user state #}
-            {% if current_user %}
-                <a href="{{ url_for('logout') }}" class="btn">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn">Login</a>
-                <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
-            {% endif %}
-        </div>
-    </aside>
-    {# Overlay for Side Menu #}
-    <div id="overlay" class="overlay"></div>
-
-    <!-- Site Header -->
-    <header class="site-header" role="banner">
-        <div class="header-container">
-            <!-- Left Section: Hamburger (Mobile) & Logo -->
-            <div class="header-left">
-                <button id="hamburger-toggle" class="hamburger-toggle" aria-label="Open menu" aria-controls="side-menu" aria-expanded="false">
-                    <i class="fas fa-bars" aria-hidden="true"></i>
-                </button>
-                <a href="{{ url_for('index') }}" class="logo-link">
-                    <img src="{{ url_for('static', filename='image.png') }}" alt="OwlJudge Logo" class="logo-img">
-                </a>
-            </div>
-
-            <!-- Middle Section: Navigation (Desktop) -->
-            <nav class="main-navigation" aria-label="Main navigation">
-                <ul class="nav-links">
-                    {# Apply 'nav-item' class for consistent targeting and styling #}
-                    <li><a href="{{ url_for('index') }}" class="nav-item">Home</a></li>
-                    <li><a href="{{ url_for('audience') }}" class="nav-item">Audience</a></li>
-                    <li><a href="{{ url_for('about') }}" class="nav-item">About Us</a></li>
-                    <li><a href="{{ url_for('contact') }}" class="nav-item">Contact Us</a></li>
-                    {% if current_user and current_user.role == 'judge' %}
-                       <li><a href="{{ url_for('vote_casting') }}" class="nav-item">Voting</a></li>
-                    {% endif %}
-                    {% if current_user and current_user.role == 'admin' %}
-                        <li><a href="{{ url_for('admin_dashboard') }}" class="nav-item">Admin Dashboard</a></li>
-                    {% endif %}
-                    {% if current_user %}
-                         <li><a href="{{ url_for('profile') }}" class="nav-item">Profile</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-
-            <!-- Right Section: Login/Signup or User Info/Logout (Desktop) -->
-            <div class="header-right">
-                {% if current_user %}
-                     <span>Welcome, {{ current_user.name }}!</span> {# Added Welcome message #}
-                    <a href="{{ url_for('logout') }}" class="btn">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn">Login</a>
-                    <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
-                {% endif %}
-            </div>
-        </div>
-    </header>
-
-    <!-- Flash Messages Container -->
-    <div class="flash-messages-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
-                    <div class="flash-message {{ category }}" role="alert">
-                        {{ message }}
-                         <button class="flash-close-btn" aria-label="Close message" onclick="this.parentElement.remove()">×</button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <!-- Main Content Block -->
-    <main id="main-content">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Site Footer -->
-    <footer class="site-footer" role="contentinfo">
-        <div class="container">
-            <p>© {{ now().year }} OwlJudge - Kennesaw State University CCSE. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript for Side Menu and Active Links -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById("hamburger-toggle");
-            const sideMenu = document.getElementById("side-menu");
-            const closeBtn = document.getElementById("close-menu-btn");
-            const overlay = document.getElementById("overlay");
-            // const mainContent = document.getElementById("main-content"); // Not currently used, but keep for potential focus trap
-
-            // --- Side Menu Functions ---
-            function openSideMenu() {
-                if (sideMenu && !sideMenu.classList.contains('open')) {
-                    sideMenu.classList.add("open");
-                    overlay.classList.add("show");
-                    menuToggle.setAttribute('aria-expanded', 'true');
-                    sideMenu.setAttribute('aria-hidden', 'false');
-                    // Basic focus trap: focus the close button
-                    if(closeBtn) closeBtn.focus();
-                    // Prevent background scrolling when menu is open (optional but good UX)
-                    // document.body.style.overflow = 'hidden';
-                }
-            }
-
-            function closeSideMenu() {
-                if (sideMenu && sideMenu.classList.contains('open')) {
-                    sideMenu.classList.remove("open");
-                    overlay.classList.remove("show");
-                    menuToggle.setAttribute('aria-expanded', 'false');
-                    sideMenu.setAttribute('aria-hidden', 'true');
-                     // Return focus to the hamburger button that opened it
-                     if(menuToggle) menuToggle.focus();
-                     // Restore background scrolling
-                     // document.body.style.overflow = '';
-                }
-            }
-
-            // --- Event Listeners ---
-            if (menuToggle) {
-                menuToggle.addEventListener("click", (e) => {
-                    e.stopPropagation(); // Prevent triggering document click listener if added later
-                    openSideMenu();
-                });
-            }
-
-            if (closeBtn) {
-                closeBtn.addEventListener("click", closeSideMenu);
-            }
-
-            if (overlay) {
-                 overlay.addEventListener("click", closeSideMenu);
+         .header-container {
+             display: flex;
+             align-items: center;
+             justify-content: space-between;
+             height: 100%;
+             max-width: 1300px; /* Wider container for header */
+             margin: 0 auto;
+         }
+ 
+         .header-left {
+             display: flex;
+             align-items: center;
+         }
+         .logo-link {
+              display: inline-block; /* Prevents layout shifts */
+              margin-left: 10px; /* Space between hamburger and logo */
+          }
+         .logo-img {
+             max-height: calc(var(--header-height) - 30px); /* Adjust padding */
+             width: 30px;
+             display: block; /* Removes bottom space */
+             transition: transform var(--transition-speed) ease;
+         }
+         .logo-img:hover {
+             transform: scale(1.05);
+         }
+ 
+         /* Desktop Navigation */
+         .main-navigation {
+             display: none; /* Hidden on mobile by default */
+         }
+         .nav-links {
+             list-style: none;
+             display: flex;
+             gap: 25px;
+             padding: 0;
+             margin: 0;
+         }
+         .nav-links a { /* Shared style for desktop and mobile nav-item */
+             text-decoration: none;
+             color: var(--ksu-gold);
+             font-family: var(--heading-font);
+             font-weight: 600;
+             transition: color var(--transition-speed) ease;
+             position: relative;
+             padding: 5px 0;
+         }
+         /* Desktop underline effect */
+         .nav-links > li > a::after {
+             content: '';
+             position: absolute;
+             width: 0;
+             height: 2px;
+             bottom: 0;
+             left: 50%;
+             transform: translateX(-50%);
+             background-color: var(--ksu-gold);
+             transition: width var(--transition-speed) ease;
+         }
+         .nav-links a:hover,
+         .nav-links a.active { /* Active state for desktop links */
+             color: var(--white);
+         }
+         .nav-links > li > a:hover::after,
+         .nav-links > li > a.active::after { /* Underline on hover/active for desktop */
+             width: 100%;
+         }
+ 
+         /* Header Right (Auth links for Desktop) */
+         .header-right {
+             display: none; /* Hidden on mobile */
+             align-items: center;
+             gap: 15px;
+         }
+         .header-right .btn {
+             margin-left: 10px;
+         }
+         .header-right span { /* Welcome message */
+              color: var(--white);
+              font-size: 0.9em;
+          }
+ 
+ 
+         /* Hamburger Button (Mobile Only) */
+         .hamburger-toggle {
+             background: none;
+             border: none;
+             font-size: 1.8rem;
+             cursor: pointer;
+             color: var(--ksu-gold);
+             padding: 10px;
+             display: block; /* Visible on mobile */
+             transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
+             z-index: 1101; /* Above side menu overlay */
+             line-height: 1; /* Ensure button height is consistent */
+         }
+         .hamburger-toggle:hover {
+             color: var(--white);
+             transform: rotate(90deg);
+         }
+ 
+ 
+         /* --- Side Menu Styles --- */
+         .side-menu {
+             position: fixed;
+             top: 0;
+             left: 0;
+             height: 100%;
+             width: 280px; /* Width of the side menu */
+             background: var(--ksu-black);
+             transform: translateX(-100%); /* Start hidden off-screen */
+             transition: transform var(--transition-speed) ease-in-out;
+             overflow-y: auto; /* Scroll if content exceeds height */
+             z-index: 1100; /* Above main content, below hamburger if open */
+             padding-top: var(--header-height); /* Space for fixed header */
+             display: flex; /* Use flex for footer positioning */
+             flex-direction: column;
+         }
+         .side-menu.open {
+             transform: translateX(0); /* Slide in */
+             box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+         }
+ 
+         /* Optional: Header within the side menu */
+         .side-menu-header {
+              padding: 1rem 1.5rem;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 1px solid rgba(255, 193, 7, 0.2); /* Faint gold line */
+          }
+         .side-menu-title {
+             font-family: var(--heading-font);
+             font-size: 1.4rem;
+             font-weight: bold;
+             color: var(--ksu-gold);
+             margin: 0;
+         }
+         .close-menu-btn {
+             font-size: 2rem;
+             color: var(--ksu-gold);
+             background: none;
+             border: none;
+             cursor: pointer;
+             padding: 5px;
+             line-height: 1;
+              transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
+         }
+          .close-menu-btn:hover {
+              color: var(--white);
+              transform: rotate(180deg);
+          }
+ 
+         /* Navigation within side menu */
+         .side-menu nav {
+              flex-grow: 1; /* Allows nav to take available space pushing footer down */
+              padding: 1rem 0;
+          }
+         /* Styling for links inside the side menu */
+         .side-menu a.nav-item { /* Target specific links */
+             display: block;
+             padding: 0.9rem 1.5rem;
+             font-size: 1.1rem;
+             color: var(--ksu-gold);
+             text-decoration: none;
+             border-bottom: 1px solid rgba(255, 193, 7, 0.1); /* Subtle separator */
+             transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+             font-family: var(--primary-font); /* Consistent font */
+             font-weight: 500;
+         }
+         .side-menu a.nav-item:hover,
+         .side-menu a.nav-item.active { /* Active/hover state for side menu links */
+             color: var(--ksu-black);
+             background-color: var(--ksu-gold);
+         }
+          .side-menu a.nav-item i { /* Optional icon styling */
+             margin-right: 10px;
+              width: 20px; /* Align icons if used */
+              text-align: center;
+          }
+ 
+         /* Footer section within side menu for Auth links */
+         .side-menu-footer {
+              padding: 1.5rem;
+              margin-top: auto; /* Pushes footer to bottom */
+              border-top: 1px solid rgba(255, 193, 7, 0.2);
+          }
+          /* Style buttons within side menu footer */
+          .side-menu-footer .btn {
+              display: block; /* Stack buttons vertically */
+              width: 100%;
+              text-align: center;
+              margin-bottom: 0.8rem;
+          }
+          .side-menu-footer .btn:last-child {
+               margin-bottom: 0;
+           }
+ 
+         /* Side Menu Overlay */
+         .overlay {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+             z-index: 1099; /* Below side menu, above content */
+             opacity: 0;
+             visibility: hidden;
+             transition: opacity var(--transition-speed) ease-in-out, visibility 0s var(--transition-speed); /* Delay visibility transition */
+         }
+         .overlay.show {
+             opacity: 1;
+             visibility: visible;
+             transition-delay: 0s; /* Show immediately on adding class */
+         }
+ 
+ 
+         /* --- Button Styles --- */
+         .btn {
+             display: inline-block;
+             background-color: var(--ksu-gold);
+             color: var(--ksu-black);
+             padding: 10px 20px;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+             text-decoration: none;
+             font-size: 1em;
+             font-weight: 500;
+             font-family: var(--primary-font);
+             text-align: center;
+             transition: background-color var(--transition-speed) ease, transform 0.2s ease, box-shadow var(--transition-speed) ease;
+             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+         }
+         .btn:hover {
+             background-color: var(--ksu-dark-gold);
+             color: var(--ksu-black);
+             transform: translateY(-2px);
+             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+         }
+         .btn:disabled {
+             background-color: var(--medium-gray);
+             color: #666;
+             cursor: not-allowed;
+             transform: none;
+             box-shadow: none;
+         }
+ 
+ 
+         /* --- Flash Message Styles --- */
+         .flash-messages-container {
+             position: fixed;
+             top: calc(var(--header-height) + 10px); /* Below header */
+             right: 15px;
+             z-index: 1050; /* Above overlay */
+             width: 90%;
+             max-width: 400px;
+         }
+         .flash-message {
+             padding: 15px; margin-bottom: 10px; border-radius: 5px; color: var(--white);
+             opacity: 0.95; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative;
+             animation: slideInRight 0.5s ease forwards;
+         }
+          @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 0.95; } }
+         .flash-message.success { background-color: #4CAF50; }
+         .flash-message.error { background-color: #f44336; }
+         .flash-message.info { background-color: #2196F3; }
+         .flash-message.warning { background-color: #ff9800; }
+         .flash-close-btn {
+             position: absolute; top: 5px; right: 10px; background: none; border: none;
+             color: inherit; font-size: 1.2rem; cursor: pointer; opacity: 0.7;
+             transition: opacity var(--transition-speed);
+         }
+          .flash-close-btn:hover { opacity: 1; }
+ 
+ 
+         /* --- Footer Styles --- */
+         .site-footer {
+             background-color: var(--ksu-black); color: var(--ksu-gold); text-align: center;
+             padding: 1.5rem 1rem; margin-top: auto; /* Pushes footer to bottom */ font-size: 0.9rem;
+         }
+         .site-footer p { margin: 0; color: #ccc; }
+ 
+ 
+         /* --- Responsive Design --- */
+         /* Desktop Styles (Large Screens) */
+         @media (min-width: 992px) {
+             .hamburger-toggle {
+                 display: none; /* Hide hamburger on desktop */
              }
-
-             // Close menu if escape key is pressed
-             document.addEventListener('keydown', (e) => {
-                 if (e.key === "Escape" && sideMenu && sideMenu.classList.contains('open')) {
-                     closeSideMenu();
+             .main-navigation {
+                 display: block; /* Show desktop nav */
+             }
+             .header-right {
+                 display: flex; /* Show desktop auth links */
+             }
+              .side-menu {
+                  /* Ensure side menu is hidden on desktop even if JS fails or class is stuck */
+                  transform: translateX(-100%);
+              }
+              .overlay {
+                   /* Ensure overlay is hidden on desktop */
+                   opacity: 0;
+                   visibility: hidden;
+               }
+         }
+ 
+         /* Mobile/Tablet Styles (Smaller Screens) - Default is mobile-first */
+         @media (max-width: 991px) {
+             /* Styles already set up for mobile-first (hamburger visible, nav hidden) */
+             .header-container {
+                  padding: 0 0.5rem; /* Slightly less padding on smaller screens */
+              }
+             /* Explicitly hide desktop nav and right section if they weren't display:none by default */
+              .main-navigation { display: none; }
+              .header-right { display: none; }
+         }
+ 
+          /* Reduced Motion Preference */
+          @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              scroll-behavior: auto !important;
+            }
+          }
+ 
+     </style>
+ </head>
+ <body>
+     <!-- Side Sliding Menu (Mobile) -->
+     <aside id="side-menu" class="side-menu" role="navigation" aria-label="Mobile navigation" aria-hidden="true">
+         <div class="side-menu-header">
+              <h2 class="side-menu-title">Menu</h2>
+              <button id="close-menu-btn" class="close-menu-btn" aria-label="Close menu">×</button>
+         </div>
+         <nav>
+             {# Navigation Links - Duplicated for mobile #}
+             {# Apply 'nav-item' class for consistent targeting and styling #}
+             <a href="{{ url_for('index') }}" class="nav-item">Home</a>
+             <a href="{{ url_for('audience') }}" class="nav-item">Audience</a>
+             <a href="{{ url_for('about') }}" class="nav-item">About Us</a>
+             <a href="{{ url_for('contact') }}" class="nav-item">Contact Us</a>
+             {% if current_user and current_user.role == 'judge' %}
+                 <a href="{{ url_for('vote_casting') }}" class="nav-item">Voting</a>
+             {% endif %}
+             {% if current_user and current_user.role == 'admin' %}
+                  <a href="{{ url_for('admin_dashboard') }}" class="nav-item">Admin Dashboard</a>
+             {% endif %}
+              {% if current_user %}
+                   <a href="{{ url_for('profile') }}" class="nav-item">Profile</a>
+              {% endif %}
+         </nav>
+         <div class="side-menu-footer">
+             {# Authentication Links - Based on user state #}
+             {% if current_user %}
+                 <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+             {% else %}
+                 <a href="{{ url_for('login') }}" class="btn">Login</a>
+                 <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+             {% endif %}
+         </div>
+     </aside>
+     {# Overlay for Side Menu #}
+     <div id="overlay" class="overlay"></div>
+ 
+     <!-- Site Header -->
+     <header class="site-header" role="banner">
+         <div class="header-container">
+             <!-- Left Section: Hamburger (Mobile) & Logo -->
+             <div class="header-left">
+                 <button id="hamburger-toggle" class="hamburger-toggle" aria-label="Open menu" aria-controls="side-menu" aria-expanded="false">
+                     <i class="fas fa-bars" aria-hidden="true"></i>
+                 </button>
+                 <a href="{{ url_for('index') }}" class="logo-link">
+                     <img src="{{ url_for('static', filename='owljudge-removebg.png') }}" alt="OwlJudge Logo" class="logo-img">
+                 </a>
+             </div>
+ 
+             <!-- Middle Section: Navigation (Desktop) -->
+             <nav class="main-navigation" aria-label="Main navigation">
+                 <ul class="nav-links">
+                     {# Apply 'nav-item' class for consistent targeting and styling #}
+                     <li><a href="{{ url_for('index') }}" class="nav-item">Home</a></li>
+                     <li><a href="{{ url_for('audience') }}" class="nav-item">Audience</a></li>
+                     <li><a href="{{ url_for('about') }}" class="nav-item">About Us</a></li>
+                     <li><a href="{{ url_for('contact') }}" class="nav-item">Contact Us</a></li>
+                     {% if current_user and current_user.role == 'judge' %}
+                        <li><a href="{{ url_for('vote_casting') }}" class="nav-item">Voting</a></li>
+                     {% endif %}
+                     {% if current_user and current_user.role == 'admin' %}
+                         <li><a href="{{ url_for('admin_dashboard') }}" class="nav-item">Admin Dashboard</a></li>
+                     {% endif %}
+                     {% if current_user %}
+                          <li><a href="{{ url_for('profile') }}" class="nav-item">Profile</a></li>
+                     {% endif %}
+                 </ul>
+             </nav>
+ 
+             <!-- Right Section: Login/Signup or User Info/Logout (Desktop) -->
+             <div class="header-right">
+                 {% if current_user %}
+                      <span>Welcome, {{ current_user.name }}!</span> {# Added Welcome message #}
+                     <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+                 {% else %}
+                     <a href="{{ url_for('login') }}" class="btn">Login</a>
+                     <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
+                 {% endif %}
+             </div>
+         </div>
+     </header>
+ 
+     <!-- Flash Messages Container -->
+     <div class="flash-messages-container">
+         {% with messages = get_flashed_messages(with_categories=true) %}
+             {% if messages %}
+                 {% for category, message in messages %}
+                     {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                     <div class="flash-message {{ category }}" role="alert">
+                         {{ message }}
+                          <button class="flash-close-btn" aria-label="Close message" onclick="this.parentElement.remove()">×</button>
+                     </div>
+                 {% endfor %}
+             {% endif %}
+         {% endwith %}
+     </div>
+ 
+     <!-- Main Content Block -->
+     <main id="main-content">
+         {% block content %}{% endblock %}
+     </main>
+ 
+     <!-- Site Footer -->
+     <footer class="site-footer" role="contentinfo">
+         <div class="container">
+             <p>© {{ now().year }} OwlJudge - Kennesaw State University CCSE. All rights reserved.</p>
+         </div>
+     </footer>
+ 
+     <!-- JavaScript for Side Menu and Active Links -->
+     <script>
+         document.addEventListener('DOMContentLoaded', function() {
+             const menuToggle = document.getElementById("hamburger-toggle");
+             const sideMenu = document.getElementById("side-menu");
+             const closeBtn = document.getElementById("close-menu-btn");
+             const overlay = document.getElementById("overlay");
+             // const mainContent = document.getElementById("main-content"); // Not currently used, but keep for potential focus trap
+ 
+             // --- Side Menu Functions ---
+             function openSideMenu() {
+                 if (sideMenu && !sideMenu.classList.contains('open')) {
+                     sideMenu.classList.add("open");
+                     overlay.classList.add("show");
+                     menuToggle.setAttribute('aria-expanded', 'true');
+                     sideMenu.setAttribute('aria-hidden', 'false');
+                     // Basic focus trap: focus the close button
+                     if(closeBtn) closeBtn.focus();
+                     // Prevent background scrolling when menu is open (optional but good UX)
+                     // document.body.style.overflow = 'hidden';
                  }
-             });
-
-             // Close menu when a navigation link inside it is clicked (good for SPAs or if links are #hashes)
-             if (sideMenu) {
-                 sideMenu.querySelectorAll('a.nav-item').forEach(link => {
-                     link.addEventListener('click', closeSideMenu);
+             }
+ 
+             function closeSideMenu() {
+                 if (sideMenu && sideMenu.classList.contains('open')) {
+                     sideMenu.classList.remove("open");
+                     overlay.classList.remove("show");
+                     menuToggle.setAttribute('aria-expanded', 'false');
+                     sideMenu.setAttribute('aria-hidden', 'true');
+                      // Return focus to the hamburger button that opened it
+                      if(menuToggle) menuToggle.focus();
+                      // Restore background scrolling
+                      // document.body.style.overflow = '';
+                 }
+             }
+ 
+             // --- Event Listeners ---
+             if (menuToggle) {
+                 menuToggle.addEventListener("click", (e) => {
+                     e.stopPropagation(); // Prevent triggering document click listener if added later
+                     openSideMenu();
                  });
              }
-
-            // --- Active Link Highlighting (EXISTING LOGIC - VERIFIED) ---
-            const currentPath = window.location.pathname;
-            const activePath = (currentPath === '/' || currentPath === '/index' || currentPath === '/index.html')
-                                ? "{{ url_for('index') }}" // Explicitly target index URL
-                                : currentPath;
-
-            // Target all links with class 'nav-item' in both desktop and mobile nav
-            document.querySelectorAll('.nav-item').forEach(link => {
-                 const linkPath = link.getAttribute('href');
-                 // Normalize paths for comparison (handle potential trailing slashes, though Flask's url_for usually doesn't add them)
-                 const cleanLinkPath = linkPath.replace(/\/$/, "");
-                 const cleanActivePath = activePath.replace(/\/$/, "");
-
-                if (cleanLinkPath === cleanActivePath) {
-                    link.classList.add('active');
-                    // Add ARIA current attribute for accessibility, especially in side menu
-                     link.setAttribute('aria-current', 'page');
-                } else {
-                    link.classList.remove('active');
-                     link.removeAttribute('aria-current');
-                }
-            });
-
-             // --- Auto-close Flash Messages (EXISTING LOGIC - VERIFIED) ---
-            document.querySelectorAll('.flash-message').forEach(flash => {
-                 const closeButton = flash.querySelector('.flash-close-btn');
-                 // Auto-close timeout
-                 const autoCloseTimeout = setTimeout(() => {
-                     if (flash) { // Check if element still exists
-                         flash.style.transition = 'opacity 0.5s ease';
-                         flash.style.opacity = '0';
-                         setTimeout(() => flash.remove(), 500); // Remove after fade out
-                     }
-                 }, 5000); // 5 seconds delay
-
-                 // Allow manual closing and clear the auto-close timeout
-                 if (closeButton) {
-                      closeButton.addEventListener('click', () => {
-                          clearTimeout(autoCloseTimeout);
-                          // Immediate removal on manual close (or add fade effect)
-                          flash.remove();
-                      });
+ 
+             if (closeBtn) {
+                 closeBtn.addEventListener("click", closeSideMenu);
+             }
+ 
+             if (overlay) {
+                  overlay.addEventListener("click", closeSideMenu);
+              }
+ 
+              // Close menu if escape key is pressed
+              document.addEventListener('keydown', (e) => {
+                  if (e.key === "Escape" && sideMenu && sideMenu.classList.contains('open')) {
+                      closeSideMenu();
                   }
+              });
+ 
+              // Close menu when a navigation link inside it is clicked (good for SPAs or if links are #hashes)
+              if (sideMenu) {
+                  sideMenu.querySelectorAll('a.nav-item').forEach(link => {
+                      link.addEventListener('click', closeSideMenu);
+                  });
+              }
+ 
+             // --- Active Link Highlighting (EXISTING LOGIC - VERIFIED) ---
+             const currentPath = window.location.pathname;
+             const activePath = (currentPath === '/' || currentPath === '/index' || currentPath === '/index.html')
+                                 ? "{{ url_for('index') }}" // Explicitly target index URL
+                                 : currentPath;
+ 
+             // Target all links with class 'nav-item' in both desktop and mobile nav
+             document.querySelectorAll('.nav-item').forEach(link => {
+                  const linkPath = link.getAttribute('href');
+                  // Normalize paths for comparison (handle potential trailing slashes, though Flask's url_for usually doesn't add them)
+                  const cleanLinkPath = linkPath.replace(/\/$/, "");
+                  const cleanActivePath = activePath.replace(/\/$/, "");
+ 
+                 if (cleanLinkPath === cleanActivePath) {
+                     link.classList.add('active');
+                     // Add ARIA current attribute for accessibility, especially in side menu
+                      link.setAttribute('aria-current', 'page');
+                 } else {
+                     link.classList.remove('active');
+                      link.removeAttribute('aria-current');
+                 }
              });
-
-        }); // End DOMContentLoaded
-    </script>
-
-    {# If using final_auth_overrides.js, ensure it's loaded LAST #}
-    {# <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script> #}
-
-{# Removed the unnecessary Cloudflare IFRAME script #}
-</body>
-</html>
+ 
+              // --- Auto-close Flash Messages (EXISTING LOGIC - VERIFIED) ---
+             document.querySelectorAll('.flash-message').forEach(flash => {
+                  const closeButton = flash.querySelector('.flash-close-btn');
+                  // Auto-close timeout
+                  const autoCloseTimeout = setTimeout(() => {
+                      if (flash) { // Check if element still exists
+                          flash.style.transition = 'opacity 0.5s ease';
+                          flash.style.opacity = '0';
+                          setTimeout(() => flash.remove(), 500); // Remove after fade out
+                      }
+                  }, 5000); // 5 seconds delay
+ 
+                  // Allow manual closing and clear the auto-close timeout
+                  if (closeButton) {
+                       closeButton.addEventListener('click', () => {
+                           clearTimeout(autoCloseTimeout);
+                           // Immediate removal on manual close (or add fade effect)
+                           flash.remove();
+                       });
+                   }
+              });
+ 
+         }); // End DOMContentLoaded
+     </script>
+ 
+     {# If using final_auth_overrides.js, ensure it's loaded LAST #}
+     {# <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script> #}
+ 
+ {# Removed the unnecessary Cloudflare IFRAME script #}
+ </body>
+ </html>
