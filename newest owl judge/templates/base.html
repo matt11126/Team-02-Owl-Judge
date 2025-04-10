@@ -4,15 +4,15 @@
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>{% block title %}OwlJudge{% endblock %}</title> {# Default title #}
- 
+
      {# Link to external CSS - IMPORTANT: Create and link this file if moving styles! #}
      {# <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> #}
- 
+
      {# Google Fonts #}
      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
      {# Font Awesome #}
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
- 
+
      <style>
          /* --- Base Styles (Ideally in style.css) --- */
          :root {
@@ -28,7 +28,7 @@
              --transition-speed: 0.3s;
              --header-height: 70px; /* Adjust as needed */
          }
- 
+
          html {
              box-sizing: border-box;
              scroll-behavior: smooth;
@@ -36,7 +36,7 @@
          *, *:before, *:after {
              box-sizing: inherit;
          }
- 
+
          body {
              font-family: var(--primary-font);
              color: var(--dark-gray);
@@ -47,14 +47,14 @@
              flex-direction: column;
              min-height: 100vh;
          }
- 
+
          h1, h2, h3, h4, h5, h6 {
              font-family: var(--heading-font);
              font-weight: 700;
              margin-top: 0;
              color: var(--ksu-black);
          }
- 
+
          a {
              color: var(--ksu-dark-gold);
              text-decoration: none;
@@ -63,19 +63,19 @@
          a:hover {
              color: var(--ksu-gold);
          }
- 
+
          main {
              flex: 1; /* Allows main content to fill space */
              padding-top: calc(var(--header-height) + 1rem); /* Space below header */
              padding-bottom: 2rem;
          }
- 
+
          .container {
               max-width: 1100px;
               margin: 0 auto;
               padding: 0 1rem;
           }
- 
+
          /* --- Header Styles --- */
          .site-header {
              background-color: var(--ksu-black);
@@ -97,7 +97,7 @@
              max-width: 1300px; /* Wider container for header */
              margin: 0 auto;
          }
- 
+
          .header-left {
              display: flex;
              align-items: center;
@@ -115,7 +115,7 @@
          .logo-img:hover {
              transform: scale(1.05);
          }
- 
+
          /* Desktop Navigation */
          .main-navigation {
              display: none; /* Hidden on mobile by default */
@@ -156,7 +156,7 @@
          .nav-links > li > a.active::after { /* Underline on hover/active for desktop */
              width: 100%;
          }
- 
+
          /* Header Right (Auth links for Desktop) */
          .header-right {
              display: none; /* Hidden on mobile */
@@ -170,8 +170,8 @@
               color: var(--white);
               font-size: 0.9em;
           }
- 
- 
+
+
          /* Hamburger Button (Mobile Only) */
          .hamburger-toggle {
              background: none;
@@ -189,8 +189,8 @@
              color: var(--white);
              transform: rotate(90deg);
          }
- 
- 
+
+
          /* --- Side Menu Styles --- */
          .side-menu {
              position: fixed;
@@ -211,7 +211,7 @@
              transform: translateX(0); /* Slide in */
              box-shadow: 3px 0 15px rgba(0,0,0,0.3);
          }
- 
+
          /* Optional: Header within the side menu */
          .side-menu-header {
               padding: 1rem 1.5rem;
@@ -241,7 +241,7 @@
               color: var(--white);
               transform: rotate(180deg);
           }
- 
+
          /* Navigation within side menu */
          .side-menu nav {
               flex-grow: 1; /* Allows nav to take available space pushing footer down */
@@ -269,7 +269,7 @@
               width: 20px; /* Align icons if used */
               text-align: center;
           }
- 
+
          /* Footer section within side menu for Auth links */
          .side-menu-footer {
               padding: 1.5rem;
@@ -286,7 +286,7 @@
           .side-menu-footer .btn:last-child {
                margin-bottom: 0;
            }
- 
+
          /* Side Menu Overlay */
          .overlay {
              position: fixed;
@@ -305,7 +305,7 @@
              visibility: visible;
              transition-delay: 0s; /* Show immediately on adding class */
          }
- 
+
          /* --- Button Styles --- */
          .btn {
              display: inline-block;
@@ -336,7 +336,7 @@
              transform: none;
              box-shadow: none;
          }
- 
+
          /* --- Flash Message Styles --- */
          .flash-messages-container {
              position: fixed;
@@ -362,14 +362,14 @@
              transition: opacity var(--transition-speed);
          }
           .flash-close-btn:hover { opacity: 1; }
- 
+
          /* --- Footer Styles --- */
          .site-footer {
              background-color: var(--ksu-black); color: var(--ksu-gold); text-align: center;
              padding: 1.5rem 1rem; margin-top: auto; /* Pushes footer to bottom */ font-size: 0.9rem;
          }
          .site-footer p { margin: 0; color: #ccc; }
- 
+
          /* --- Responsive Design --- */
          /* Desktop Styles (Large Screens) */
          @media (min-width: 992px) {
@@ -392,7 +392,7 @@
                    visibility: hidden;
                }
          }
- 
+
          /* Mobile/Tablet Styles (Smaller Screens) - Default is mobile-first */
          @media (max-width: 991px) {
              /* Styles already set up for mobile-first (hamburger visible, nav hidden) */
@@ -403,7 +403,7 @@
               .main-navigation { display: none; }
               .header-right { display: none; }
          }
- 
+
           /* Reduced Motion Preference */
           @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
@@ -414,7 +414,7 @@
               scroll-behavior: auto !important;
             }
           }
- 
+
      </style>
      <!-- Added block for extra head content -->
      {% block head_extra %}{% endblock %}
@@ -455,7 +455,7 @@
      </aside>
      {# Overlay for Side Menu #}
      <div id="overlay" class="overlay"></div>
- 
+
      <!-- Site Header -->
      <header class="site-header" role="banner">
          <div class="header-container">
@@ -468,7 +468,7 @@
                      <img src="{{ url_for('static', filename='owljudge-removebg.png') }}" alt="OwlJudge Logo" class="logo-img">
                  </a>
              </div>
- 
+
              <!-- Middle Section: Navigation (Desktop) -->
              <nav class="main-navigation" aria-label="Main navigation">
                  <ul class="nav-links">
@@ -488,7 +488,7 @@
                      {% endif %}
                  </ul>
              </nav>
- 
+
              <!-- Right Section: Login/Signup or User Info/Logout (Desktop) -->
              <div class="header-right">
                  {% if current_user %}
@@ -501,7 +501,7 @@
              </div>
          </div>
      </header>
- 
+
      <!-- Flash Messages Container -->
      <div class="flash-messages-container">
          {% with messages = get_flashed_messages(with_categories=true) %}
@@ -516,19 +516,19 @@
              {% endif %}
          {% endwith %}
      </div>
- 
+
      <!-- Main Content Block -->
      <main id="main-content">
          {% block content %}{% endblock %}
      </main>
- 
+
      <!-- Site Footer -->
      <footer class="site-footer" role="contentinfo">
          <div class="container">
              <p>© {{ now().year }} OwlJudge - Kennesaw State University CCSE. All rights reserved.</p>
          </div>
      </footer>
- 
+
      <!-- JavaScript for Side Menu and Active Links -->
      <script>
          document.addEventListener('DOMContentLoaded', function() {
@@ -537,7 +537,7 @@
              const closeBtn = document.getElementById("close-menu-btn");
              const overlay = document.getElementById("overlay");
              // const mainContent = document.getElementById("main-content"); // Not currently used, but keep for potential focus trap
-             
+
              // --- Side Menu Functions ---
              function openSideMenu() {
                  if (sideMenu && !sideMenu.classList.contains('open')) {
@@ -551,7 +551,7 @@
                      // document.body.style.overflow = 'hidden';
                  }
              }
- 
+
              function closeSideMenu() {
                  if (sideMenu && sideMenu.classList.contains('open')) {
                      sideMenu.classList.remove("open");
@@ -564,7 +564,7 @@
                       // document.body.style.overflow = '';
                  }
              }
- 
+
              // --- Event Listeners ---
              if (menuToggle) {
                  menuToggle.addEventListener("click", (e) => {
@@ -572,42 +572,42 @@
                      openSideMenu();
                  });
              }
- 
+
              if (closeBtn) {
                  closeBtn.addEventListener("click", closeSideMenu);
              }
- 
+
              if (overlay) {
                   overlay.addEventListener("click", closeSideMenu);
               }
- 
+
               // Close menu if escape key is pressed
               document.addEventListener('keydown', (e) => {
                   if (e.key === "Escape" && sideMenu && sideMenu.classList.contains('open')) {
                       closeSideMenu();
                   }
               });
- 
+
               // Close menu when a navigation link inside it is clicked (good for SPAs or if links are #hashes)
               if (sideMenu) {
                   sideMenu.querySelectorAll('a.nav-item').forEach(link => {
                       link.addEventListener('click', closeSideMenu);
                   });
               }
- 
+
              // --- Active Link Highlighting (EXISTING LOGIC - VERIFIED) ---
              const currentPath = window.location.pathname;
              const activePath = (currentPath === '/' || currentPath === '/index' || currentPath === '/index.html')
                                  ? "{{ url_for('index') }}" // Explicitly target index URL
                                  : currentPath;
- 
+
              // Target all links with class 'nav-item' in both desktop and mobile nav
              document.querySelectorAll('.nav-item').forEach(link => {
                   const linkPath = link.getAttribute('href');
                   // Normalize paths for comparison (handle potential trailing slashes, though Flask's url_for usually doesn't add them)
                   const cleanLinkPath = linkPath.replace(/\/$/, "");
                   const cleanActivePath = activePath.replace(/\/$/, "");
- 
+
                  if (cleanLinkPath === cleanActivePath) {
                      link.classList.add('active');
                      // Add ARIA current attribute for accessibility, especially in side menu
@@ -617,7 +617,7 @@
                       link.removeAttribute('aria-current');
                  }
              });
- 
+
               // --- Auto-close Flash Messages (EXISTING LOGIC - VERIFIED) ---
              document.querySelectorAll('.flash-message').forEach(flash => {
                   const closeButton = flash.querySelector('.flash-close-btn');
@@ -629,7 +629,7 @@
                           setTimeout(() => flash.remove(), 500); // Remove after fade out
                       }
                   }, 5000); // 5 seconds delay
- 
+
                   // Allow manual closing and clear the auto-close timeout
                   if (closeButton) {
                        closeButton.addEventListener('click', () => {
@@ -639,13 +639,13 @@
                        });
                    }
               });
- 
+
          }); // End DOMContentLoaded
      </script>
- 
+
      {# If using final_auth_overrides.js, ensure it's loaded LAST #}
      {# <script src="{{ url_for('static', filename='final_auth_overrides.js') }}"></script> #}
- 
+
  {# Removed the unnecessary Cloudflare IFRAME script #}
  </body>
 </html>

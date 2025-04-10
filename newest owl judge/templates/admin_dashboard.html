@@ -308,6 +308,23 @@
     .column-hidden {
         display: none;
     }
+    /* Assigned judges display */
+    .assigned-judge-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    .assigned-judge-item {
+        background-color: #e9ecef;
+        padding: 3px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.85em;
+        white-space: nowrap;
+        border: 1px solid #ced4da;
+    }
 
     /* User Table Specific: Pending Indicator */
     .pending-indicator {
@@ -423,6 +440,7 @@
     .actions-menu .btn-approve i { color: var(--success-green); }
     .actions-menu .btn-edit i { color: var(--warning-orange); }
     .actions-menu .btn-delete i { color: var(--error-red); }
+    .actions-menu .btn-assign i { color: var(--info-blue); } /* New color for Assign button */
 
 
     /* --- Modal Styling --- */
@@ -489,6 +507,10 @@
         font-weight: 500;
         text-align: center;
         color: #333;
+    }
+    .modal-content h3 .project-name-highlight { /* Style for project name in modal title */
+        color: var(--ksu-gold);
+        font-weight: 600;
     }
 
     /* Modal Form Styling */
@@ -604,6 +626,48 @@
     .modal-form .btn-cancel:hover:not(:disabled) {
         background-color: #5a6268;
         border-color: #5a6268;
+    }
+
+    /* Judge Assignment Modal Specific Styles */
+    #judge-assignment-modal .modal-content {
+        max-width: 550px; /* Slightly smaller for list */
+    }
+    #judge-assignment-modal p {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #555;
+    }
+    .judge-assignment-list {
+        max-height: 300px; /* Limit height and allow scroll */
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 10px;
+        margin-bottom: 1.5rem;
+        background-color: var(--light-gray);
+    }
+    .judge-assignment-list .judge-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+    .judge-assignment-list .judge-item:last-child {
+        border-bottom: none;
+    }
+    .judge-assignment-list .judge-item label {
+        margin-bottom: 0;
+        font-weight: 400;
+        cursor: pointer;
+        flex-grow: 1; /* Make label take space */
+    }
+    .judge-assignment-list .judge-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--ksu-gold);
+        cursor: pointer;
+        flex-shrink: 0; /* Prevent shrinking */
     }
 
     /* Column Configuration Modal */
@@ -723,6 +787,49 @@
     }
 
 
+    /* --- Import/Export Instructions Styling --- */
+    .import-export-instructions {
+        background-color: #eef5ff; /* Light blue background */
+        border: 1px solid #b8d6fb;
+        border-radius: var(--border-radius-md);
+        padding: 1rem 1.5rem;
+        margin-top: 1rem; /* Space above */
+        margin-bottom: 1.5rem; /* Space below */
+        font-size: 0.9rem;
+        color: #334;
+    }
+    .import-export-instructions h4 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0056b3; /* Darker blue title */
+    }
+    .import-export-instructions p {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+    .import-export-instructions ul {
+        list-style: disc;
+        margin-left: 20px;
+        margin-bottom: 1rem;
+        padding-left: 0;
+    }
+    .import-export-instructions li {
+        margin-bottom: 0.4rem;
+    }
+    .import-export-instructions code {
+        background-color: rgba(0, 0, 0, 0.06);
+        padding: 2px 5px;
+        border-radius: var(--border-radius-sm);
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.85em;
+    }
+    .import-export-instructions strong {
+        font-weight: 600;
+    }
+
+
     /* --- Responsive Adjustments --- */
     @media (max-width: 992px) {
         .dashboard-container { max-width: 95%; }
@@ -742,6 +849,8 @@
         .modal-form .form-actions { flex-direction: column; gap: 0.8rem; }
         .modal-form .btn { width: 100%; }
         #notification-container { width: 90%; right: 5%; top: calc(var(--header-height) + 10px); }
+        .import-export-instructions { padding: 0.8rem 1rem; }
+        .import-export-instructions h4 { font-size: 1rem; }
     }
      @media (max-width: 576px) {
          .dashboard-header h1 { font-size: 1.8rem; }
@@ -753,6 +862,7 @@
          .actions-menu button { padding: 8px 14px; font-size: 0.85rem; }
          .modal-content { padding: 20px 15px; margin: 1rem auto; }
          .modal-form .form-actions { padding-top: 1rem; }
+         .import-export-instructions { font-size: 0.85rem; }
      }
 
 </style>
@@ -761,7 +871,7 @@
     <div class="dashboard-container">
         <div class="dashboard-header">
             <h1>Admin Dashboard</h1>
-            <p>Manage users, projects, scores, and settings for OwlJudge C-Day events.</p>
+            <p>Manage users, projects, scores, groups, students, and settings for OwlJudge C-Day events.</p>
         </div>
 
         {# --- Button to Add Custom Table --- #}
@@ -796,22 +906,35 @@
                      <i class="fas fa-search search-icon"></i>
                     <input type="search" id="user-search" class="table-search" data-table="users-table" placeholder="Search by name, email, role..." aria-label="Search all users">
                 </div>
+                {# --- Import/Export Instructions --- #}
+                <div class="import-export-instructions">
+                    <h4>User Import/Export Instructions</h4>
+                    <p>Use an <strong>.xlsx</strong> file. The <strong>first row must be the header</strong> row. Column order matters.</p>
+                    <ul>
+                        <li><strong>Import Columns:</strong>
+                            <ul>
+                                <li><code>name</code> (Required): User's full name.</li>
+                                <li><code>email</code> (Required): User's unique email address. Existing users are matched by email for updates.</li>
+                                <li><code>password</code> (Required for <strong>new</strong> users): Set initial password. Leave blank or omit column when updating existing users to keep their current password.</li>
+                                <li><code>role</code> (Required): Must be one of <code>user</code>, <code>judge</code>, or <code>admin</code>.</li>
+                                <li><code>judge_request_pending</code> (Optional): Set to <code>TRUE</code> to mark as a pending judge request, otherwise <code>FALSE</code> or omit (defaults to False).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Export:</strong> Creates an .xlsx file with all users, including their <code>id</code>, <code>name</code>, <code>email</code>, <code>role</code>, and <code>judge_request_pending</code> status.</li>
+                    </ul>
+                </div>
                 <div class="data-table-wrapper">
                     <table class="data-table" id="users-table">
                         <thead>
                             <tr>
-                                <th data-col="id">ID</th>
-                                <th data-col="name">Name</th>
-                                <th data-col="email">Email</th>
-                                <th data-col="role">Role</th>
-                                <th data-col="actions" class="actions">Actions</th>
+                                {# Columns defined by tableColumnsConfig['users-table'] in JS #}
                             </tr>
                         </thead>
                         <tbody>
                             {# Data rows will be rendered by JS initially from initialUsers #}
                             {# Fallback if JS disabled or initial data empty #}
                             {% if not users %}
-                             <tr class="no-items-row"><td colspan="5">No users found.</td></tr>
+                             <tr class="no-items-row"><td colspan="5">No users found.</td></tr> {# Adjusted colspan likely needed #}
                             {% endif %}
                         </tbody>
                     </table>
@@ -840,16 +963,12 @@
                     <table class="data-table" id="pending-judges-table">
                         <thead>
                             <tr>
-                                <th data-col="id">ID</th>
-                                <th data-col="name">Name</th>
-                                <th data-col="email">Email</th>
-                                {# Maybe add request date if available? #}
-                                <th data-col="actions" class="actions">Actions</th>
+                                {# Columns defined by tableColumnsConfig['pending-judges-table'] in JS #}
                             </tr>
                         </thead>
                         <tbody>
                            {# Data rows will be rendered by JS #}
-                           <tr class="no-items-row"><td colspan="4">No pending judge requests found.</td></tr>
+                           <tr class="no-items-row"><td colspan="4">No pending judge requests found.</td></tr> {# Adjusted colspan likely needed #}
                         </tbody>
                     </table>
                 </div>
@@ -876,16 +995,13 @@
                 <div class="data-table-wrapper">
                     <table class="data-table" id="judges-table">
                         <thead>
-                            <tr>
-                                <th data-col="id">ID</th>
-                                <th data-col="name">Name</th>
-                                <th data-col="email">Email</th>
-                                <th data-col="actions" class="actions">Actions</th>
+                             <tr>
+                                {# Columns defined by tableColumnsConfig['judges-table'] in JS #}
                             </tr>
                         </thead>
                         <tbody>
                             {# Data rows will be rendered by JS #}
-                            <tr class="no-items-row"><td colspan="4">No judges found.</td></tr>
+                            <tr class="no-items-row"><td colspan="4">No judges found.</td></tr> {# Adjusted colspan likely needed #}
                         </tbody>
                     </table>
                 </div>
@@ -913,15 +1029,12 @@
                     <table class="data-table" id="regular-users-table">
                         <thead>
                             <tr>
-                                <th data-col="id">ID</th>
-                                <th data-col="name">Name</th>
-                                <th data-col="email">Email</th>
-                                <th data-col="actions" class="actions">Actions</th>
+                                {# Columns defined by tableColumnsConfig['regular-users-table'] in JS #}
                             </tr>
                         </thead>
                         <tbody>
                              {# Data rows will be rendered by JS #}
-                            <tr class="no-items-row"><td colspan="4">No regular users found.</td></tr>
+                            <tr class="no-items-row"><td colspan="4">No regular users found.</td></tr> {# Adjusted colspan likely needed #}
                         </tbody>
                     </table>
                 </div>
@@ -954,22 +1067,33 @@
                      <i class="fas fa-search search-icon"></i>
                     <input type="search" id="project-search" class="table-search" data-table="projects-table" placeholder="Search by name, group ID, description..." aria-label="Search projects">
                 </div>
+                {# --- Import/Export Instructions --- #}
+                <div class="import-export-instructions">
+                    <h4>Project Import/Export Instructions</h4>
+                    <p>Use an <strong>.xlsx</strong> file. The <strong>first row must be the header</strong> row. Column order matters.</p>
+                    <ul>
+                        <li><strong>Import Columns:</strong>
+                            <ul>
+                                <li><code>project_name</code> (Required): The name of the project.</li>
+                                <li><code>group_id</code> (Required): The numeric ID of the associated group. <strong>The group must already exist in the system.</strong></li>
+                                <li><code>description</code> (Optional): A description of the project.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Export:</strong> Creates an .xlsx file with all projects, including their <code>project_id</code>, <code>project_name</code>, <code>group_id</code>, and <code>description</code>. Assigned judges are <strong>not</strong> included in this export file.</li>
+                    </ul>
+                </div>
                  <div class="data-table-wrapper">
                     <table class="data-table" id="projects-table">
                         <thead>
-                            <tr>
-                                <th data-col="project_id">ID</th>
-                                <th data-col="project_name">Project Name</th>
-                                <th data-col="group_id">Group ID</th>
-                                <th data-col="description">Description</th>
-                                <th data-col="actions" class="actions">Actions</th>
+                             <tr>
+                                {# Columns defined by tableColumnsConfig['projects-table'] in JS #}
                             </tr>
                         </thead>
                         <tbody>
                              {# Data rows will be rendered by JS initially from initialProjects #}
                              {# Fallback if JS disabled or initial data empty #}
                              {% if not projects %}
-                              <tr class="no-items-row"><td colspan="5">No projects found.</td></tr>
+                              <tr class="no-items-row"><td colspan="6">No projects found.</td></tr> {# Adjusted colspan likely needed #}
                              {% endif %}
                         </tbody>
                     </table>
@@ -977,12 +1101,13 @@
             </div>
         </section>
 
-        {# --- Scores Section --- #}
+        {# --- Scores Section (REVISED) --- #}
         <section id="scores-section" class="dashboard-section" data-section-id="scores">
              <div class="section-header" onclick="toggleSection(this)">
                 <h2><i class="fas fa-star-half-alt"></i> Scores</h2>
                 <i class="fas fa-chevron-down toggle-icon"></i>
                  <div class="section-controls" onclick="event.stopPropagation()">
+                     {# Scores Import is complex and not supported via file #}
                      <button class="btn btn-export" onclick="exportData('score')">
                           <i class="fas fa-file-export"></i> Export Scores
                       </button>
@@ -997,26 +1122,30 @@
             <div class="section-content">
                 <div class="search-container">
                      <i class="fas fa-search search-icon"></i>
-                    <input type="search" id="score-search" class="table-search" data-table="scores-table" placeholder="Search by category, score, project, judge..." aria-label="Search scores">
+                    <input type="search" id="score-search" class="table-search" data-table="scores-table" placeholder="Search project, category, judge, score..." aria-label="Search scores">
+                </div>
+                {# --- Import/Export Instructions (REVISED) --- #}
+                <div class="import-export-instructions">
+                    <h4>Score Export Instructions</h4>
+                    <p>Export generates an <strong>.xlsx</strong> file containing all recorded scores with detailed information.</p>
+                    <ul>
+                        <li><strong>Export Columns:</strong> <code>score_id</code>, <code>category</code>, <code>score_given</code>, <code>project_id</code>, <code>judge_id</code>, <code>timestamp</code>, <code>project_name</code> (derived), <code>judge_name</code> (derived), <code>group_id</code> (derived from project), <code>judge_email</code> (derived).</li>
+                        <li><strong>Import:</strong> Score import is not currently supported via file upload due to complexity. Use the "Add Score" button to add scores manually.</li>
+                    </ul>
                 </div>
                  <div class="data-table-wrapper">
                     <table class="data-table" id="scores-table">
                          <thead>
                             <tr>
-                                <th data-col="score_id">ID</th>
-                                <th data-col="category">Category</th>
-                                <th data-col="score_given">Score</th>
-                                <th data-col="project_name">Project</th>
-                                <th data-col="judge_name">Judge</th>
-                                <th data-col="timestamp">Timestamp</th>
-                                <th data-col="actions" class="actions">Actions</th>
+                                {# Columns defined by tableColumnsConfig['scores-table'] in JS (REVISED ORDER) #}
+                                {# Example: Project, Category, Score, Judge, Timestamp, Group, Judge Email, ID, Actions #}
                             </tr>
                         </thead>
                         <tbody>
-                             {# Data rows will be rendered by JS initially from initialScores #}
+                             {# Data rows will be rendered by JS initially from initialScores (REVISED rendering) #}
                              {# Fallback if JS disabled or initial data empty #}
                               {% if not scores %}
-                               <tr class="no-items-row"><td colspan="7">No scores found.</td></tr>
+                               <tr class="no-items-row"><td colspan="9">No scores found.</td></tr> {# REVISED colspan, update based on final config #}
                               {% endif %}
                         </tbody>
                     </table>
@@ -1069,7 +1198,7 @@
         </div>
     </div>
 
-    <!-- NEW: Student Modal -->
+    <!-- Student Modal -->
     <div id="student-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title" aria-hidden="true">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
@@ -1096,7 +1225,7 @@
         </div>
     </div>
 
-    <!-- NEW: Group Modal -->
+    <!-- Group Modal -->
     <div id="group-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="group-modal-title" aria-hidden="true">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
@@ -1137,7 +1266,7 @@
                 <div class="form-group">
                     <label for="project-group-id">Group ID</label>
                     <input type="number" id="project-group-id" name="group_id" required>
-                    <small class="input-hint">Enter the numeric ID of the associated group.</small>
+                    <small class="input-hint">Enter the numeric ID of the associated group. The group must exist.</small>
                 </div>
                 <div class="form-group">
                     <label for="project-description">Description</label>
@@ -1205,10 +1334,12 @@
                         <option value="score">Scores</option>
                         <option value="student">Students</option>
                         <option value="group">Groups</option>
+                        {# --- REMOVED OPTIONS for less useful/non-actionable views ---
                         <option value="ranking">Rankings</option>
-                        <option value="judge_table">Judges (Table)</option> {# Renamed to avoid conflict with 'judge' role #}
+                        <option value="judge_table">Judges (Table)</option>
                         <option value="credential">Credentials</option>
                         <option value="permission">Permissions</option>
+                         --- #}
                     </select>
                 </div>
 
@@ -1249,12 +1380,36 @@
         </div>
     </div>
 
+    <!-- Judge Assignment Modal -->
+    <div id="judge-assignment-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="judge-assignment-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()" aria-label="Close">&times;</button>
+            <h3 id="judge-assignment-modal-title">Assign Judges</h3>
+            <p>Select judges to assign to project: <strong id="assignment-project-name" class="project-name-highlight">Loading...</strong></p>
+            <form id="judge-assignment-form" class="modal-form" novalidate>
+                <input type="hidden" id="assignment-project-id" name="project_id">
+                <div class="form-group">
+                    <label>Available Judges (Judge & Admin Roles):</label>
+                    <div id="judge-assignment-list" class="judge-assignment-list">
+                         <p>Loading judges...</p>
+                        <!-- Judge checkboxes will be loaded here by JS -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-save"><span class="btn-text">Save Assignments</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
      {# --- Notification Container --- #}
     <div id="notification-container"></div>
 
     {# --- Hidden File Inputs for Import --- #}
-    <input type="file" id="import-file-user" accept=".xlsx" style="display: none;">
-    <input type="file" id="import-file-project" accept=".xlsx" style="display: none;">
+    <input type="file" id="import-file-user" accept=".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
+    <input type="file" id="import-file-project" accept=".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
     {# Scores typically aren't imported, but added if needed #}
     {# <input type="file" id="import-file-score" accept=".xlsx" style="display: none;"> #}
 
@@ -1265,16 +1420,13 @@
     // Make initial data available to JavaScript
     // Ensure data is properly JSON-escaped by Flask's `tojson` filter
     let initialUsers = {{ users | tojson }};
-    let initialProjects = {{ projects | tojson }};
+    let initialProjects = {{ projects | tojson }}; // IMPORTANT: Expects 'assigned_judges' array within each project object from backend
     let initialScores = {{ scores | tojson }};
-    // --- NEW: Add placeholders for data from other tables ---
+    // --- Add placeholders for data from other tables ---
     // !! IMPORTANT: Your app.py MUST pass these variables !!
     let initialStudents = {{ students | default([]) | tojson }};
     let initialGroups = {{ groups | default([]) | tojson }};
-    let initialRankings = {{ rankings | default([]) | tojson }};
-    let initialJudgesTable = {{ judges_table | default([]) | tojson }}; // Use distinct name
-    let initialCredentials = {{ credentials | default([]) | tojson }};
-    let initialPermissions = {{ permissions | default([]) | tojson }};
+    // --- REMOVED initial data for less used custom table types ---
 
     const currentUserId = {{ current_user.id if current_user else 'null' }};
 
@@ -1288,7 +1440,6 @@
             { key: 'email', label: 'Email' },
     ];
     const userActionsColumn = { key: 'actions', label: 'Actions', alwaysVisible: true };
-    const noActionsColumn = []; // An empty array signifies no specific actions column needed by default
 
     // Column configuration definition (keys MUST match data attributes in table headers/cells AND table IDs)
     // IMPORTANT: This map will be dynamically updated when custom tables are created/deleted
@@ -1318,71 +1469,45 @@
             { key: 'project_name', label: 'Project Name', alwaysVisible: true },
             { key: 'group_id', label: 'Group ID' },
             { key: 'description', label: 'Description' },
+            { key: 'assigned_judges', label: 'Assigned Judges' },
             userActionsColumn
         ],
-        'scores-table': [ // Base for 'score' type
-            { key: 'score_id', label: 'ID', alwaysVisible: false },
-            { key: 'category', label: 'Category' },
-            { key: 'score_given', label: 'Score' },
-            { key: 'project_name', label: 'Project', alwaysVisible: true }, // Display name
-            { key: 'judge_name', label: 'Judge', alwaysVisible: true }, // Display name
-            { key: 'timestamp', label: 'Timestamp' },
-            userActionsColumn
+        // === REVISED scores-table configuration ===
+        'scores-table': [
+            { key: 'project_name', label: 'Project', alwaysVisible: true }, // More prominent
+            { key: 'category', label: 'Category', alwaysVisible: true }, // Important context
+            { key: 'score_given', label: 'Score', alwaysVisible: true }, // The actual score
+            { key: 'judge_name', label: 'Judge', alwaysVisible: true }, // Who gave the score
+            { key: 'timestamp', label: 'Timestamp', alwaysVisible: false }, // Less critical, hidden by default
+            { key: 'group_id', label: 'Group', alwaysVisible: false }, // Derived context, hidden by default
+            { key: 'judge_email', label: 'Judge Email', alwaysVisible: false }, // Derived context, hidden by default
+            { key: 'score_id', label: 'Score ID', alwaysVisible: false }, // Internal ID, hidden by default
+            userActionsColumn // Keep actions
         ],
-        // --- NEW: Base configs for other tables ---
+        // === END REVISED scores-table configuration ===
+
+        // --- Base configs for other core tables ---
         'students-table': [ // Base for 'student' type
             { key: 'student_id', label: 'Student ID', alwaysVisible: false },
             { key: 'student_name', label: 'Name', alwaysVisible: true },
             { key: 'group_id', label: 'Group ID' },
-            userActionsColumn // <-- ADDED Actions column for Edit
+            userActionsColumn
         ],
         'groups-table': [ // Base for 'group' type
             { key: 'group_id', label: 'Group ID', alwaysVisible: true },
             { key: 'group_name', label: 'Group Name' },
             { key: 'project_id', label: 'Project ID' },
-            userActionsColumn // <-- ADDED Actions column for Edit
+            userActionsColumn
         ],
-        'rankings-table': [ // Base for 'ranking' type
-            { key: 'id', label: 'Entry ID', alwaysVisible: false }, // Added primary key 'id'
-            { key: 'ranking', label: 'Rank' },
-            { key: 'project_name', label: 'Project Name', alwaysVisible: true },
-            { key: 'score', label: 'Score' },
-            { key: 'project_id', label: 'Project ID' },
-             ...noActionsColumn // Rankings likely not editable here
-        ],
-        'judges_table-table': [ // Base for 'judge_table' type (Note the double '-table' in the key)
-            { key: 'judge_id', label: 'Judge ID', alwaysVisible: true },
-            { key: 'judge_name', label: 'Name' },
-            { key: 'projects_assigned', label: 'Projects Assigned' },
-            { key: 'perc_complete', label: '% Complete' },
-            { key: 'credential_id', label: 'Credential ID' },
-             ...noActionsColumn // This table is likely derived, not directly editable
-        ],
-        'credentials-table': [ // Base for 'credential' type
-            { key: 'credential_id', label: 'Credential ID', alwaysVisible: true },
-            { key: 'judge_name', label: 'Judge Name' },
-            { key: 'username_encrypted', label: 'Username (Enc)' }, // Displaying encrypted data might not be useful
-            { key: 'password_encrypted', label: 'Password (Enc)' }, // Displaying encrypted data might not be useful
-            { key: 'judge_id', label: 'Judge ID' },
-            { key: 'permission_id', label: 'Permission ID' },
-             ...noActionsColumn // Credentials likely managed elsewhere or not editable directly
-        ],
-        'permissions-table': [ // Base for 'permission' type
-            { key: 'permission_id', label: 'Permission ID', alwaysVisible: true },
-            { key: 'permission_name', label: 'Name' },
-            { key: 'can_read', label: 'Read' },
-            { key: 'can_cast', label: 'Cast Vote' },
-            { key: 'can_modify', label: 'Modify' },
-            { key: 'is_developer', label: 'Developer' },
-             ...noActionsColumn // Permissions likely managed elsewhere or not editable directly
-        ]
-        // Custom table configs will be added here dynamically
+        // --- REMOVED Base configs for less used/read-only custom table types ---
+
+        // Custom table configs will be added here dynamically for user, project, score, student, group types
     };
 
     // LocalStorage keys for persistence
-    const COLUMN_CONFIG_STORAGE_KEY = 'adminDashboardColumnPrefs_v2';
-    const SECTION_COLLAPSE_STORAGE_KEY = 'adminDashboardSectionCollapsePrefs_v2';
-    const CUSTOM_TABLE_DEFS_KEY = 'adminDashboardCustomTables_v1'; // For custom table definitions
+    const COLUMN_CONFIG_STORAGE_KEY = 'adminDashboardColumnPrefs_v3'; // Incremented version
+    const SECTION_COLLAPSE_STORAGE_KEY = 'adminDashboardSectionCollapsePrefs_v3'; // Incremented version
+    const CUSTOM_TABLE_DEFS_KEY = 'adminDashboardCustomTables_v2'; // Incremented version for custom table definitions
 </script>
 
 {# --- Main Dashboard JavaScript --- #}
@@ -1397,8 +1522,9 @@ document.addEventListener('DOMContentLoaded', function() {
         user: document.getElementById('user-modal'),
         project: document.getElementById('project-modal'),
         score: document.getElementById('score-modal'),
-        student: document.getElementById('student-modal'), // Added student modal
-        group: document.getElementById('group-modal'),     // Added group modal
+        student: document.getElementById('student-modal'),
+        group: document.getElementById('group-modal'),
+        judgeAssignment: document.getElementById('judge-assignment-modal'),
         columnConfig: document.getElementById('column-config-modal'),
         customTable: document.getElementById('custom-table-modal')
     };
@@ -1406,8 +1532,9 @@ document.addEventListener('DOMContentLoaded', function() {
         user: document.getElementById('user-form'),
         project: document.getElementById('project-form'),
         score: document.getElementById('score-form'),
-        student: document.getElementById('student-form'), // Added student form
-        group: document.getElementById('group-form'),     // Added group form
+        student: document.getElementById('student-form'),
+        group: document.getElementById('group-form'),
+        judgeAssignment: document.getElementById('judge-assignment-form'),
         columnConfig: document.getElementById('column-config-form'),
         customTable: document.getElementById('custom-table-form')
     };
@@ -1448,7 +1575,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function logError(...args) { console.error('[ADMIN ERROR]', ...args); }
 
     // --- Utility Functions (showNotification, dismissNotification, getApiEndpoint, etc.) ---
-    // ... (Keep all existing utility functions like showNotification, getApiEndpoint, setButtonLoading, etc.) ...
         /**
      * Shows a toast notification.
      * @param {string} message The message to display.
@@ -1506,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * Generates the correct API endpoint URL using API_BASE_URL.
-     * @param {string} type The type of resource/action (e.g., 'user', 'project', 'student', 'approveJudge', 'importUser').
+     * @param {string} type The type of resource/action (e.g., 'user', 'project', 'student', 'approveJudge', 'importUser', 'projectJudges').
      * @param {number|string|null} [id=null] The resource ID (optional).
      * @returns {string|null} The API endpoint URL or null if type is invalid for endpoint generation.
      */
@@ -1518,11 +1644,8 @@ document.addEventListener('DOMContentLoaded', function() {
              score: '/admin/scores',
              student: '/admin/students', // Added Student base path
              group: '/admin/groups',     // Added Group base path
-             // Types likely not having standard CRUD endpoints via admin dashboard:
-             // ranking: '/admin/rankings', // Probably GET only or complex generation
-             // judge_table: '/admin/judges_table', // Likely read-only view
-             // credential: '/admin/credentials', // Security sensitive
-             // permission: '/admin/permissions', // Likely read-only or specific config endpoint
+             // REMOVED types not having standard CRUD endpoints via admin dashboard:
+             // ranking, judge_table, credential, permission
          };
          // Specific action endpoints
          const actionEndpoints = {
@@ -1537,18 +1660,20 @@ document.addEventListener('DOMContentLoaded', function() {
              // importStudent: '/admin/import/students',
              // exportGroup: '/admin/export/groups',
              // importGroup: '/admin/import/groups',
+             projectJudges: '/admin/projects' // Needs project ID and '/judges' appended later
          };
 
          let path;
          if (actionEndpoints[type]) {
              path = actionEndpoints[type];
-             // Append ID only for specific actions that require it in the path itself
              if (type === 'approveJudge' && id !== null && id !== undefined) {
                  path += `/${id}`;
              }
+             else if (type === 'projectJudges' && id !== null && id !== undefined) {
+                 path += `/${id}/judges`;
+             }
          } else if (basePathMap[type]) {
              path = basePathMap[type];
-             // Append ID for standard resource identification (GET one, PUT, DELETE)
              if (id !== null && id !== undefined) {
                  path += `/${id}`;
              }
@@ -1611,9 +1736,6 @@ document.addEventListener('DOMContentLoaded', function() {
          if (!formElement) return;
          logDebug(`Resetting form: ${formElement.id}`);
          formElement.reset();
-         // Clear any manual validation styles if used (not currently implemented)
-         // formElement.querySelectorAll('.is-invalid, .is-valid').forEach(el => el.classList.remove('is-invalid', 'is-valid'));
-
          // Clear hidden ID inputs specifically
          const idInputs = formElement.querySelectorAll('input[type="hidden"][name$="_id"], input[type="hidden"][name="id"]');
          idInputs.forEach(input => input.value = '');
@@ -1637,16 +1759,29 @@ document.addEventListener('DOMContentLoaded', function() {
               if (data.hasOwnProperty(key)) {
                   const input = formElement.elements[key];
                   if (input) {
-                      const value = data[key] ?? ''; // Use empty string for null/undefined
+                      // Use enriched data if available (e.g., project_name, judge_name)
+                      // But still fall back to original ID keys for form population if needed
+                      let value = data[key] ?? '';
+
                       // Handle different input types
                       if (input.type === 'checkbox') {
                           input.checked = !!value; // Boolean conversion
                       } else if (input.type === 'radio') {
-                          // Find the specific radio button with the matching value
                           const radioToSelect = formElement.querySelector(`input[name="${key}"][value="${value}"]`);
                           if (radioToSelect) radioToSelect.checked = true;
                       } else if (input.tagName === 'SELECT') {
-                          input.value = value;
+                          // Special handling for score modal selects (use IDs)
+                          if (formElement.id === 'score-form') {
+                              if (key === 'project_id') {
+                                  input.value = data.project_id ?? '';
+                              } else if (key === 'judge_id') {
+                                  input.value = data.judge_id ?? '';
+                              } else {
+                                  input.value = value;
+                              }
+                          } else {
+                             input.value = value;
+                          }
                       } else if (input.type === 'password') {
                            input.value = ''; // Never populate password fields
                            input.placeholder = "Leave blank to keep current"; // Set placeholder for edits
@@ -1654,17 +1789,16 @@ document.addEventListener('DOMContentLoaded', function() {
                           input.value = value;
                       }
                   } else {
-                      // Handle cases where form key might not directly match data key (e.g., hidden IDs)
-                      // The explicit ID setting below handles common cases.
-                      if (!key.endsWith('_id') && key !== 'id') { // Avoid logging ID fields here
+                      // Don't warn for enriched fields like project_name, judge_name, assigned_judges, group_id (for scores), judge_email
+                      const ignoredKeys = ['project_name', 'judge_name', 'assigned_judges', 'group_id', 'judge_email'];
+                      if (!key.endsWith('_id') && key !== 'id' && !ignoredKeys.includes(key)) {
                          // logWarn(`populateForm: No form element found for data key '${key}' in form '${formElement.id}'.`);
                       }
                   }
               }
           }
            // Specifically find and set the hidden ID field based on convention
-           const type = formElement.id.split('-')[0]; // 'user', 'project', 'score', 'student', 'group'
-           // Adjust ID key logic based on type - assuming convention holds for new types
+           const type = formElement.id.split('-')[0]; // 'user', 'project', 'score', 'student', 'group', 'judgeAssignment'
            const idFieldName = (type === 'user') ? 'id' : `${type}_id`; // Special case for user 'id' instead of 'user_id'
            const idInput = formElement.elements[idFieldName];
            const idValue = data[idFieldName] || data['id']; // Handle cases where ID might just be 'id' in user data
@@ -1678,7 +1812,9 @@ document.addEventListener('DOMContentLoaded', function() {
                logWarn(`populateForm: ID field '${idFieldName}' found, but no corresponding ID in data or data ID is null/undefined.`);
                idInput.value = ''; // Ensure it's cleared if no ID
            } else {
-               logError(`populateForm: Hidden ID field with name '${idFieldName}' not found in form '${formElement.id}'`);
+               if(formElement.id !== 'judge-assignment-form') {
+                   logError(`populateForm: Hidden ID field with name '${idFieldName}' not found in form '${formElement.id}'`);
+               }
            }
      }
 
@@ -1697,11 +1833,11 @@ document.addEventListener('DOMContentLoaded', function() {
                const currentProjectValue = scoreProjectSelect.value;
                scoreProjectSelect.innerHTML = '<option value="">-- Select Project --</option>';
                if(initialProjects && initialProjects.length > 0) {
-                   initialProjects.slice().sort((a, b) => a.project_name.localeCompare(b.project_name))
+                   initialProjects.slice().sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''))
                    .forEach(p => {
                        const option = document.createElement('option');
                        option.value = p.project_id;
-                       option.textContent = `${p.project_name} (ID: ${p.project_id})`;
+                       option.textContent = `${p.project_name || 'Unnamed Project'} (ID: ${p.project_id})`;
                        scoreProjectSelect.appendChild(option);
                    });
                    if (initialProjects.some(p => String(p.project_id) === currentProjectValue)) {
@@ -1717,11 +1853,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 scoreJudgeSelect.innerHTML = '<option value="">-- Select Judge --</option>';
                 const eligibleJudges = initialUsers.filter(u => ['judge', 'admin'].includes(u.role));
                 if(eligibleJudges && eligibleJudges.length > 0) {
-                    eligibleJudges.slice().sort((a, b) => a.name.localeCompare(b.name))
+                    eligibleJudges.slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''))
                     .forEach(j => {
                         const option = document.createElement('option');
                         option.value = j.id;
-                        option.textContent = `${j.name} (${j.role}, ID: ${j.id})`;
+                        option.textContent = `${j.name || 'Unnamed User'} (${j.role}, ID: ${j.id})`;
                         scoreJudgeSelect.appendChild(option);
                     });
                     if (eligibleJudges.some(j => String(j.id) === currentJudgeValue)) {
@@ -1757,11 +1893,11 @@ document.addEventListener('DOMContentLoaded', function() {
               const currentProjectValue = groupProjectSelect.value;
               groupProjectSelect.innerHTML = '<option value="">-- No Project --</option>';
               if(initialProjects && initialProjects.length > 0) {
-                  initialProjects.slice().sort((a, b) => a.project_name.localeCompare(b.project_name))
+                  initialProjects.slice().sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''))
                   .forEach(p => {
                       const option = document.createElement('option');
                       option.value = p.project_id;
-                      option.textContent = `${p.project_name} (ID: ${p.project_id})`;
+                      option.textContent = `${p.project_name || 'Unnamed Project'} (ID: ${p.project_id})`;
                       groupProjectSelect.appendChild(option);
                   });
                   if (initialProjects.some(p => String(p.project_id) === currentProjectValue)) {
@@ -1774,11 +1910,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
     // --- Modal Open/Close Logic ---
-    // ... (Keep existing openGenericModal, closeModal functions) ...
         /**
      * Opens a generic modal with transition and focus management.
      * @param {HTMLElement} modalElement The modal element to open.
-     * @param {string} [title] Optional title to set.
+     * @param {string} [title] Optional title to set (can contain HTML).
      */
     function openGenericModal(modalElement, title) {
         if (!modalElement) { logError("openGenericModal: Invalid modal element provided."); return; }
@@ -1789,7 +1924,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         currentModal = modalElement;
         const titleElement = modalElement.querySelector('h3[id$="-modal-title"]');
-        if (titleElement && title) { titleElement.textContent = title; }
+        // Use innerHTML for title to allow potential HTML tags like <strong>
+        if (titleElement && title) { titleElement.innerHTML = title; }
 
         document.body.style.overflow = 'hidden'; // Prevent background scroll
         modalElement.style.display = 'flex'; // Use flex for centering
@@ -1821,14 +1957,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // --- Check if type is supported by this function ---
         const supportedTypes = ['user', 'project', 'score', 'student', 'group'];
         if (!supportedTypes.includes(type)) {
-             logWarn(`openModal called for unsupported type '${type}'. No add/edit form exists or handler not implemented.`);
-             showNotification(`Adding/Editing for '${type}' is not supported via this interface.`, 'warning');
+             // Check if it's a type handled by other functions
+             if (type === 'columnConfig' || type === 'customTable' || type === 'judgeAssignment') {
+                  logWarn(`openModal called for '${type}', but it should be opened by its specific function (e.g., openColumnConfig(), openJudgeAssignmentModal()).`);
+             } else {
+                 logWarn(`openModal called for unsupported type '${type}'. No add/edit form exists or handler not implemented.`);
+                 showNotification(`Adding/Editing for '${type}' is not supported via this interface.`, 'warning');
+             }
              return;
-        }
-        // Exclude special modal types handled differently
-        if (type === 'columnConfig' || type === 'customTable') {
-            logWarn(`openModal called for '${type}', use specific functions (openColumnConfig() or openAddCustomTableModal()) instead.`);
-            return;
         }
 
         if (!modalElement) { logError(`Cannot open modal: Modal element not found for type '${type}'`); return; }
@@ -1868,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  let sourceArray;
                  if (type === 'user') sourceArray = initialUsers;
                  else if (type === 'project') sourceArray = initialProjects;
-                 else if (type === 'score') sourceArray = initialScores;
+                 else if (type === 'score') sourceArray = initialScores; // Use enriched scores
                  else if (type === 'student') sourceArray = initialStudents;
                  else if (type === 'group') sourceArray = initialGroups;
                  else { logError(`Invalid type '${type}' for finding edit data.`); return; }
@@ -1882,7 +2018,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (dataToEdit) {
                 logDebug("Data found for edit:", dataToEdit);
-                populateForm(form, dataToEdit); // Populate form fields
+                populateForm(form, dataToEdit); // Populate form fields (handles enriched data for scores)
 
                 // Re-check hidden ID field population *after* calling populateForm
                  const hiddenIdInput = form.elements[idKey];
@@ -1932,7 +2068,8 @@ document.addEventListener('DOMContentLoaded', function() {
             modalToClose.style.display = 'none';
             // Reset form only if it's a data entry form (not config etc.)
             const formType = Object.keys(modalMap).find(key => modalMap[key] === modalToClose);
-            if (formType && formMap[formType] && formType !== 'columnConfig') {
+             // Exclude columnConfig and judgeAssignment (judgeAssignment reset happens in open)
+            if (formType && formMap[formType] && !['columnConfig', 'judgeAssignment'].includes(formType)) {
                 resetForm(formMap[formType]); // Reset form after modal is hidden
             }
         };
@@ -1962,7 +2099,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // --- Custom Table Section Logic ---
-    // ... (Keep existing custom table functions: loadCustomTableDefinitions, saveCustomTableDefinitions, openAddCustomTableModal, updateCustomTableFilterOptions, handleCustomTableFormSubmit, filterData, renderCustomSectionHTML, renderCustomSection, loadAndRenderCustomTables, deleteCustomTable) ...
     /**
      * Loads custom table definitions from localStorage.
      */
@@ -2046,6 +2182,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <label for="filter-project-group">Filter by Group ID:</label>
                     <input type="number" id="filter-project-group" name="filter_group_id" placeholder="Enter Group ID (optional)">
                 </div>
+                <div class="form-group filter-option-group">
+                    <input type="checkbox" id="filter-project-no-judges" name="filter_no_judges" value="true">
+                    <label for="filter-project-no-judges">Only show projects with no assigned judges?</label>
+                </div>
             `; // Example filter for projects
         } else if (dataType === 'student') {
              fieldset.style.display = 'block';
@@ -2068,6 +2208,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="form-group filter-option-group">
                     <input type="checkbox" id="filter-group-no-project" name="filter_no_project" value="true">
                     <label for="filter-group-no-project">Only show groups with no associated project?</label>
+                </div>
+            `;
+        } else if (dataType === 'score') { // Add filters for scores if needed
+            fieldset.style.display = 'block';
+            filtersContainer.innerHTML = `
+                <div class="form-group">
+                    <label for="filter-score-project">Filter by Project ID:</label>
+                    <input type="number" id="filter-score-project" name="filter_project_id" placeholder="Enter Project ID (optional)">
+                </div>
+                 <div class="form-group">
+                    <label for="filter-score-judge">Filter by Judge ID:</label>
+                    <input type="number" id="filter-score-judge" name="filter_judge_id" placeholder="Enter Judge ID (optional)">
+                </div>
+                <div class="form-group">
+                    <label for="filter-score-category">Filter by Category:</label>
+                    <input type="text" id="filter-score-category" name="filter_category" placeholder="Enter Category (optional)">
                 </div>
             `;
         } else if (dataType) {
@@ -2105,9 +2261,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (pending) filters.judge_request_pending = true;
         } else if (dataType === 'project') {
             const groupId = formData.get('filter_group_id');
+            const noJudges = formData.get('filter_no_judges') === 'true';
             if (groupId && !isNaN(parseInt(groupId))) { // Check if it's a valid number
                 filters.group_id = parseInt(groupId);
             }
+            if (noJudges) filters.assigned_judges_empty = true; // Use a specific flag for empty array
         } else if (dataType === 'student') {
             const groupIdSelect = formData.get('filter_group_id');
             const groupIdInput = formData.get('filter_group_id_input');
@@ -2121,6 +2279,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (dataType === 'group') {
              const noProject = formData.get('filter_no_project') === 'true';
              if (noProject) filters.project_id = null; // Filter for groups with no project
+        } else if (dataType === 'score') { // Parse score filters
+             const projectId = formData.get('filter_project_id');
+             const judgeId = formData.get('filter_judge_id');
+             const category = formData.get('filter_category')?.trim();
+             if (projectId && !isNaN(parseInt(projectId))) filters.project_id = parseInt(projectId);
+             if (judgeId && !isNaN(parseInt(judgeId))) filters.judge_id = parseInt(judgeId);
+             if (category) filters.category = category;
         }
         // Add parsing for other data types' filters here if implemented
 
@@ -2173,11 +2338,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         logDebug("Filtering data with filters:", filters);
 
+        // Ensure score data is enriched before filtering if necessary (e.g., if filtering on derived fields)
+        // Note: Enrichment now happens centrally before rendering, so dataArray should already have derived fields.
+
         return dataArray.filter(item => {
             // Check each filter criterion against the item
             for (const key in filters) {
                 const filterValue = filters[key];
                 const itemValue = item[key];
+
+                // Handle specific filter flags before general checks
+                if (key === 'assigned_judges_empty' && filterValue === true) {
+                    // Check if 'assigned_judges' exists and is an empty array
+                    if (!Array.isArray(item.assigned_judges) || item.assigned_judges.length !== 0) {
+                        return false; // Doesn't match filter for no assigned judges
+                    }
+                    continue; // Move to next filter if this one matches
+                }
 
                 // Handle null filter specifically
                 if (filterValue === null) {
@@ -2187,17 +2364,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 // Handle boolean filters (like judge_request_pending)
                 else if (typeof filterValue === 'boolean') {
-                    if (!!itemValue !== filterValue) { // Compare boolean values correctly
-                        return false; // Doesn't match boolean filter
+                    // Check for the specific 'assigned_judges_empty' case handled above
+                    if (key !== 'assigned_judges_empty') {
+                        if (!!itemValue !== filterValue) { // Compare boolean values correctly
+                            return false; // Doesn't match boolean filter
+                        }
                     }
                 }
-                // Handle string equality filters (like role)
+                // Handle string equality filters (like role, score category)
                 else if (typeof filterValue === 'string') {
-                    if (itemValue === null || itemValue === undefined || String(itemValue).toLowerCase() !== filterValue.toLowerCase()) { // Case-insensitive compare for strings like role
+                     // Case-insensitive compare for strings like role, category
+                    if (itemValue === null || itemValue === undefined || String(itemValue).toLowerCase() !== filterValue.toLowerCase()) {
                         return false; // Doesn't match string filter
                     }
                 }
-                 // Handle number equality filters (like group_id, project_id)
+                 // Handle number equality filters (like group_id, project_id, judge_id)
                  else if (typeof filterValue === 'number') {
                      // Use == for potential type coercion (e.g., number vs string from form) or === if types are guaranteed
                      if (itemValue === null || itemValue === undefined || Number(itemValue) !== filterValue) {
@@ -2226,33 +2407,36 @@ document.addEventListener('DOMContentLoaded', function() {
          // Determine icon and base config key
          let iconClass = 'fa-table'; // Default icon
          let baseConfigKey;
+         let placeholderColspan = 5; // Default fallback colspan
+
          switch (dataType) {
              case 'user': iconClass = 'fa-users'; baseConfigKey = 'users-table'; break;
              case 'project': iconClass = 'fa-project-diagram'; baseConfigKey = 'projects-table'; break;
              case 'score': iconClass = 'fa-star-half-alt'; baseConfigKey = 'scores-table'; break;
              case 'student': iconClass = 'fa-user-graduate'; baseConfigKey = 'students-table'; break;
              case 'group': iconClass = 'fa-users-cog'; baseConfigKey = 'groups-table'; break;
-             case 'ranking': iconClass = 'fa-trophy'; baseConfigKey = 'rankings-table'; break;
-             case 'judge_table': iconClass = 'fa-gavel'; baseConfigKey = 'judges_table-table'; break; // Note the key name
-             case 'credential': iconClass = 'fa-key'; baseConfigKey = 'credentials-table'; break;
-             case 'permission': iconClass = 'fa-shield-alt'; baseConfigKey = 'permissions-table'; break;
+             // REMOVED cases for deleted types: ranking, judge_table, credential, permission
              default: baseConfigKey = 'users-table'; // Fallback? Or error?
          }
 
          const baseColumns = tableColumnsConfig[baseConfigKey];
-         const colspan = baseColumns ? baseColumns.length : 1; // Default colspan if config missing, avoid 0
+         if (baseColumns) {
+             placeholderColspan = baseColumns.length; // Use actual count from config
+         } else {
+             logWarn(`renderCustomSectionHTML: Base config '${baseConfigKey}' not found for dataType '${dataType}'. Using default colspan.`);
+         }
 
          // Determine if actions should be available based on base config
          const hasActions = baseColumns && baseColumns.some(col => col.key === 'actions');
          // Determine if 'Add' makes sense for this data type in a custom view
-         const canAddDirectly = ['user', 'project', 'score', 'student', 'group'].includes(dataType); // Add 'student' and 'group' if desired
+         const canAddDirectly = ['user', 'project', 'score', 'student', 'group'].includes(dataType);
          const addActionButtonHTML = (hasActions && canAddDirectly) ? `
              <button class="btn btn-add" onclick="openModal('${dataType}', 'add')" title="Add New ${dataType}">
                  <i class="fas fa-plus-circle"></i> Add ${dataType}
              </button>` : '';
 
          return `
-             <section id="${sectionId}" class="dashboard-section custom-section" data-section-id="${sectionId}">
+             <section id="${sectionId}" class="dashboard-section custom-section" data-section-id="${sectionId}" data-data-type="${dataType}">
                  <div class="section-header" onclick="toggleSection(this)">
                      <h2><i class="fas ${iconClass}"></i> ${definition.name}</h2>
                      <i class="fas fa-chevron-down toggle-icon"></i>
@@ -2277,7 +2461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                  <!-- Header row will be generated by renderCustomSection -->
                              </thead>
                              <tbody>
-                                 <tr class="no-items-row"><td colspan="${colspan}">Loading data...</td></tr>
+                                 <tr class="no-items-row"><td colspan="${placeholderColspan}">Loading data...</td></tr>
                              </tbody>
                          </table>
                      </div>
@@ -2327,19 +2511,12 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'project':
                 sourceData = initialProjects; renderRowFn = renderProjectRowContent; baseConfigKey = 'projects-table'; break;
             case 'score':
-                sourceData = initialScores; renderRowFn = renderScoreRowContent; baseConfigKey = 'scores-table'; break;
+                sourceData = initialScores; renderRowFn = renderScoreRowContent; baseConfigKey = 'scores-table'; break; // Use updated render function
             case 'student':
                 sourceData = initialStudents; renderRowFn = renderStudentRowContent; baseConfigKey = 'students-table'; break;
             case 'group':
                 sourceData = initialGroups; renderRowFn = renderGroupRowContent; baseConfigKey = 'groups-table'; break;
-            case 'ranking':
-                sourceData = initialRankings; renderRowFn = renderRankingRowContent; baseConfigKey = 'rankings-table'; break;
-            case 'judge_table': // The specific 'Judges' table data
-                sourceData = initialJudgesTable; renderRowFn = renderJudgeTableRowContent; baseConfigKey = 'judges_table-table'; break;
-            case 'credential':
-                sourceData = initialCredentials; renderRowFn = renderCredentialRowContent; baseConfigKey = 'credentials-table'; break;
-            case 'permission':
-                sourceData = initialPermissions; renderRowFn = renderPermissionRowContent; baseConfigKey = 'permissions-table'; break;
+            // REMOVED cases for deleted types
             default:
                 logError(`Unsupported dataType '${dataType}' for custom section ${definition.id}`);
                 tbody.innerHTML = `<tr class="no-items-row"><td colspan="1">Error: Unsupported data type</td></tr>`;
@@ -2366,6 +2543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const colspan = baseColumns ? baseColumns.length : 1; // Update colspan based on actual columns rendered
 
         // 6. Filter Data
+        // Enrichment happens centrally now, so sourceData should be ready
         const filteredData = filterData(sourceData, definition.filters);
         logDebug(`Filtered data count for ${definition.name}: ${filteredData.length}`);
 
@@ -2452,7 +2630,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // --- API Call Helper ---
-    // ... (Keep existing apiCall function) ...
     /**
      * Makes an API call to the backend.
      * @param {string} endpoint The API URL.
@@ -2558,19 +2735,22 @@ document.addEventListener('DOMContentLoaded', function() {
      /**
       * Formats an ISO timestamp string into a more readable local format.
       * @param {string|null} isoString The ISO timestamp string.
+      * @param {boolean} [dateOnly=false] If true, only return the date part.
       * @returns {string} Formatted date/time string or 'N/A'.
       */
-     function formatTimestamp(isoString) {
+     function formatTimestamp(isoString, dateOnly = false) {
         if (!isoString) return 'N/A';
         try {
             const date = new Date(isoString);
             // Check if date is valid
             if (isNaN(date.getTime())) return 'Invalid Date';
+
+            const options = dateOnly
+              ? { year: 'numeric', month: 'short', day: 'numeric' }
+              : { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+
             // Use Intl for locale-aware formatting
-            return new Intl.DateTimeFormat(navigator.language || 'en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: 'numeric', minute: '2-digit', hour12: true // Adjust format as needed
-            }).format(date);
+            return new Intl.DateTimeFormat(navigator.language || 'en-US', options).format(date);
         } catch (e) {
             logError("Timestamp format error:", isoString, e);
             return isoString; // Return original string on error
@@ -2582,6 +2762,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Handles null, undefined.
      */
     function safeVal(value, placeholder = 'N/A') {
+        // Check for empty string explicitly as well
         return (value === null || value === undefined || value === '') ? placeholder : value;
     }
 
@@ -2597,9 +2778,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return value ? 'Yes' : 'No';
     }
 
-    // --- Row Render Functions (Existing + New) ---
+    // --- Row Render Functions (Existing + New/Modified) ---
 
-    function renderUserRowContent(user, tableId) { // Existing - Minor tweak for ARIA ID
+    function renderUserRowContent(user, tableId) {
         const isCurrentUser = user.id === currentUserId;
         const buttonId = `actions-toggle-${tableId}-${user.id}`;
         const deleteButtonHtml = `
@@ -2641,17 +2822,30 @@ document.addEventListener('DOMContentLoaded', function() {
         return cells;
      }
 
-     function renderProjectRowContent(project, tableId) { // Existing - Minor tweak for ARIA ID
+     function renderProjectRowContent(project, tableId) {
         const fullDescription = project.description || '';
         const truncatedDescription = fullDescription.length > 70 ? fullDescription.substring(0, 70) + '...' : fullDescription;
-        const descriptionText = truncatedDescription || 'N/A';
+        const descriptionText = safeVal(truncatedDescription);
         const buttonId = `actions-toggle-${tableId}-${project.project_id}`;
+
+        // Render Assigned Judges
+        let assignedJudgesHtml = '<span style="color: #888;">N/A</span>'; // Default if no judges
+        if (Array.isArray(project.assigned_judges) && project.assigned_judges.length > 0) {
+            assignedJudgesHtml = `<ul class="assigned-judge-list">`;
+            assignedJudgesHtml += project.assigned_judges
+                .map(judge => `<li class="assigned-judge-item" title="ID: ${judge.id}">${safeVal(judge.name, 'Unknown Judge')}</li>`)
+                .join('');
+            assignedJudgesHtml += `</ul>`;
+        } else if (project.assigned_judges === undefined) {
+             assignedJudgesHtml = '<span style="color: #f00; font-style: italic;">Data missing</span>';
+        }
 
         let cells = `
             <td data-col="project_id">${safeVal(project.project_id)}</td>
             <td data-col="project_name">${safeVal(project.project_name)}</td>
             <td data-col="group_id">${safeVal(project.group_id)}</td>
-            <td data-col="description" title="${fullDescription}">${descriptionText}</td>`;
+            <td data-col="description" title="${fullDescription}">${descriptionText}</td>
+            <td data-col="assigned_judges">${assignedJudgesHtml}</td>`;
 
         const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['projects-table'] || [];
         if (columnConfig.some(col => col.key === 'actions')) {
@@ -2661,6 +2855,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
                     <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
                         <button role="menuitem" class="btn-edit" onclick="openModal('project', 'edit', ${project.project_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
+                        <button role="menuitem" class="btn-assign" onclick="openJudgeAssignmentModal(${project.project_id})"><i class="fas fa-users-cog" aria-hidden="true"></i> Assign Judges</button>
                         <button role="menuitem" class="btn-delete" onclick="deleteItem('project', ${project.project_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button>
                     </div>
                 </div>
@@ -2669,18 +2864,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return cells;
      }
 
-     function renderScoreRowContent(score, tableId) { // Existing - Minor tweak for ARIA ID
-         const projectName = score.project_name || initialProjects.find(p => p.project_id === score.project_id)?.project_name || 'N/A';
-         const judgeName = score.judge_name || initialUsers.find(u => u.id === score.judge_id)?.name || 'N/A';
+     // === REVISED renderScoreRowContent ===
+     function renderScoreRowContent(score, tableId) {
+         // score object is expected to be pre-enriched with project_name, judge_name, group_id, judge_email
          const buttonId = `actions-toggle-${tableId}-${score.score_id}`;
 
-        let cells = `
-            <td data-col="score_id">${safeVal(score.score_id)}</td>
+         // Match the order defined in tableColumnsConfig['scores-table']
+         let cells = `
+            <td data-col="project_name">${safeVal(score.project_name)}</td>
             <td data-col="category">${safeVal(score.category)}</td>
             <td data-col="score_given">${safeVal(score.score_given)}</td>
-            <td data-col="project_name">${safeVal(projectName)}</td>
-            <td data-col="judge_name">${safeVal(judgeName)}</td>
-            <td data-col="timestamp">${formatTimestamp(score.timestamp)}</td>`;
+            <td data-col="judge_name">${safeVal(score.judge_name)}</td>
+            <td data-col="timestamp">${formatTimestamp(score.timestamp)}</td>
+            <td data-col="group_id">${safeVal(score.group_id)}</td>
+            <td data-col="judge_email">${safeVal(score.judge_email)}</td>
+            <td data-col="score_id">${safeVal(score.score_id)}</td>`;
 
         const columnConfig = tableColumnsConfig[tableId] || tableColumnsConfig['scores-table'] || [];
         if (columnConfig.some(col => col.key === 'actions')) {
@@ -2697,8 +2895,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cells;
      }
+     // === END REVISED renderScoreRowContent ===
 
-     // --- NEW/MODIFIED Row Render Functions ---
      function renderStudentRowContent(item, tableId) {
          const buttonId = `actions-toggle-${tableId}-${item.student_id}`;
          let cells = `
@@ -2715,7 +2913,7 @@ document.addEventListener('DOMContentLoaded', function() {
                          <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
                          <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
                              <button role="menuitem" class="btn-edit" onclick="openModal('student', 'edit', ${item.student_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
-                             {# Add delete button if needed, similar to other types #}
+                             {# Add delete button if student deletion is implemented #}
                              {# <button role="menuitem" class="btn-delete" onclick="deleteItem('student', ${item.student_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button> #}
                          </div>
                      </div>
@@ -2740,7 +2938,7 @@ document.addEventListener('DOMContentLoaded', function() {
                           <button id="${buttonId}" class="btn-actions-toggle" onclick="toggleActionsMenu(this)" aria-haspopup="true" aria-expanded="false">Actions <i class="fas fa-caret-down" aria-hidden="true"></i></button>
                           <div class="actions-menu" role="menu" aria-labelledby="${buttonId}">
                               <button role="menuitem" class="btn-edit" onclick="openModal('group', 'edit', ${item.group_id})"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Edit</button>
-                              {# Add delete button if needed #}
+                              {# Add delete button if group deletion is implemented #}
                               {# <button role="menuitem" class="btn-delete" onclick="deleteItem('group', ${item.group_id})"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button> #}
                           </div>
                       </div>
@@ -2748,56 +2946,65 @@ document.addEventListener('DOMContentLoaded', function() {
           }
          return cells;
      }
-     function renderRankingRowContent(item, tableId) {
-        // Assuming Rankings are not directly editable from this dashboard
-        return `
-            <td data-col="id">${safeVal(item.id)}</td>
-            <td data-col="ranking">${safeVal(item.ranking)}</td>
-            <td data-col="project_name">${safeVal(item.project_name)}</td>
-            <td data-col="score">${safeVal(item.score)}</td>
-            <td data-col="project_id">${safeVal(item.project_id)}</td>
-            `;
-     }
-     function renderJudgeTableRowContent(item, tableId) { // Renders data from the 'Judges' table model
-        // Assuming JudgeTable is not directly editable
-        return `
-            <td data-col="judge_id">${safeVal(item.judge_id)}</td>
-            <td data-col="judge_name">${safeVal(item.judge_name)}</td>
-            <td data-col="projects_assigned">${safeVal(item.projects_assigned)}</td>
-            <td data-col="perc_complete">${safeVal(item.perc_complete)}%</td>
-            <td data-col="credential_id">${safeVal(item.credential_id)}</td>
-            `;
-     }
-     function renderCredentialRowContent(item, tableId) {
-         // Assuming Credentials are not directly editable
-        return `
-            <td data-col="credential_id">${safeVal(item.credential_id)}</td>
-            <td data-col="judge_name">${safeVal(item.judge_name)}</td>
-            <td data-col="username_encrypted" title="${safeVal(item.username_encrypted, '')}">${safeVal(item.username_encrypted)?.substring(0,15)}...</td>
-            <td data-col="password_encrypted" title="Encrypted">********</td>
-            <td data-col="judge_id">${safeVal(item.judge_id)}</td>
-            <td data-col="permission_id">${safeVal(item.permission_id)}</td>
-            `;
-     }
-     function renderPermissionRowContent(item, tableId) {
-         // Assuming Permissions are not directly editable
-         return `
-            <td data-col="permission_id">${safeVal(item.permission_id)}</td>
-            <td data-col="permission_name">${safeVal(item.permission_name)}</td>
-            <td data-col="can_read">${formatBoolean(item.can_read)}</td>
-            <td data-col="can_cast">${formatBoolean(item.can_cast)}</td>
-            <td data-col="can_modify">${formatBoolean(item.can_modify)}</td>
-            <td data-col="is_developer">${formatBoolean(item.is_developer)}</td>
-            `;
-     }
+     // --- REMOVED render functions for deleted types ---
+
+    /** Pre-enriches the data arrays (users, projects, scores, etc.) with derived info */
+    function enrichAllData() {
+        logDebug("Starting data enrichment...");
+
+        // Enrich Projects (ensure assigned_judges is valid)
+        initialProjects.forEach(project => {
+             if (project.assigned_judges === undefined) {
+                  logWarn(`Project ID ${project.project_id} is missing 'assigned_judges' data. Defaulting to undefined.`);
+                  project.assigned_judges = undefined; // Keep as undefined to signify missing data
+             } else if (!Array.isArray(project.assigned_judges)){
+                 logWarn(`Project ID ${project.project_id} has non-array 'assigned_judges' data. Fixing to empty array. Data:`, project.assigned_judges);
+                 project.assigned_judges = []; // Fix to empty array
+             }
+             // Ensure judge objects within assigned_judges have names if possible
+             if(Array.isArray(project.assigned_judges)) {
+                 project.assigned_judges.forEach(judgeRef => {
+                     if (!judgeRef.name) { // If name is missing from the ref
+                         const fullJudge = initialUsers.find(u => u.id === judgeRef.id);
+                         judgeRef.name = fullJudge ? fullJudge.name : 'Unknown Judge';
+                     }
+                 });
+             }
+        });
+
+        // Enrich Scores (project name, judge name, group id, judge email)
+        initialScores.forEach(score => {
+            const project = initialProjects.find(p => p.project_id === score.project_id);
+            const judge = initialUsers.find(u => u.id === score.judge_id);
+            score.project_name = project ? project.project_name : 'N/A';
+            score.judge_name = judge ? judge.name : 'N/A';
+            score.group_id = project ? project.group_id : 'N/A'; // Get group ID from the project
+            score.judge_email = judge ? judge.email : 'N/A'; // Get email from the judge
+        });
+
+        // Add enrichment for Students (e.g., group name) if needed for custom tables
+        initialStudents.forEach(student => {
+             const group = initialGroups.find(g => g.group_id === student.group_id);
+             student.group_name = group ? group.group_name : 'N/A'; // Add group name if needed
+        });
+
+        // Add enrichment for Groups (e.g., project name) if needed for custom tables
+        initialGroups.forEach(group => {
+            const project = initialProjects.find(p => p.project_id === group.project_id);
+            group.project_name = project ? project.project_name : 'N/A'; // Add project name if needed
+        });
+
+
+        logDebug("Finished data enrichment.");
+    }
 
 
     /**
      * Renders all standard tables from the current state of the initial data arrays.
-     * NOTE: This does NOT render the raw Student, Group, etc. tables unless they are added as custom sections.
+     * Assumes data has been pre-enriched.
      */
     function renderStandardTables() {
-        logDebug("Rendering standard tables from current JS data...");
+        logDebug("Rendering standard tables from current (enriched) JS data...");
 
         // --- Filter User Data ---
         const pendingJudgesData = initialUsers.filter(u => u.judge_request_pending);
@@ -2805,22 +3012,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const regularUsersData = initialUsers.filter(u => u.role === 'user' && !u.judge_request_pending);
 
         // --- Render Standard Tables ---
-        renderTable('users-table', initialUsers, renderUserRowContent, tableColumnsConfig['users-table']?.length || 5);
-        renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, tableColumnsConfig['pending-judges-table']?.length || 4);
-        renderTable('judges-table', judgesData, renderUserRowContent, tableColumnsConfig['judges-table']?.length || 4);
-        renderTable('regular-users-table', regularUsersData, renderUserRowContent, tableColumnsConfig['regular-users-table']?.length || 4);
-        renderTable('projects-table', initialProjects, renderProjectRowContent, tableColumnsConfig['projects-table']?.length || 5);
+        // Get column counts from config for colspan fallbacks
+        const usersColCount = tableColumnsConfig['users-table']?.length || 5;
+        const pendingColCount = tableColumnsConfig['pending-judges-table']?.length || 4;
+        const judgesColCount = tableColumnsConfig['judges-table']?.length || 4;
+        const regularColCount = tableColumnsConfig['regular-users-table']?.length || 4;
+        const projectsColCount = tableColumnsConfig['projects-table']?.length || 6;
+        const scoresColCount = tableColumnsConfig['scores-table']?.length || 9; // Updated for new score columns
 
-        // Enrich and Render Scores Table
-        initialScores.forEach(score => {
-            if (!score.project_name || !score.judge_name) {
-                const project = initialProjects.find(p => p.project_id === score.project_id);
-                const judge = initialUsers.find(u => u.id === score.judge_id);
-                score.project_name = project ? project.project_name : 'N/A';
-                score.judge_name = judge ? judge.name : 'N/A';
-            }
+        renderTable('users-table', initialUsers, renderUserRowContent, usersColCount);
+        renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, pendingColCount);
+        renderTable('judges-table', judgesData, renderUserRowContent, judgesColCount);
+        renderTable('regular-users-table', regularUsersData, renderUserRowContent, regularColCount);
+        renderTable('projects-table', initialProjects, renderProjectRowContent, projectsColCount);
+
+        // Sort scores before rendering (by timestamp descending)
+        const sortedScores = initialScores.slice().sort((a, b) => {
+             const dateA = a.timestamp ? new Date(a.timestamp) : 0;
+             const dateB = b.timestamp ? new Date(b.timestamp) : 0;
+             return dateB - dateA; // Descending order
         });
-        renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+
+        renderTable('scores-table', sortedScores, renderScoreRowContent, scoresColCount); // Use revised render function and colspan
 
         logDebug("Finished rendering standard tables from JS data.");
     }
@@ -2830,59 +3043,80 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {string} tableId The ID of the table element.
      * @param {Array<object>} dataArray The array of data objects.
      * @param {Function} renderRowContentFn Function that takes (item, tableId) and returns innerHTML for cells.
-     * @param {number} colspan The colspan for the 'no items' row.
+     * @param {number} colspan The total number of columns defined for the table (for the 'no items' row).
      */
     function renderTable(tableId, dataArray, renderRowContentFn, colspan) {
         const tbody = tableBodyMap[tableId];
+        const tableElement = document.getElementById(tableId); // Get table element for header access
+
         if (!tbody) { logWarn(`renderTable: tbody not found for ${tableId}`); return; }
+        if (!tableElement) { logWarn(`renderTable: table element not found for ${tableId}`); return; }
+
 
         // Determine the unique ID key based on convention or specific table type
         let idKey;
-        if (tableId.includes('user') || tableId.includes('pending') || tableId.includes('judge') || tableId.includes('regular')) idKey = 'id'; // User model based
-        else if (tableId.includes('project')) idKey = 'project_id';
-        else if (tableId.includes('score')) idKey = 'score_id';
-        else if (tableId.includes('student')) idKey = 'student_id';
-        else if (tableId.includes('group')) idKey = 'group_id';
-        else if (tableId.includes('ranking')) idKey = 'id'; // Assuming 'id' is PK for Rankings
-        else if (tableId.includes('judge_table')) idKey = 'judge_id'; // Judges table
-        else if (tableId.includes('credential')) idKey = 'credential_id';
-        else if (tableId.includes('permission')) idKey = 'permission_id';
-        else idKey = 'id'; // Default fallback
+        // Derive type from table ID, more robustly
+        let type = tableId.split('-')[0]; // 'users', 'pending', 'judges', 'regular', 'projects', 'scores', 'students', 'groups', 'custom'
+        if (type === 'pending' || type === 'judges' || type === 'regular') type = 'user';
+        else if (type === 'custom') {
+            const section = tableElement.closest('.custom-section');
+            type = section?.dataset.dataType; // Get actual data type from custom section
+        }
+
+        switch (type) {
+            case 'user': idKey = 'id'; break;
+            case 'project': idKey = 'project_id'; break;
+            case 'score': idKey = 'score_id'; break;
+            case 'student': idKey = 'student_id'; break;
+            case 'group': idKey = 'group_id'; break;
+            default: idKey = 'id'; logWarn(`renderTable: Could not determine ID key for table ${tableId}, defaulting to 'id'.`);
+        }
+
 
         if (!dataArray) { dataArray = []; logWarn(`renderTable: dataArray for ${tableId} was undefined, defaulting to empty.`); }
+
+        // Render table header dynamically (ensure it happens before body render)
+        const columns = tableColumnsConfig[tableId];
+        const thead = tableElement.querySelector('thead');
+        if (thead && columns) {
+            thead.innerHTML = `<tr>${columns.map(col => `<th data-col="${col.key}" ${col.key === 'actions' ? 'class="actions"' : ''}>${col.label}</th>`).join('')}</tr>`;
+        } else if (thead) {
+            logWarn(`renderTable: Missing column config for table ${tableId}, cannot render header.`);
+            thead.innerHTML = '<tr><th>Error: Config Missing</th></tr>';
+        }
+
+        // Calculate the correct colspan based on the *defined* columns for the table.
+        const actualColspan = columns ? columns.length : (colspan || 1); // Use config length if possible, else fallback
 
         if (dataArray.length > 0) {
             tbody.innerHTML = dataArray.map(item => {
                 const idValue = item[idKey];
-                // Allow rendering even if ID is missing for some tables? Maybe log warning.
                 if (idValue === undefined || idValue === null) {
                     logWarn(`Item in ${tableId} is missing expected ID ('${idKey}'):`, item);
-                    // return ''; // Option: Skip row if ID is missing
                 }
-                // Use || 0 for ID in data-id if it might be missing but row should still render
                 return `<tr data-id="${idValue || 'no-id-' + Math.random().toString(16).slice(2)}">${renderRowContentFn(item, tableId)}</tr>`;
             }).join('');
         } else {
             // Display a "No items found" message
-            const itemType = tableId.split('-')[0]; // e.g., 'users', 'projects', 'custom'
-            let message = `No ${itemType.replace(/s$/, '')} found.`;
-            if (tableId.startsWith('custom-')) {
-                 const customDef = customTableDefinitions.find(def => tableId.startsWith(def.id));
-                 // Make message more specific based on custom data type
-                 const customDataType = customDef?.dataType?.replace('_table',''); // e.g. 'student', 'judge'
-                 message = `No ${customDataType || 'items'} found for "${customDef?.name || 'this view'}".`;
+            const section = tableElement.closest('.dashboard-section');
+            let itemType = type?.replace(/s$/, '') || tableId.split('-')[0]?.replace(/s$/, ''); // e.g., 'user', 'project'
+            let message = `No ${itemType || 'items'} found.`;
+            if (section?.classList.contains('custom-section')) {
+                 const customDataType = section.dataset.dataType?.replace('_table',''); // e.g. 'student', 'judge'
+                 const customName = section.querySelector('h2')?.textContent.trim() || 'this view';
+                 message = `No ${customDataType || 'items'} found matching the criteria for "${customName}".`;
             } else if (tableId === 'pending-judges-table') message = 'No pending judge requests found.';
+            else if (tableId === 'judges-table') message = 'No users with the Judge role found.';
+            else if (tableId === 'regular-users-table') message = 'No users with the User role found.';
             // Add more specific messages if needed
 
-            tbody.innerHTML = `<tr class="no-items-row"><td colspan="${colspan || 1}">${message}</td></tr>`;
+            tbody.innerHTML = `<tr class="no-items-row"><td colspan="${actualColspan}">${message}</td></tr>`;
         }
          // After rendering, apply column visibility for this specific table
-         const tableElement = document.getElementById(tableId);
-         if(tableElement) applyColumnVisibility(tableElement);
+         applyColumnVisibility(tableElement);
     }
 
     // --- Form Submission Handler (Add/Update) ---
-    // MODIFIED: Now handles User, Project, Score, Student, Group
     /**
      * Handles submission of Add/Edit forms in modals (User, Project, Score, Student, Group).
      * @param {Event} event The form submission event.
@@ -2890,11 +3124,17 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleFormSubmit(event) {
         event.preventDefault();
         const form = event.target;
+        // Exclude judge assignment form, handled separately
+        if (form.id === 'judge-assignment-form') return;
+
         const type = form.id.split('-')[0]; // 'user', 'project', 'score', 'student', 'group'
         const supportedTypes = ['user', 'project', 'score', 'student', 'group'];
 
         // Check if type is supported by this form handler
         if (!type || !supportedTypes.includes(type)) {
+             if (form.id === 'column-config-form' || form.id === 'custom-table-form') {
+                 return; // Handled elsewhere
+             }
             logError("handleFormSubmit: Could not determine supported type from form ID:", form.id);
             showNotification(`Internal error: Form type '${type}' not handled.`, "error");
             return;
@@ -2923,7 +3163,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!data.project_name && type === 'project') { showNotification('Project Name is required.', 'error'); return; }
         if (!data.group_id && type === 'project') { showNotification('Group ID is required.', 'error'); return; }
         if (!data.student_name && type === 'student') { showNotification('Student Name is required.', 'error'); return; }
-        // Group name is optional, Project ID is optional for group add/edit
 
         if (type === 'user' && method === 'POST' && !data.password) { showNotification('Password is required for new users.', 'error'); return; }
         if (type === 'user' && method === 'PUT' && data.password === '') {
@@ -2935,12 +3174,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isNaN(scoreVal) || scoreVal < 1 || scoreVal > 100) {
                 showNotification('Score must be a whole number between 1 and 100.', 'error'); return;
             }
+             if (!data.category?.trim()) { showNotification('Category is required.', 'error'); return; } // Add category check
             if (!data.project_id) { showNotification('Project selection is required.', 'error'); return; }
             if (!data.judge_id) { showNotification('Judge selection is required.', 'error'); return; }
         }
 
         // Convert numeric fields expected by backend
-        // Handle potentially empty strings from select fields for optional FKs
         try {
             if (data.group_id && type === 'project') data.group_id = parseInt(data.group_id, 10);
             if (data.score_given) data.score_given = parseInt(data.score_given, 10);
@@ -2954,10 +3193,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validate parsing results where applicable
              if (isNaN(data.group_id) && type === 'project') throw new Error("Project Group ID is not a valid number.");
-             if (isNaN(data.project_id) && type === 'score' && data.project_id !== null) throw new Error("Score Project ID is not valid."); // Allow null? No, required.
-             if (isNaN(data.judge_id) && type === 'score' && data.judge_id !== null) throw new Error("Score Judge ID is not valid."); // Allow null? No, required.
-             if (isNaN(data.group_id) && type === 'student' && data.group_id !== null) throw new Error("Student Group ID is not valid."); // Allow null
-             if (isNaN(data.project_id) && type === 'group' && data.project_id !== null) throw new Error("Group Project ID is not valid."); // Allow null
+             if (isNaN(data.project_id) && type === 'score' && data.project_id !== null) throw new Error("Score Project ID is not valid.");
+             if (isNaN(data.judge_id) && type === 'score' && data.judge_id !== null) throw new Error("Score Judge ID is not valid.");
+             if (isNaN(data.group_id) && type === 'student' && data.group_id !== null) throw new Error("Student Group ID is not valid.");
+             if (isNaN(data.project_id) && type === 'group' && data.project_id !== null) throw new Error("Group Project ID is not valid.");
 
         } catch (e) {
             logError("Error parsing numeric fields:", e);
@@ -2988,24 +3227,57 @@ document.addEventListener('DOMContentLoaded', function() {
                      if (!arr) { logError(`Local data array for type ${type} is undefined.`); return; }
                     const index = arr.findIndex(item => String(item[currentIdKey]) === String(newItem[currentIdKey]));
                     if (index > -1) { // Update existing item
-                        // Enrich score data specifically
+                        if (type === 'project' && newItem.assigned_judges === undefined) {
+                             newItem.assigned_judges = arr[index].assigned_judges;
+                             logDebug("Preserved existing assigned_judges for updated project.");
+                        }
+                        // Pre-enrich the received item *before* storing it locally
                          if (type === 'score') {
-                             returnedData.project_name = result.score.project_name || initialProjects.find(p => p.project_id === returnedData.project_id)?.project_name || 'N/A';
-                             returnedData.judge_name = result.score.judge_name || initialUsers.find(u => u.id === returnedData.judge_id)?.name || 'N/A';
+                             const project = initialProjects.find(p => p.project_id === newItem.project_id);
+                             const judge = initialUsers.find(u => u.id === newItem.judge_id);
+                             newItem.project_name = project ? project.project_name : 'N/A';
+                             newItem.judge_name = judge ? judge.name : 'N/A';
+                             newItem.group_id = project ? project.group_id : 'N/A';
+                             newItem.judge_email = judge ? judge.email : 'N/A';
                          }
-                         // Ensure user pending flag is handled
                          else if (type === 'user') {
-                              if(returnedData.judge_request_pending === undefined){
-                                 returnedData.judge_request_pending = arr[index].judge_request_pending;
+                              if(newItem.judge_request_pending === undefined){
+                                 newItem.judge_request_pending = arr[index].judge_request_pending;
                               }
+                         } else if (type === 'project') {
+                             // Ensure assigned_judges is an array
+                             if (!Array.isArray(newItem.assigned_judges)) newItem.assigned_judges = [];
+                             // Ensure judge refs have names
+                              newItem.assigned_judges.forEach(judgeRef => {
+                                 if (!judgeRef.name) {
+                                     const fullJudge = initialUsers.find(u => u.id === judgeRef.id);
+                                     judgeRef.name = fullJudge ? fullJudge.name : 'Unknown Judge';
+                                 }
+                             });
                          }
-                        arr[index] = { ...arr[index], ...returnedData }; // Overwrite existing with new data
+
+                        arr[index] = { ...arr[index], ...newItem }; // Overwrite existing with new data
                         logDebug(`Updated item in local array '${type}' at index ${index}`);
                     } else { // Add new item
-                         // Enrich score with names on add
+                         // Pre-enrich the new item before adding
                          if (type === 'score') {
-                             returnedData.project_name = result.score.project_name || initialProjects.find(p => p.project_id === returnedData.project_id)?.project_name || 'N/A';
-                             returnedData.judge_name = result.score.judge_name || initialUsers.find(u => u.id === returnedData.judge_id)?.name || 'N/A';
+                             const project = initialProjects.find(p => p.project_id === newItem.project_id);
+                             const judge = initialUsers.find(u => u.id === newItem.judge_id);
+                             newItem.project_name = project ? project.project_name : 'N/A';
+                             newItem.judge_name = judge ? judge.name : 'N/A';
+                             newItem.group_id = project ? project.group_id : 'N/A';
+                             newItem.judge_email = judge ? judge.email : 'N/A';
+                         }
+                         if (type === 'project') {
+                             // Ensure assigned_judges is initialized correctly for new projects
+                             if (!Array.isArray(newItem.assigned_judges)) newItem.assigned_judges = [];
+                             // Should typically be empty on add, but check anyway
+                              newItem.assigned_judges.forEach(judgeRef => {
+                                 if (!judgeRef.name) {
+                                     const fullJudge = initialUsers.find(u => u.id === judgeRef.id);
+                                     judgeRef.name = fullJudge ? fullJudge.name : 'Unknown Judge';
+                                 }
+                             });
                          }
                         arr.unshift(newItem); // Add to the beginning for visibility
                         logDebug(`Added new item to local array '${type}'`);
@@ -3034,90 +3306,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } else {
                  logWarn(`No specific data object ('${supportedTypes.join("', '")}') found in the successful API response.`, result);
-                 showNotification('Operation successful, but couldn\'t update UI precisely. Consider refreshing.', 'warning');
-                 // fetchAllDataAndRender(); // Fallback to full refresh if needed
+                 // Attempt a full refresh as a fallback if no specific data returned
+                 fetchAllDataAndRender();
             }
             closeModal(); // Close modal on success
         } catch (error) {
             logError("Form submission failed:", error);
-            // Display more specific error from API if available
             showNotification(`Error: ${error.message}`, 'error', 8000); // Show error longer
             if (submitBtn) restoreButtonState(submitBtn); // Restore button on error
         }
     }
     // Attach submit handler to relevant forms
     Object.values(formMap).forEach(form => {
-        // Exclude column config and custom table forms (handled separately)
-        if (form && form.id !== 'column-config-form' && form.id !== 'custom-table-form') {
+        if (form && form.id !== 'column-config-form' && form.id !== 'custom-table-form' && form.id !== 'judge-assignment-form') {
              form.addEventListener('submit', handleFormSubmit);
         }
     });
 
     /**
      * Re-renders tables potentially affected by a data change.
-     * Includes standard and custom tables.
-     * @param {('user'|'project'|'score'|'student'|'group'|'ranking'|'judge_table'|'credential'|'permission')} type The type of data that changed.
+     * Includes standard and custom tables. Assumes data has been enriched.
+     * @param {('user'|'project'|'score'|'student'|'group')} type The type of data that changed.
      * @param {object} changedData The new/updated data object (used mainly for logging).
      */
      function refreshAffectedTables(type, changedData) {
          logDebug(`Refreshing tables affected by ${type} change:`, changedData);
          const standardTypes = ['user', 'project', 'score']; // Types with dedicated sections
 
+         // Define column counts from config for colspan
+         const usersColCount = tableColumnsConfig['users-table']?.length || 5;
+         const pendingColCount = tableColumnsConfig['pending-judges-table']?.length || 4;
+         const judgesColCount = tableColumnsConfig['judges-table']?.length || 4;
+         const regularColCount = tableColumnsConfig['regular-users-table']?.length || 4;
+         const projectsColCount = tableColumnsConfig['projects-table']?.length || 6;
+         const scoresColCount = tableColumnsConfig['scores-table']?.length || 9;
+
          // --- Refresh Standard Tables (if the changed type is one of them) ---
          if (standardTypes.includes(type)) {
-             if (type === 'user') {
-                 renderTable('users-table', initialUsers, renderUserRowContent, tableColumnsConfig['users-table']?.length || 5);
+             if (type === 'user') { // User change affects Users, Pending, Judges, Regular, Projects (judge names), Scores (judge names)
+                 enrichAllData(); // Re-enrich everything as user names/emails might have changed
+                 renderTable('users-table', initialUsers, renderUserRowContent, usersColCount);
                  const pendingJudgesData = initialUsers.filter(u => u.judge_request_pending);
-                 renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, tableColumnsConfig['pending-judges-table']?.length || 4);
+                 renderTable('pending-judges-table', pendingJudgesData, renderUserRowContent, pendingColCount);
                  const judgesData = initialUsers.filter(u => u.role === 'judge');
-                 renderTable('judges-table', judgesData, renderUserRowContent, tableColumnsConfig['judges-table']?.length || 4);
+                 renderTable('judges-table', judgesData, renderUserRowContent, judgesColCount);
                  const regularUsersData = initialUsers.filter(u => u.role === 'user' && !u.judge_request_pending);
-                 renderTable('regular-users-table', regularUsersData, renderUserRowContent, tableColumnsConfig['regular-users-table']?.length || 4);
-                 // Re-render scores as judge names might have changed
-                 initialScores.forEach(score => {
-                    const judge = initialUsers.find(u => u.id === score.judge_id);
-                    score.judge_name = judge ? judge.name : 'N/A';
-                 });
-                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
-                 // Refresh JudgeTable and Credential if User changed
-                 initialJudgesTable.forEach(jt => { if(jt.judge_id === changedData?.id) { jt.judge_name = changedData?.name || 'N/A'; } });
-                 initialCredentials.forEach(cr => { if(cr.judge_id === changedData?.id) { cr.judge_name = changedData?.name || 'N/A'; } });
+                 renderTable('regular-users-table', regularUsersData, renderUserRowContent, regularColCount);
+                 renderTable('projects-table', initialProjects, renderProjectRowContent, projectsColCount); // Re-render projects for judge name updates
+                 const sortedScores = initialScores.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                 renderTable('scores-table', sortedScores, renderScoreRowContent, scoresColCount); // Re-render scores for judge name updates
 
-             } else if (type === 'project') {
-                 renderTable('projects-table', initialProjects, renderProjectRowContent, tableColumnsConfig['projects-table']?.length || 5);
-                 // Re-enrich and render scores as project names might have changed
-                 initialScores.forEach(score => {
-                    const project = initialProjects.find(p => p.project_id === score.project_id);
-                    score.project_name = project ? project.project_name : 'N/A';
-                 });
-                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
-                 // Refresh Rankings if Project changed
-                 initialRankings.forEach(rk => { if(rk.project_id === changedData?.project_id) { rk.project_name = changedData?.project_name || 'N/A'; } });
-                 // Refresh Groups if Project changed (if displaying project name in group table)
-                 // initialGroups.forEach(grp => { if (grp.project_id === changedData?.project_id) { /* update related info */ } });
+             } else if (type === 'project') { // Project change affects Projects, Scores (project name), Groups (project name)
+                 enrichAllData(); // Re-enrich scores and groups
+                 renderTable('projects-table', initialProjects, renderProjectRowContent, projectsColCount);
+                 const sortedScores = initialScores.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                 renderTable('scores-table', sortedScores, renderScoreRowContent, scoresColCount); // Re-render scores for project name updates
 
-             } else if (type === 'score') {
-                 // Re-enrich score data just in case (if names weren't in the response)
-                 const scoreIdKey = 'score_id';
-                 const scoreIndex = initialScores.findIndex(s => String(s[scoreIdKey]) === String(changedData[scoreIdKey]));
-                 if(scoreIndex > -1){
-                    const score = initialScores[scoreIndex];
-                    const project = initialProjects.find(p => p.project_id === score.project_id);
-                    const judge = initialUsers.find(u => u.id === score.judge_id);
-                    score.project_name = project ? project.project_name : 'N/A';
-                    score.judge_name = judge ? judge.name : 'N/A';
-                 }
-                 renderTable('scores-table', initialScores, renderScoreRowContent, tableColumnsConfig['scores-table']?.length || 7);
+             } else if (type === 'score') { // Score change only affects Scores table
+                 // Enrichment should already be done via handleFormSubmit
+                 const sortedScores = initialScores.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                 renderTable('scores-table', sortedScores, renderScoreRowContent, scoresColCount);
              }
          }
-         // Refresh if Group changed (affects Student dropdown/table)
+         // Refresh if Group changed (affects Student dropdown/table, custom group/student tables)
          else if (type === 'group') {
-             // initialStudents might need re-rendering if group name is displayed
-             // Custom tables showing students might need refresh
+             enrichAllData(); // Re-enrich students
          }
-         // Refresh if Student changed (only affects student tables)
+         // Refresh if Student changed (only affects student tables, custom student tables)
          else if (type === 'student') {
-             // Custom tables showing students might need refresh
+             // No standard table displays students directly, but enrichment might be needed if custom tables rely on it
+             // enrichAllData(); // Uncomment if student changes affect other derived data
          }
          else {
              logInfo(`Refresh requested for non-standard type '${type}'. Standard tables not directly refreshed.`);
@@ -3133,14 +3391,11 @@ document.addEventListener('DOMContentLoaded', function() {
              if (customTableDataType === type) {
                  needsRefresh = true;
              }
-             // Indirect dependencies:
-             else if (customTableDataType === 'score' && ['user', 'project'].includes(type)) { needsRefresh = true; } // Score depends on User, Project
-             else if (customTableDataType === 'ranking' && type === 'project') { needsRefresh = true; } // Ranking depends on Project
-             else if (customTableDataType === 'judge_table' && type === 'user') { needsRefresh = true; } // JudgeTable depends on User
-             else if (customTableDataType === 'credential' && type === 'user') { needsRefresh = true; } // Credential depends on User
-             else if (customTableDataType === 'student' && type === 'group') { needsRefresh = true; } // Student depends on Group
-             else if (customTableDataType === 'group' && type === 'project') { needsRefresh = true; } // Group depends on Project
-             // Add more dependencies as needed
+             // Indirect dependencies: Check if the changed type affects the data displayed in the custom table
+             else if (customTableDataType === 'score' && ['user', 'project'].includes(type)) { needsRefresh = true; } // Score display depends on User (judge), Project
+             else if (customTableDataType === 'student' && type === 'group') { needsRefresh = true; } // Student display might depend on Group name
+             else if (customTableDataType === 'group' && type === 'project') { needsRefresh = true; } // Group display might depend on Project name
+             else if (customTableDataType === 'project' && type === 'user') { needsRefresh = true; } // Project display needs update if assigned judge name changes
 
              if (needsRefresh) {
                  logDebug(`Re-filtering and rendering custom section: ${definition.name} (ID: ${definition.id})`);
@@ -3159,29 +3414,22 @@ document.addEventListener('DOMContentLoaded', function() {
                          case 'score': sourceData = initialScores; renderRowFn = renderScoreRowContent; baseConfigKey = 'scores-table'; break;
                          case 'student': sourceData = initialStudents; renderRowFn = renderStudentRowContent; baseConfigKey = 'students-table'; break;
                          case 'group': sourceData = initialGroups; renderRowFn = renderGroupRowContent; baseConfigKey = 'groups-table'; break;
-                         case 'ranking': sourceData = initialRankings; renderRowFn = renderRankingRowContent; baseConfigKey = 'rankings-table'; break;
-                         case 'judge_table': sourceData = initialJudgesTable; renderRowFn = renderJudgeTableRowContent; baseConfigKey = 'judges_table-table'; break;
-                         case 'credential': sourceData = initialCredentials; renderRowFn = renderCredentialRowContent; baseConfigKey = 'credentials-table'; break;
-                         case 'permission': sourceData = initialPermissions; renderRowFn = renderPermissionRowContent; baseConfigKey = 'permissions-table'; break;
+                         // REMOVED cases for deleted types
                          default: logWarn(`Skipping refresh for custom table ${tableId}: Unsupported data type ${customTableDataType}`); return;
                      }
 
                     if (!sourceData) { logWarn(`Skipping refresh for ${tableId}: Source data array is undefined.`); return; }
 
-                    // Enrich data if necessary based on the type that triggered the refresh
-                    if (customTableDataType === 'score' && ['user', 'project'].includes(type)) {
-                        sourceData.forEach(score => { score.project_name = initialProjects.find(p => p.project_id === score.project_id)?.project_name || 'N/A'; score.judge_name = initialUsers.find(u => u.id === score.judge_id)?.name || 'N/A'; });
-                    } else if (customTableDataType === 'ranking' && type === 'project') {
-                        sourceData.forEach(rk => { rk.project_name = initialProjects.find(p => p.project_id === rk.project_id)?.project_name || 'N/A'; });
-                    } else if (customTableDataType === 'judge_table' && type === 'user') {
-                        sourceData.forEach(jt => { jt.judge_name = initialUsers.find(u => u.id === jt.judge_id)?.name || 'N/A'; });
-                    } else if (customTableDataType === 'credential' && type === 'user') {
-                        sourceData.forEach(cr => { cr.judge_name = initialUsers.find(u => u.id === cr.judge_id)?.name || 'N/A'; });
-                    } // Add more enrichments if needed (e.g., Student needs Group name, Group needs Project name)
+                    // Data should be pre-enriched by enrichAllData() call earlier if necessary
 
                     const filteredData = filterData(sourceData, definition.filters);
+                    // Sort scores custom tables by timestamp descending as well
+                    const dataToRender = (customTableDataType === 'score')
+                        ? filteredData.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        : filteredData;
+
                     const currentColspan = tableColumnsConfig[tableId]?.length || tableColumnsConfig[baseConfigKey]?.length || 1;
-                    renderTable(tableId, filteredData, renderRowFn, currentColspan);
+                    renderTable(tableId, dataToRender, renderRowFn, currentColspan);
                  } else {
                       logWarn(`Could not find table element '${tableId}' to refresh custom section ${definition.id}`);
                  }
@@ -3196,34 +3444,53 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Fetches all initial data again from the server (if endpoints exist)
      * OR simply re-renders from the current `initial*` arrays.
+     * NOTE: Recommended to implement backend fetching for full refresh.
      */
-     function fetchAllDataAndRender() {
-         logWarn("fetchAllDataAndRender called - Re-rendering from existing JS data.");
-         // TODO: Implement API calls to fetch fresh data for ALL tables if backend endpoints are available
-         // Example:
-         // Promise.all([
-         //     apiCall(getApiEndpoint('user')), // Assume these return {users: [...]} etc.
-         //     apiCall(getApiEndpoint('project')),
-         //     // ... fetch all other data types ...
-         // ]).then(([userData, projectData, ...]) => {
-         //     initialUsers = userData.users || [];
-         //     initialProjects = projectData.projects || [];
-         //     // ... update all initial* arrays ...
-         //     renderStandardTables();
-         //     loadAndRenderCustomTables();
-         //     populateSelectOptions();
-         //     applyStatesAfterRender();
-         //     showNotification("UI refreshed with latest data from server.", "info", 2000);
-         // }).catch(error => {
-         //     showNotification(`Failed to refresh data from server: ${error.message}`, 'error');
-         // });
+     async function fetchAllDataAndRender() {
+         logWarn("fetchAllDataAndRender called - Attempting full refresh.");
+         showNotification("Refreshing all data...", "info", 3000);
 
-         // --- Current implementation: Just re-render with local data ---
+         // --- OPTION 1: Fetch from backend (RECOMMENDED if endpoints exist) ---
+         try {
+            const userEndpoint = getApiEndpoint('user');
+            const projectEndpoint = getApiEndpoint('project');
+            const scoreEndpoint = getApiEndpoint('score');
+            const studentEndpoint = getApiEndpoint('student');
+            const groupEndpoint = getApiEndpoint('group');
+
+            // Add other endpoints if needed/available
+
+            const requests = [];
+            if (userEndpoint) requests.push(apiCall(userEndpoint).catch(e => { logError("Failed to fetch users", e); return { users: initialUsers }; })); // Fallback to existing
+            if (projectEndpoint) requests.push(apiCall(projectEndpoint).catch(e => { logError("Failed to fetch projects", e); return { projects: initialProjects }; }));
+            if (scoreEndpoint) requests.push(apiCall(scoreEndpoint).catch(e => { logError("Failed to fetch scores", e); return { scores: initialScores }; }));
+            if (studentEndpoint) requests.push(apiCall(studentEndpoint).catch(e => { logError("Failed to fetch students", e); return { students: initialStudents }; }));
+            if (groupEndpoint) requests.push(apiCall(groupEndpoint).catch(e => { logError("Failed to fetch groups", e); return { groups: initialGroups }; }));
+
+            const results = await Promise.all(requests);
+
+            let i = 0;
+            if (userEndpoint) initialUsers = results[i++].users || initialUsers;
+            if (projectEndpoint) initialProjects = results[i++].projects || initialProjects;
+            if (scoreEndpoint) initialScores = results[i++].scores || initialScores;
+            if (studentEndpoint) initialStudents = results[i++].students || initialStudents;
+            if (groupEndpoint) initialGroups = results[i++].groups || initialGroups;
+
+            logInfo("Successfully refreshed data from backend.");
+
+         } catch (error) {
+             logError("Full data refresh failed:", error);
+             showNotification(`Failed to refresh all data: ${error.message}. Displaying cached data.`, 'error');
+             // Fallback to Option 2 (render local data) is implicit if error occurs above
+         }
+
+        // --- OPTION 2: Re-render from (potentially updated) local data ---
+         enrichAllData(); // Enrich the potentially updated local data
          renderStandardTables(); // Render standard tables first
          loadAndRenderCustomTables(); // Re-render custom tables using current local data and filters
          populateSelectOptions(); // Repopulate dropdowns
          applyStatesAfterRender(); // Apply column/collapse states and search
-         showNotification("UI refreshed with current data.", "info", 2000);
+         showNotification("UI refreshed.", "info", 2000);
      }
 
      /** Helper to apply column and collapse states and search filters after rendering */
@@ -3237,29 +3504,14 @@ document.addEventListener('DOMContentLoaded', function() {
      }
 
     // --- Delete Item Handler ---
-    // ... (Keep existing deleteItem - needs extension for Student/Group if required) ...
-    // --- Approve Judge Role Handler ---
-    // ... (Keep existing approveJudgeRole) ...
-    // --- Search Functionality ---
-    // ... (Keep existing handleSearch) ...
-    // --- Actions Dropdown Toggle ---
-    // ... (Keep existing toggleActionsMenu and global click listener) ...
-    // --- Column Visibility Configuration ---
-    // ... (Keep existing getColumnPrefs, saveColumnPrefs, applyColumnVisibility, openColumnConfig, handleColumnToggle) ...
-    // --- Section Collapsing ---
-    // ... (Keep existing getSectionCollapsePrefs, saveSectionCollapsePrefs, toggleSection, applySectionCollapseStates) ...
-    // --- Import/Export ---
-    // ... (Keep existing triggerImport, handleImportFile, exportData) ...
     /**
      * Handles the deletion of an item (User, Project, Score).
-     * Needs extension if deleting items from other tables is required.
-     * @param {('user'|'project'|'score')} type The type of item to delete.
+     * @param {('user'|'project'|'score'|'student'|'group')} type The type of item to delete.
      * @param {number|string} id The ID of the item to delete.
      */
     window.deleteItem = async (type, id) => {
-        // Only handle types with existing modals/API endpoints for deletion
         // TODO: Extend to support 'student', 'group' if delete endpoints are added
-        const deletableTypes = ['user', 'project', 'score'];
+        const deletableTypes = ['user', 'project', 'score']; // Add 'student', 'group' when ready
         if (!deletableTypes.includes(type)) {
             showNotification(`Deletion not implemented for type '${type}'.`, 'warning');
             logWarn(`Attempted to delete unhandled type: ${type}`);
@@ -3274,14 +3526,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const idKey = type === 'user' ? 'id' : `${type}_id`;
         let itemToDelete;
         let sourceArray;
-         if (type === 'user') { sourceArray = initialUsers; itemToDelete = sourceArray.find(item => String(item.id) === String(id)); }
-         else if (type === 'project') { sourceArray = initialProjects; itemToDelete = sourceArray.find(item => String(item.project_id) === String(id)); }
-         else if (type === 'score') { sourceArray = initialScores; itemToDelete = sourceArray.find(item => String(item.score_id) === String(id)); }
-         // else if (type === 'student') { sourceArray = initialStudents; itemToDelete = ... } // Find student
-         // else if (type === 'group') { sourceArray = initialGroups; itemToDelete = ... } // Find group
+         if (type === 'user') { sourceArray = initialUsers; itemToDelete = sourceArray?.find(item => String(item.id) === String(id)); }
+         else if (type === 'project') { sourceArray = initialProjects; itemToDelete = sourceArray?.find(item => String(item.project_id) === String(id)); }
+         else if (type === 'score') { sourceArray = initialScores; itemToDelete = sourceArray?.find(item => String(item.score_id) === String(id)); }
+         // else if (type === 'student') { sourceArray = initialStudents; itemToDelete = sourceArray?.find(...); }
+         // else if (type === 'group') { sourceArray = initialGroups; itemToDelete = sourceArray?.find(...); }
 
         if (itemToDelete) {
-             itemName = itemToDelete.name || itemToDelete.project_name || itemToDelete.student_name || itemToDelete.group_name || (type === 'score' ? `${itemToDelete.category} score` : `ID ${id}`);
+             itemName = itemToDelete.name || itemToDelete.project_name || itemToDelete.student_name || itemToDelete.group_name || (type === 'score' ? `${itemToDelete.category} score for ${itemToDelete.project_name || 'Unknown Project'}` : `ID ${id}`);
         }
 
         if (!confirm(`Are you sure you want to permanently delete ${typeName}: "${itemName}"?\nThis action cannot be undone.`)) {
@@ -3293,8 +3545,8 @@ document.addEventListener('DOMContentLoaded', function() {
              showNotification(`Cannot delete ${type}: API endpoint not configured.`, 'error');
              return;
         }
-        const deleteButton = event?.target.closest('button.btn-delete');
-        if (deleteButton) setButtonLoading(deleteButton, 'Deleting...');
+        const triggerButton = event ? event.target.closest('button.btn-delete') : null;
+        if (triggerButton) setButtonLoading(triggerButton, 'Deleting...');
 
         try {
             const result = await apiCall(endpoint, 'DELETE');
@@ -3318,11 +3570,15 @@ document.addEventListener('DOMContentLoaded', function() {
                          logDebug(`Removed scores associated with deleted user ID ${id} from local cache.`);
                     }
                     if(type === 'user') { // User (judge) deleted
-                        initialJudgesTable = initialJudgesTable.filter(jt => String(jt.judge_id) !== String(id));
-                        initialCredentials = initialCredentials.filter(cr => String(cr.judge_id) !== String(id));
+                        // Remove deleted judge from any project assignments
+                        initialProjects.forEach(proj => {
+                           if(Array.isArray(proj.assigned_judges)){
+                               proj.assigned_judges = proj.assigned_judges.filter(judge => String(judge.id) !== String(id));
+                           }
+                        });
+                        logDebug(`Removed deleted user ID ${id} from project assignments.`);
                     }
                      if(type === 'project') { // Project deleted
-                        initialRankings = initialRankings.filter(rk => String(rk.project_id) !== String(id));
                         // Unlink from groups locally if backend uses SET NULL on FK
                         initialGroups.forEach(grp => { if (String(grp.project_id) === String(id)) grp.project_id = null; });
                         logDebug(`Unlinked groups associated with deleted project ID ${id}.`);
@@ -3332,6 +3588,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         initialStudents.forEach(std => { if (String(std.group_id) === String(id)) std.group_id = null; });
                         logDebug(`Unlinked students associated with deleted group ID ${id}.`);
                     }
+                    // Re-enrich data after potential cascading deletes/updates
+                    enrichAllData();
 
                 } else { logWarn(`Item with ID ${id} not found in local data array for type ${type} after successful delete.`); }
              } else { logWarn(`Source array for type '${type}' not found.`); }
@@ -3345,10 +3603,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             logError(`Failed to delete ${type} ID ${id}:`, error);
             showNotification(`Error deleting ${typeName}: ${error.message}`, 'error');
-            if (deleteButton) restoreButtonState(deleteButton);
         } finally {
-             // Close actions menu if open
-             const menu = deleteButton?.closest('.actions-menu');
+            if (triggerButton) restoreButtonState(triggerButton); // Restore button state
+             const menu = triggerButton?.closest('.actions-menu');
              if (menu?.classList.contains('show')) {
                  menu.classList.remove('show');
                  menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
@@ -3393,20 +3650,29 @@ document.addEventListener('DOMContentLoaded', function() {
                      initialUsers[userIndex] = { ...initialUsers[userIndex], ...returnedUser }; // Update local user
                  } else { logError("User approved, but not found in local initialUsers array for update."); }
 
+                 enrichAllData(); // Re-enrich relevant data (scores, projects)
                  refreshAffectedTables('user', returnedUser); // Refresh using updated local data
                  populateSelectOptions(); // Role change affects judge dropdown in score modal
 
              } else {
                  logWarn("Approval successful, but no updated user data object received.", result);
-                 showNotification('Approval successful. Refreshing data might be needed.', 'warning');
-                 fetchAllDataAndRender(); // Refresh all as fallback
+                 // Fallback: Manually update local state if response is minimal
+                 const userIndex = initialUsers.findIndex(u => String(u.id) === String(userId));
+                 if (userIndex !== -1) {
+                    initialUsers[userIndex].role = 'judge';
+                    initialUsers[userIndex].judge_request_pending = false;
+                    enrichAllData(); // Re-enrich relevant data
+                    refreshAffectedTables('user', initialUsers[userIndex]);
+                    populateSelectOptions();
+                 } else {
+                    showNotification('Approval successful, but UI update failed. Consider refreshing.', 'warning');
+                 }
              }
         } catch (error) {
             logError(`Failed to approve judge role for user ID ${userId}:`, error);
             showNotification(`Error approving judge: ${error.message}`, 'error');
-            if (approveButton) restoreButtonState(approveButton); // Restore button on error
         } finally {
-             // Close actions menu if open
+            if (approveButton) restoreButtonState(approveButton); // Restore button on error
              const menu = approveButton?.closest('.actions-menu');
              if (menu?.classList.contains('show')) {
                  menu.classList.remove('show');
@@ -3414,6 +3680,191 @@ document.addEventListener('DOMContentLoaded', function() {
              }
         }
     };
+
+    // --- Judge Assignment Logic ---
+    /**
+     * Opens the modal to assign/unassign judges for a specific project.
+     * @param {number|string} projectId The ID of the project.
+     */
+    window.openJudgeAssignmentModal = async (projectId) => {
+        logDebug(`Opening judge assignment modal for project ID: ${projectId}`);
+        const modal = modalMap.judgeAssignment;
+        const form = formMap.judgeAssignment;
+        const listContainer = document.getElementById('judge-assignment-list');
+        const projectNameEl = document.getElementById('assignment-project-name');
+        const projectIdInput = document.getElementById('assignment-project-id');
+
+        if (!modal || !form || !listContainer || !projectNameEl || !projectIdInput) {
+             logError("Judge assignment modal elements not found.");
+             showNotification("Error: Cannot open assignment modal.", "error");
+             return;
+        }
+
+        // Find project name from local data
+        const project = initialProjects.find(p => String(p.project_id) === String(projectId));
+        const projectName = project ? project.project_name : `ID ${projectId}`;
+        projectNameEl.textContent = projectName;
+        projectIdInput.value = projectId;
+        listContainer.innerHTML = '<p>Loading judges...</p>'; // Show loading state
+
+        // Prepare list of available judges (role 'judge' or 'admin')
+        const availableJudges = initialUsers
+            .filter(u => ['judge', 'admin'].includes(u.role))
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+        if (availableJudges.length === 0) {
+            listContainer.innerHTML = '<p>No users with Judge or Admin role found.</p>';
+            openGenericModal(modal, `Assign Judges to <span class="project-name-highlight">${projectName}</span>`);
+            return;
+        }
+
+        // Fetch currently assigned judges for this project from the backend
+        let currentlyAssignedIds = new Set();
+        const assignmentEndpoint = getApiEndpoint('projectJudges', projectId);
+        if (!assignmentEndpoint) {
+             listContainer.innerHTML = '<p style="color:red;">Error: API endpoint for assignments not configured.</p>';
+             openGenericModal(modal, `Assign Judges to <span class="project-name-highlight">${projectName}</span>`);
+             return;
+        }
+
+        try {
+            const assignedResult = await apiCall(assignmentEndpoint, 'GET');
+            if (assignedResult && Array.isArray(assignedResult.judges)) {
+                assignedResult.judges.forEach(j => currentlyAssignedIds.add(String(j.id)));
+                logDebug(`Currently assigned judge IDs for project ${projectId}:`, Array.from(currentlyAssignedIds));
+            } else {
+                 logWarn(`No assigned judges found or invalid format received from API for project ${projectId}. Response:`, assignedResult);
+                 // Use local cache if available as fallback?
+                 if (project && Array.isArray(project.assigned_judges)) {
+                     project.assigned_judges.forEach(j => currentlyAssignedIds.add(String(j.id)));
+                     logDebug(`Using locally cached assigned judge IDs for project ${projectId}`);
+                 }
+            }
+        } catch (error) {
+            logError(`Failed to fetch currently assigned judges for project ${projectId}:`, error);
+            listContainer.innerHTML = `<p style="color:red;">Error loading current assignments: ${error.message}</p>`;
+             // Use local cache if available as fallback?
+             if (project && Array.isArray(project.assigned_judges)) {
+                 project.assigned_judges.forEach(j => currentlyAssignedIds.add(String(j.id)));
+                 logDebug(`Using locally cached assigned judge IDs for project ${projectId}`);
+             } else {
+                // Continue to show available judges anyway without pre-selection
+             }
+        }
+
+        // Populate the checkbox list
+        listContainer.innerHTML = ''; // Clear loading/error message
+        availableJudges.forEach(judge => {
+            const isChecked = currentlyAssignedIds.has(String(judge.id));
+            const div = document.createElement('div');
+            div.className = 'judge-item';
+            div.innerHTML = `
+                <input type="checkbox" id="assign-judge-${judge.id}" name="judge_ids" value="${judge.id}" ${isChecked ? 'checked' : ''}>
+                <label for="assign-judge-${judge.id}">${safeVal(judge.name)} (${judge.role}, ID: ${judge.id})</label>
+            `;
+            listContainer.appendChild(div);
+        });
+
+        // Ensure save button is in default state
+        const saveBtn = form.querySelector('button[type="submit"]');
+        if (saveBtn) restoreButtonState(saveBtn);
+
+        openGenericModal(modal, `Assign Judges to <span class="project-name-highlight">${projectName}</span>`);
+    };
+
+    /**
+     * Handles the submission of the judge assignment form.
+     * @param {Event} event The form submission event.
+     */
+    async function handleJudgeAssignmentSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const projectId = form.elements['project_id']?.value;
+
+        if (!projectId) {
+            logError("handleJudgeAssignmentSubmit: Missing project ID in form.");
+            showNotification("Internal error: Project ID missing.", "error");
+            return;
+        }
+
+        // Get selected judge IDs from checkboxes
+        const formData = new FormData(form);
+        const selectedJudgeIds = formData.getAll('judge_ids').map(id => parseInt(id, 10)); // Ensure IDs are numbers
+        logDebug(`Submitting judge assignments for project ${projectId}. Selected IDs:`, selectedJudgeIds);
+
+        // *** REQUIRES BACKEND ENDPOINT: PUT /admin/projects/{projectId}/judges ***
+        const endpoint = getApiEndpoint('projectJudges', projectId);
+        if (!endpoint) {
+             showNotification(`Cannot update assignments: API endpoint not configured.`, 'error');
+             return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        setButtonLoading(submitBtn, 'Saving...');
+
+        try {
+            // Send the list of selected IDs in the request body
+            const result = await apiCall(endpoint, 'PUT', { judge_ids: selectedJudgeIds });
+            logDebug("Judge assignment update successful:", result);
+            showNotification(result.message || `Judge assignments updated successfully for project ${projectId}.`, 'success');
+
+            // Update local project data - expect updated project object in response
+             if (result.project) {
+                 const updatedProject = result.project;
+                 // Ensure assigned_judges is an array and has names in the response
+                 if (!Array.isArray(updatedProject.assigned_judges)) {
+                     logWarn("API response for assignment update missing or has invalid 'assigned_judges' array. Using selected IDs for UI update.", updatedProject);
+                     updatedProject.assigned_judges = selectedJudgeIds.map(id => {
+                         const judge = initialUsers.find(u => u.id === id);
+                         return { id: id, name: judge ? judge.name : 'Unknown' };
+                     });
+                 } else {
+                     // Ensure judge refs have names
+                      updatedProject.assigned_judges.forEach(judgeRef => {
+                         if (!judgeRef.name) {
+                             const fullJudge = initialUsers.find(u => u.id === judgeRef.id);
+                             judgeRef.name = fullJudge ? fullJudge.name : 'Unknown Judge';
+                         }
+                     });
+                 }
+
+
+                 const projectIndex = initialProjects.findIndex(p => String(p.project_id) === String(projectId));
+                 if (projectIndex > -1) {
+                     initialProjects[projectIndex] = { ...initialProjects[projectIndex], ...updatedProject };
+                     logDebug(`Updated local project data for ID ${projectId}:`, initialProjects[projectIndex]);
+                 } else {
+                     logError(`Project ID ${projectId} not found in local data after successful assignment update.`);
+                 }
+             } else {
+                  logWarn("Judge assignment successful, but no updated project data received. Updating local cache based on selection.");
+                  // Attempt to update local data based on selection as fallback
+                  const projectIndex = initialProjects.findIndex(p => String(p.project_id) === String(projectId));
+                  if (projectIndex > -1) {
+                      initialProjects[projectIndex].assigned_judges = selectedJudgeIds.map(id => {
+                           const judge = initialUsers.find(u => u.id === id);
+                           return { id: id, name: judge ? judge.name : 'Unknown' };
+                      });
+                  }
+             }
+
+             // Refresh project table and any custom tables showing projects
+             refreshAffectedTables('project', { project_id: projectId });
+
+            closeModal();
+
+        } catch (error) {
+            logError(`Failed to update judge assignments for project ${projectId}:`, error);
+            showNotification(`Error updating assignments: ${error.message}`, 'error', 8000);
+            if (submitBtn) restoreButtonState(submitBtn); // Restore button on error
+        }
+    }
+    // Attach submit handler to the judge assignment form
+    if (formMap.judgeAssignment) {
+        formMap.judgeAssignment.addEventListener('submit', handleJudgeAssignmentSubmit);
+    }
+
+    // --- Search Functionality ---
     /**
      * Filters table rows based on search input.
      * @param {Event} event The input or search event.
@@ -3430,8 +3881,8 @@ document.addEventListener('DOMContentLoaded', function() {
          const rows = tbody.querySelectorAll('tr:not(.no-items-row):not(.no-search-results)'); // Select only data rows
 
          rows.forEach(row => {
-             // Check text content of all non-action cells for a match
-             const match = Array.from(row.querySelectorAll('td'))
+             // Check text content of all non-action, VISIBLE cells for a match
+             const match = Array.from(row.querySelectorAll('td:not(.column-hidden)')) // Only search visible columns
                               .filter(cell => !cell.classList.contains('actions')) // Exclude actions column
                               .some(cell => cell.textContent.toLowerCase().includes(searchTerm));
              row.style.display = match ? '' : 'none';
@@ -3481,6 +3932,8 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener('search', handleSearch); // Handle clearing search via 'x' button
         });
     }
+
+    // --- Actions Dropdown Toggle ---
     /**
      * Toggles the visibility of the actions dropdown menu for a table row.
      * Closes other open menus.
@@ -3506,15 +3959,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Global click listener to close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
-         // If the click is not inside an actions dropdown, close all menus
          if (!event.target.closest('.actions-dropdown')) {
              document.querySelectorAll('.actions-menu.show').forEach(menu => {
                  menu.classList.remove('show');
                  menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
              });
          }
-     }, true); // Use capture phase to catch clicks early
-         /** Gets column visibility preferences from localStorage. */
+     }, true); // Use capture phase
+
+    // --- Column Visibility Configuration ---
+    /** Gets column visibility preferences from localStorage. */
     function getColumnPrefs() {
         try {
             const prefsString = localStorage.getItem(COLUMN_CONFIG_STORAGE_KEY);
@@ -3548,10 +4002,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const columns = tableColumnsConfig[tableId]; // Get column definitions for THIS table ID
 
         if (!columns) {
-            logWarn(`No column config found in tableColumnsConfig for table ID: ${tableId}. Cannot apply visibility.`);
+            // Config might not be ready for custom tables during initial render cycles, don't warn excessively
+            // logWarn(`No column config found in tableColumnsConfig for table ID: ${tableId}. Cannot apply visibility.`);
             return;
         }
-        // logDebug(`Applying column visibility for table '${tableId}'`, tablePrefs);
 
         let visibleColCount = 0;
         columns.forEach(colConfig => {
@@ -3599,22 +4053,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const tablePrefs = allPrefs[tableId] || {};
 
         columns.forEach(colConfig => {
-            // Only show checkboxes for columns that are NOT always visible
-            if (colConfig.alwaysVisible) return;
+            if (colConfig.alwaysVisible) return; // Skip always visible columns
 
             const colKey = colConfig.key;
-            const isChecked = (tablePrefs[colKey] !== false); // Default to checked (visible) if not explicitly false
+            const isChecked = (tablePrefs[colKey] !== false); // Default to checked (visible)
 
             const label = document.createElement('label');
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.name = colKey; // Use column key as name
+            checkbox.name = colKey;
             checkbox.checked = isChecked;
-            checkbox.dataset.tableId = tableId; // Store target table ID on checkbox
-            checkbox.addEventListener('change', handleColumnToggle); // Attach listener
+            checkbox.dataset.tableId = tableId;
+            checkbox.addEventListener('change', handleColumnToggle);
 
             label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(` ${colConfig.label}`)); // Add label text
+            label.appendChild(document.createTextNode(` ${colConfig.label}`));
             configOptionsDiv.appendChild(label);
         });
         openGenericModal(configModal, `Configure Columns for ${tableName}`);
@@ -3638,13 +4091,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update and save preferences
         const prefs = getColumnPrefs();
         if (!prefs[tableId]) { prefs[tableId] = {}; }
-        prefs[tableId][colKey] = isVisible; // Store boolean state
+        prefs[tableId][colKey] = isVisible;
         saveColumnPrefs(prefs);
 
         // Apply the change visually to the table
         const tableElement = document.getElementById(tableId);
         if (tableElement) {
-             applyColumnVisibility(tableElement); // Re-apply all visibility rules for this table
+             applyColumnVisibility(tableElement);
              // Re-run search if active to ensure 'no results' colspan is correct
              const searchInput = document.querySelector(`.table-search[data-table="${tableId}"]`);
              if (searchInput && searchInput.value) {
@@ -3654,6 +4107,8 @@ document.addEventListener('DOMContentLoaded', function() {
             logWarn(`handleColumnToggle: Table element not found for ID '${tableId}' during visual update.`);
         }
     }
+
+    // --- Section Collapsing ---
     /** Gets section collapse preferences from localStorage. */
     function getSectionCollapsePrefs() {
         try {
@@ -3695,21 +4150,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.dashboard-section[data-section-id]').forEach(section => {
             const sectionId = section.dataset.sectionId;
             const shouldCollapse = prefs[sectionId] === true; // Check if explicitly saved as collapsed
-            // Ensure class matches saved state
             section.classList.toggle('section-collapsed', shouldCollapse);
-            // Update toggle icon state (optional, good for initial load consistency)
             const icon = section.querySelector('.section-header .toggle-icon');
             if (icon) icon.style.transform = shouldCollapse ? 'rotate(-90deg)' : '';
         });
     }
-        /**
+
+    // --- Import/Export ---
+    /**
      * Triggers the hidden file input for the specified import type.
      * @param {('user'|'project')} type The type of data to import.
      */
-        window.triggerImport = (type) => {
+    window.triggerImport = (type) => {
         const fileInput = fileInputMap[type];
         if (fileInput) {
-            fileInput.value = ''; // Clear previous selection to allow re-importing same file
+            fileInput.value = ''; // Clear previous selection
             fileInput.click(); // Open file dialog
         } else {
             logError(`No file input found for import type: ${type}`);
@@ -3724,22 +4179,21 @@ document.addEventListener('DOMContentLoaded', function() {
      */
      async function handleImportFile(event, type) {
          const fileInput = event.target;
-         const file = fileInput.files?.[0]; // Use optional chaining
+         const file = fileInput.files?.[0];
          if (!file) { logDebug("No file selected for import."); return; }
 
          logInfo(`Importing ${type} from file: ${file.name} (Type: ${file.type}, Size: ${file.size} bytes)`);
 
-         // Basic file type check (can be spoofed, backend must validate)
+         // Basic file type check (rely on accept attribute mostly, backend MUST validate)
          if (!file.name.toLowerCase().endsWith('.xlsx') && file.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
              showNotification("Invalid file type. Please upload an XLSX file.", "error");
-             fileInput.value = ''; // Clear invalid selection
+             fileInput.value = '';
              return;
          }
 
          const formData = new FormData();
-         formData.append('file', file); // Backend expects 'file' key
+         formData.append('file', file);
 
-         // Construct endpoint type (e.g., 'importUser', 'importProject')
          const endpointType = `import${type.charAt(0).toUpperCase() + type.slice(1)}`;
          const endpoint = getApiEndpoint(endpointType);
           if (!endpoint) {
@@ -3747,7 +4201,6 @@ document.addEventListener('DOMContentLoaded', function() {
              return;
          }
 
-         // Find the corresponding import button to show loading state
          const importButton = document.querySelector(`.btn-import[onclick="triggerImport('${type}')"]`);
          if (importButton) setButtonLoading(importButton, 'Importing...');
 
@@ -3758,40 +4211,34 @@ document.addEventListener('DOMContentLoaded', function() {
              let message = result.message || `Import for ${type} completed.`;
              let notificationType = result.status === 'success' ? 'success' : (result.status === 'warning' ? 'warning' : 'info');
 
-             // Append error details if present
              if (result.errors && result.errors.length > 0) {
                  const errorCount = result.errors.length;
                  message += ` ${errorCount} row(s) had errors or were skipped.`;
-                 notificationType = 'warning'; // Treat as warning if there were errors
+                 notificationType = 'warning';
                  logWarn(`Import errors/skipped rows (${errorCount}):`, result.errors);
-                 // Optionally display detailed errors in console or a dedicated log area
                  console.groupCollapsed(`Import Errors (${type}) - Check console for details`);
                  result.errors.forEach(err => console.warn(err));
                  console.groupEnd();
                  message += " Check browser console (F12) for details."
              }
 
-             showNotification(message, notificationType, notificationType === 'warning' ? 10000 : 5000); // Show warnings longer
+             showNotification(message, notificationType, notificationType === 'warning' ? 10000 : 5000);
 
              // Refresh data after import completes (successfully or with warnings)
              if (result.status !== 'error') { // Avoid refresh on total failure reported by apiCall
-                 showNotification("Refreshing data...", "info", 2000);
-                 // IMPORTANT: Need to re-fetch data from backend if import modified DB
-                 // For now, we just re-render the frontend state, which won't reflect DB changes from import
-                 // Replace with fetchAllDataAndRender() if backend provides fetch endpoints
-                 fetchAllDataAndRender(); // Assuming this fetches fresh data or user understands limitation
+                 fetchAllDataAndRender(); // Fetch fresh data from backend
              }
 
          } catch (error) {
              logError(`Import failed for ${type}:`, error);
              showNotification(`Import Error: ${error.message}`, 'error', 8000);
          } finally {
-             if (importButton) restoreButtonState(importButton); // Restore button state
-             fileInput.value = ''; // Clear file input regardless of outcome
+             if (importButton) restoreButtonState(importButton);
+             fileInput.value = ''; // Clear file input
          }
      }
 
-     // Attach file input listeners using the map
+     // Attach file input listeners
      Object.keys(fileInputMap).forEach(type => {
         const input = fileInputMap[type];
         if (input) {
@@ -3804,10 +4251,8 @@ document.addEventListener('DOMContentLoaded', function() {
       * @param {('user'|'project'|'score')} type The type of data to export.
       */
      window.exportData = (type) => {
-         // Construct endpoint type (e.g., 'exportUser', 'exportProject')
          const endpointType = `export${type.charAt(0).toUpperCase() + type.slice(1)}`;
          try {
-            // Check if export is supported for this type
             if (!['user', 'project', 'score'].includes(type)) {
                 showNotification(`Export not currently supported for ${type}.`, 'warning');
                 return;
@@ -3818,9 +4263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  return;
              }
             logInfo(`Initiating export for ${type} via endpoint: ${endpoint}`);
-            // Simple redirect triggers the file download
             window.location.href = endpoint;
-            // Optionally provide user feedback
             showNotification(`Export started for ${type}s...`, 'info', 3000);
          } catch (error) {
             logError(`Failed to get export endpoint for ${type}:`, error);
@@ -3839,20 +4282,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // 1. Register initial STANDARD table bodies
         registerTableBodies();
 
-        // 2. Render STANDARD tables from initial JS data
-        renderStandardTables();
+        // 2. Enrich Data (add derived fields like names, emails, group IDs etc.)
+        enrichAllData();
 
-        // 3. Populate static dropdowns (Score, Student, Group modals)
+        // 3. Render STANDARD tables from initial (now enriched) JS data
+        renderStandardTables(); // This now also renders headers and applies initial column visibility
+
+        // 4. Populate static dropdowns (Score, Student, Group modals)
         populateSelectOptions();
 
-        // 4. Load definitions and render CUSTOM tables from localStorage
-        // This will also register custom table bodies
-        loadAndRenderCustomTables();
+        // 5. Load definitions and render CUSTOM tables from localStorage
+        loadAndRenderCustomTables(); // This now also registers custom table bodies, renders headers, and applies initial visibility
 
-        // 5. Attach search listeners AFTER all tables (incl. custom) are rendered
+        // 6. Attach search listeners AFTER all tables (incl. custom) are rendered
         attachSearchListeners();
 
-        // 6. Apply persistent states (collapse & columns) AFTER all sections are rendered
+        // 7. Apply persistent states (collapse & columns) AFTER all sections/tables are rendered
         applyStatesAfterRender();
 
         logInfo("Dashboard initialization complete.");
