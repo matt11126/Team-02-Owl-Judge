@@ -4,438 +4,754 @@
 
 {% block head_extra %}
 <style>
-  :root {
-    --white: #fff;
-    --light-gray: #f8f9fa;
-    --medium-gray: #dee2e6;
-    --dark-gray: #6c757d;
-    --ksu-black: #231F20;
-    --ksu-gold: #FDB927;
-    --ksu-dark-gold: #c79100;
-    --error-color: #e74c3c;
-    --primary-font: 'Montserrat', sans-serif;
-  }
-
-  /* Overall container to center content on the page */
-  .flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: var(--light-gray);
-    padding: 1rem;
-  }
-
-  .leaderboard-page-main {
-    width: 100%;
-    padding: 2rem 1rem;
-  }
-
-  /* Leaderboard container styled like a card */
-  .leaderboard-container {
-    max-width: 900px;
-    width: 100%;
-    background-color: var(--white);
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
-
-  .leaderboard-header {
-    padding: 1.5rem;
-    background-color: var(--ksu-black);
-    color: var(--ksu-gold);
-    text-align: center;
-  }
-  .leaderboard-header h1 {
-    font-family: var(--primary-font);
-    font-size: 2rem;
-    margin: 0;
-  }
-  .leaderboard-header p {
-    font-size: 1rem;
-    margin: 0.5rem 0 0;
-  }
-
-  /* Leaderboard controls styling remains similar */
-  .leaderboard-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    background-color: var(--light-gray);
-    padding: 1rem;
-    border-bottom: 1px solid var(--medium-gray);
-  }
-  .sort-controls label {
-    font-weight: 500;
-    margin-right: 0.5rem;
-    color: var(--dark-gray);
-  }
-  .sort-controls select {
-    padding: 8px 12px;
-    border: 1px solid var(--medium-gray);
-    border-radius: 5px;
-    font-size: 0.95rem;
-    min-width: 150px;
-    cursor: pointer;
-  }
-  .refresh-btn {
-    padding: 8px 15px;
-    font-size: 0.95rem;
-  }
-  .refresh-btn i {
-    margin-right: 5px;
-  }
-  .refresh-btn.loading i {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  /* Leaderboard content now uses a grid layout */
-  .leaderboard-content {
-    position: relative;
-    padding: 1rem;
-    background-color: var(--white);
-  }
-  .leaderboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-
-  /* Each leaderboard block (card) */
-  .leaderboard-block {
-    background-color: #fafafa;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-  }
-  .leaderboard-block:hover {
-    background-color: #f1f1f1;
-    transform: translateY(-3px);
-  }
-
-  /* Rank circle on each block */
-  .rank-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: var(--ksu-gold);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--ksu-black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    flex-shrink: 0;
-  }
-  /* Highlight top three ranks with different colors */
-  .leaderboard-block[data-rank="1"] .rank-circle {
-    background-color: var(--ksu-gold);
-  }
-  .leaderboard-block[data-rank="2"] .rank-circle {
-    background-color: #a0a0a0;
-  }
-  .leaderboard-block[data-rank="3"] .rank-circle {
-    background-color: #cd7f32;
-  }
-
-  /* Info section inside each block */
-  .info-section {
-    flex-grow: 1;
-  }
-  .project-name {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--ksu-black);
-  }
-  .project-score {
-    font-size: 0.95rem;
-    color: #555;
-    margin-top: 5px;
-  }
-  .project-score strong {
-    color: var(--ksu-dark-gold);
-    font-weight: 700;
-  }
-
-  /* Loading overlay styling */
-  #loading-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(255,255,255,0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-    z-index: 10;
-  }
-  #loading-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-  }
-  #loading-overlay i {
-    font-size: 2.5rem;
-    color: var(--ksu-gold);
-    animation: spin 1.5s linear infinite;
-  }
-
-  /* Status message */
-  #leaderboard-status-message {
-    text-align: center;
-    padding: 3rem 1rem;
-    font-weight: 500;
-    display: none;
-  }
-  #leaderboard-status-message.visible { display: block; }
-  #leaderboard-status-message.error { color: var(--error-color); }
-  #leaderboard-status-message.info { color: var(--dark-gray); }
-  #leaderboard-status-message i { margin-right: 8px; font-size: 1.2em; }
-
-  @media (max-width: 768px) {
-    .leaderboard-container { padding: 1.5rem; }
-    .leaderboard-header h1 { font-size: 1.8rem; }
-    .leaderboard-header p { font-size: 1rem; }
-    .leaderboard-grid {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+    :root {
+        /* If needed, you can define variables here */
+        /* --white: #fff;
+           --light-gray: #f8f9fa;
+           --medium-gray: #dee2e6;
+           --dark-gray: #6c757d;
+           --ksu-black: #231F20;
+           --ksu-gold: #FDB927;
+           --ksu-dark-gold: #c79100;
+           --error-color: #e74c3c; */
     }
-    .project-name { font-size: 1rem; }
-  }
+
+    /* Flex container for centering the main content vertically and horizontally */
+    .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        background-color: #f4f4f4;
+    }
+
+    /* Main content styling */
+    .leaderboard-page-main {
+        padding: 2rem 1rem;
+        width: 100%;
+    }
+
+    .leaderboard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: var(--white, #fff);
+        padding: 2rem 2.5rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .leaderboard-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .leaderboard-header h1 {
+        font-size: 2.3rem;
+        margin-bottom: 0.5rem;
+        color: var(--ksu-black, #231F20);
+    }
+    .leaderboard-header p {
+        font-size: 1.05rem;
+        color: var(--dark-gray, #666);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .leaderboard-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: var(--light-gray, #f8f9fa);
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border: 1px solid var(--medium-gray, #dee2e6);
+    }
+    .sort-controls label {
+        font-weight: 500;
+        margin-right: 0.5rem;
+        color: var(--dark-gray, #6c757d);
+    }
+    .sort-controls select {
+        padding: 8px 12px;
+        border: 1px solid var(--medium-gray, #dee2e6);
+        border-radius: 5px;
+        font-size: 0.95rem;
+        min-width: 150px;
+        cursor: pointer;
+    }
+    .refresh-btn {
+        padding: 8px 15px;
+        font-size: 0.95rem;
+    }
+    .refresh-btn i { margin-right: 5px; }
+    .refresh-btn.loading i { animation: spin 1s linear infinite; }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .leaderboard-content {
+        position: relative;
+        min-height: 200px;
+        border: 1px solid var(--medium-gray, #dee2e6);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: var(--white, #fff);
+    }
+
+    .leaderboard-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(255, 255, 255, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0s 0.3s;
+    }
+    #loading-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0s;
+    }
+    #loading-overlay i {
+        font-size: 2.5rem;
+        color: var(--ksu-gold, #FDB927);
+        animation: spin 1.5s linear infinite;
+    }
+
+    /* Status Message */
+    #leaderboard-status-message {
+        text-align: center;
+        padding: 3rem 1rem;
+        font-weight: 500;
+        display: none;
+    }
+    #leaderboard-status-message.visible { display: block; }
+    #leaderboard-status-message.error { color: var(--error-color, #e74c3c); }
+    #leaderboard-status-message.info { color: var(--dark-gray, #6c757d); }
+    #leaderboard-status-message i { margin-right: 8px; font-size: 1.2em; }
+
+    /* Leaderboard Item Card */
+    .leaderboard-item {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--medium-gray, #dee2e6);
+        padding: 1rem 1.5rem;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.5s ease forwards;
+        transition: background-color 0.3s ease;
+    }
+    .leaderboard-item:last-child {
+        border-bottom: none;
+    }
+    .leaderboard-item:hover {
+        background-color: var(--light-gray, #f8f9fa);
+    }
+    .leaderboard-item .rank {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ksu-black, #231F20);
+        min-width: 40px;
+        text-align: center;
+        margin-right: 1.5rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+    .leaderboard-item[data-rank="1"] .rank { color: var(--ksu-gold, #FDB927); font-size: 1.8rem; }
+    .leaderboard-item[data-rank="2"] .rank { color: #a0a0a0; font-size: 1.7rem; }
+    .leaderboard-item[data-rank="3"] .rank { color: #cd7f32; font-size: 1.6rem; }
+
+    .leaderboard-item .project-info {
+        flex-grow: 1;
+        margin-right: 1rem;
+    }
+    .leaderboard-item .project-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: var(--ksu-black, #231F20);
+    }
+    .leaderboard-item .project-score {
+        font-size: 0.95rem;
+        color: #555;
+    }
+    .leaderboard-item .project-score strong { color: var(--ksu-dark-gold, #c79100); font-weight: 700; }
+
+    .leaderboard-item .feedback-btn {
+        background-color: var(--ksu-gold, #FDB927);
+        color: var(--ksu-black, #231F20);
+        border: none;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .leaderboard-item .feedback-btn:hover,
+    .leaderboard-item .feedback-btn:focus {
+        background-color: var(--ksu-dark-gold, #c79100);
+        transform: scale(1.05);
+        outline: 2px solid var(--ksu-gold, #FDB927);
+        outline-offset: 2px;
+    }
+    .leaderboard-item .feedback-btn i { margin-right: 4px; }
+
+    /* Feedback Modal Styling */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        background-color: rgba(0,0,0,0.6);
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal.visible {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 25px 30px;
+        border: none;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+    }
+    .modal.visible .modal-content { transform: scale(1); }
+
+    .modal-content .close-modal {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 5px;
+        border: none;
+        background: none;
+    }
+    .modal-content .close-modal:hover,
+    .modal-content .close-modal:focus {
+        color: black;
+        text-decoration: none;
+        outline: none;
+        background-color: #eee;
+        border-radius: 50%;
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    #feedback-form .form-group { margin-bottom: 1rem; }
+    #feedback-form label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    #feedback-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        min-height: 120px;
+        font-size: 1rem;
+        resize: vertical;
+    }
+    #feedback-form textarea:focus {
+         border-color: var(--ksu-gold, #FDB927);
+         box-shadow: 0 0 0 3px rgba(253, 185, 39, 0.3);
+         outline: none;
+    }
+    #feedback-form .feedback-note {
+        color: #666;
+        font-size: 0.85rem;
+        display: block;
+        margin-top: 0.5rem;
+    }
+    #feedback-form button[type="submit"] {
+        display: block;
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1.05rem;
+    }
+    #feedback-form button[type="submit"]:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Feedback Status Message Styling */
+    #feedback-status {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: 500;
+        display: none;
+    }
+    #feedback-status.visible { display: block; }
+    #feedback-status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    #feedback-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    #feedback-status.submitting {
+         background-color: #e2e3e5;
+         color: #383d41;
+         border: 1px solid #d6d8db;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .leaderboard-container { padding: 1.5rem; }
+        .leaderboard-header h1 { font-size: 1.8rem; }
+        .leaderboard-header p { font-size: 1rem; }
+        .leaderboard-controls { flex-direction: column; align-items: stretch; }
+        .leaderboard-item { flex-direction: column; align-items: flex-start; padding: 1rem; }
+        .leaderboard-item .rank { margin-right: 0; margin-bottom: 0.5rem; font-size: 1.3rem !important; }
+        .leaderboard-item .project-info { margin-right: 0; margin-bottom: 0.8rem; }
+        .leaderboard-item .feedback-btn { align-self: flex-start; }
+        .modal-content { width: 95%; padding: 20px; }
+        .modal-content h3 { font-size: 1.3rem; }
+    }
+
+    /* --- Added CSS for centering the audience page --- */
+    #main-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 0 !important;
+        min-height: calc(100vh - var(--header-height));
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="leaderboard-page-main">
-  <div class="flex-center">
-    <div class="leaderboard-container">
-      <div class="leaderboard-header">
-        <h1>Project Leaderboard</h1>
-        <p>View current standings based on judge evaluations. Rankings update periodically.</p>
-      </div>
+    <div class="flex-center">
+        <div class="leaderboard-container">
+            <div class="leaderboard-header">
+                <h1>Project Leaderboard</h1>
+                <p>View the current standings of projects based on judge evaluations. Rankings update periodically.</p>
+            </div>
 
-      <div class="leaderboard-controls">
-        <div class="sort-controls">
-          <label for="sort-select">Sort by:</label>
-          <select id="sort-select" aria-label="Sort leaderboard">
-            <option value="rank">Rank</option>
-            <option value="score">Average Score (High-Low)</option>
-            <option value="name_asc">Name (A-Z)</option>
-            <option value="name_desc">Name (Z-A)</option>
-          </select>
+            <div class="leaderboard-controls">
+                <div class="sort-controls">
+                    <label for="sort-select">Sort by:</label>
+                    <select id="sort-select" aria-label="Sort leaderboard">
+                        <option value="rank">Rank</option>
+                        <option value="score">Average Score (High-Low)</option>
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                    </select>
+                </div>
+                <button id="refresh-btn" class="btn refresh-btn" aria-label="Refresh leaderboard data">
+                    <i class="fas fa-sync-alt"></i> Refresh Now
+                </button>
+            </div>
+
+            <div class="leaderboard-content">
+                <ul id="leaderboard-list" class="leaderboard-list" aria-live="polite" aria-atomic="true">
+                    {# Items will be injected here by JavaScript #}
+                </ul>
+                <div id="loading-overlay">
+                    <i class="fas fa-spinner" aria-hidden="true"></i>
+                    <span class="sr-only">Loading leaderboard data...</span>
+                </div>
+                <p id="leaderboard-status-message" role="status">
+                     {# Message content set by JavaScript #}
+                 </p>
+            </div>
+
         </div>
-        <button id="refresh-btn" class="btn refresh-btn" aria-label="Refresh leaderboard data">
-          <i class="fas fa-sync-alt"></i> Refresh Now
-        </button>
-      </div>
-
-      <div class="leaderboard-content">
-        <div id="leaderboard-grid" class="leaderboard-grid" aria-live="polite" aria-atomic="true">
-          {# Leaderboard blocks will be injected here by JavaScript #}
-        </div>
-
-        <div id="loading-overlay">
-          <i class="fas fa-spinner" aria-hidden="true"></i>
-          <span class="sr-only">Loading leaderboard data...</span>
-        </div>
-
-        <p id="leaderboard-status-message" role="status"></p>
-      </div>
     </div>
-  </div>
 </main>
 
-<!-- Feedback Modal (kept as is) -->
+<!-- Feedback Modal -->
 <div id="feedback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title" aria-describedby="feedback-modal-description" tabindex="-1">
-  <div class="modal-content">
-    <button class="close-modal" aria-label="Close feedback modal">×</button>
-    <h3 id="feedback-modal-title">Submit Feedback for <span id="feedback-project-name">Project</span></h3>
-    <form id="feedback-form" novalidate>
-      <div class="form-group">
-        <label for="feedback-text" id="feedback-modal-description">Your Feedback:</label>
-        <textarea id="feedback-text" rows="5" required placeholder="Provide constructive feedback..." aria-required="true"></textarea>
-        <small class="feedback-note">Your feedback will be associated with your user account.</small>
-      </div>
-      <input type="hidden" id="feedback-project-id">
-      <button type="submit" class="btn">Submit Feedback</button>
-      <p id="feedback-status" role="status"></p>
-    </form>
-  </div>
+    <div class="modal-content">
+        <button class="close-modal" aria-label="Close feedback modal">×</button>
+        <h3 id="feedback-modal-title">Submit Feedback for <span id="feedback-project-name">Project</span></h3>
+        <form id="feedback-form" novalidate>
+            <div class="form-group">
+                <label for="feedback-text" id="feedback-modal-description">Your Feedback:</label>
+                <textarea id="feedback-text" rows="5" required placeholder="Provide constructive feedback..." aria-required="true"></textarea>
+                <small class="feedback-note">Your feedback will be associated with your user account.</small>
+            </div>
+            <input type="hidden" id="feedback-project-id">
+            <button type="submit" class="btn">Submit Feedback</button>
+            <p id="feedback-status" role="status"></p>
+        </form>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    const API_LEADERBOARD_URL = '/api/leaderboard';
-    const USE_MOCK_DATA = true;  // Set to false for real data
-    const POLLING_INTERVAL_MS = 60000;
+        // --- Configuration ---
+        const API_LEADERBOARD_URL = '/api/leaderboard';
+        const API_FEEDBACK_URL = '/api/submit_feedback';
+        const USE_MOCK_DATA = true;
+        const POLLING_INTERVAL_MS = 60000;
 
-    const leaderboardGrid = document.getElementById('leaderboard-grid');
-    const sortSelect = document.getElementById('sort-select');
-    const refreshButton = document.getElementById('refresh-btn');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const statusMessageElement = document.getElementById('leaderboard-status-message');
+        // --- DOM Elements ---
+        const listElement = document.getElementById('leaderboard-list');
+        const sortSelect = document.getElementById('sort-select');
+        const refreshButton = document.getElementById('refresh-btn');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const statusMessageElement = document.getElementById('leaderboard-status-message');
+        const contentContainer = document.querySelector('.leaderboard-content');
 
-    let currentLeaderboardData = [];
-    let currentSort = 'rank';
-    let isLoading = false;
-    let pollingIntervalId = null;
+        // Feedback Modal Elements
+        const modal = document.getElementById('feedback-modal');
+        const closeModalBtn = modal.querySelector('.close-modal');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbackProjectName = document.getElementById('feedback-project-name');
+        const feedbackProjectIdInput = document.getElementById('feedback-project-id');
+        const feedbackText = document.getElementById('feedback-text');
+        const feedbackStatus = document.getElementById('feedback-status');
+        const feedbackSubmitButton = feedbackForm.querySelector('button[type="submit"]');
 
-    // --- Mock Data (for testing; remove in production) ---
-    const MOCK_LEADERBOARD_DATA = [
-      { rank: 1, project_id: 1, project_name: "Project Alpha", average_score: 92.5 },
-      { rank: 2, project_id: 3, project_name: "Project Gamma", average_score: 88.0 },
-      { rank: 3, project_id: 2, project_name: "Project Beta", average_score: 85.7 },
-      { rank: 4, project_id: 4, project_name: "Project Delta", average_score: 79.2 },
-      { rank: 5, project_id: 5, project_name: "Project Epsilon", average_score: 75.0 },
-      { rank: 6, project_id: 6, project_name: "Project Zeta", average_score: null }
-    ];
+        let currentLeaderboardData = [];
+        let currentSort = 'rank';
+        let isLoading = false;
+        let pollingIntervalId = null;
+        let lastFocusedElement = null;
 
-    function setUIState(state) {
-      isLoading = (state === 'loading');
-      loadingOverlay.classList.toggle('visible', isLoading);
-      refreshButton.disabled = isLoading;
-      refreshButton.classList.toggle('loading', isLoading);
-      if (isLoading) {
-        refreshButton.querySelector('i').classList.add('fa-spin');
-        statusMessageElement.classList.remove('visible', 'error', 'info');
-        leaderboardGrid.innerHTML = '';
-      } else {
-        refreshButton.querySelector('i').classList.remove('fa-spin');
-      }
-    }
+        // --- Mock Data ---
+        const MOCK_LEADERBOARD_DATA = [
+             { rank: 1, project_id: 1, project_name: "Project Alpha", average_score: 92.5 },
+             { rank: 2, project_id: 3, project_name: "Project Gamma", average_score: 88.0 },
+             { rank: 3, project_id: 2, project_name: "Project Beta", average_score: 85.7 },
+             { rank: 4, project_id: 4, project_name: "Project Delta", average_score: 79.2 },
+             { rank: 5, project_id: 5, project_name: "Project Epsilon", average_score: 75.0 },
+             { rank: 6, project_id: 6, project_name: "Project Zeta", average_score: null },
+        ];
 
-    function showStatusMessage(message, type = 'info', iconClass = 'fa-info-circle') {
-      leaderboardGrid.innerHTML = '';
-      statusMessageElement.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${message}`;
-      statusMessageElement.className = 'visible';
-      statusMessageElement.classList.add(type);
-      setUIState('idle');
-    }
+        function setUIState(state) {
+            isLoading = (state === 'loading');
+            loadingOverlay.classList.toggle('visible', isLoading);
+            refreshButton.disabled = isLoading;
+            refreshButton.classList.toggle('loading', isLoading);
+            if (isLoading) refreshButton.querySelector('i').classList.add('fa-spin');
+            else refreshButton.querySelector('i').classList.remove('fa-spin');
 
-    function renderLeaderboard() {
-      if (isLoading) return;
-      statusMessageElement.classList.remove('visible', 'error', 'info');
-      leaderboardGrid.innerHTML = '';
-
-      if (!currentLeaderboardData.length) {
-        showStatusMessage('No project data available currently.', 'info', 'fa-info-circle');
-        return;
-      }
-
-      const sortedData = sortData([...currentLeaderboardData], currentSort);
-      sortedData.forEach(item => {
-        const block = document.createElement('div');
-        block.classList.add('leaderboard-block');
-        block.setAttribute('data-rank', item.rank ?? 'N/A');
-
-        const scoreDisplay = (typeof item.average_score === 'number')
-          ? item.average_score.toFixed(2)
-          : 'N/A';
-
-        block.innerHTML = `
-          <div class="rank-circle">${item.rank ?? '-'}</div>
-          <div class="info-section">
-            <h4 class="project-name">${escapeHTML(item.project_name || 'Unnamed Project')}</h4>
-            <p class="project-score">Average Score: <strong>${scoreDisplay}</strong></p>
-          </div>
-        `;
-        leaderboardGrid.appendChild(block);
-      });
-    }
-
-    function sortData(data, sortType) {
-      switch (sortType) {
-        case 'score':
-          data.sort((a, b) => {
-            const scoreA = typeof a.average_score === 'number' ? a.average_score : -Infinity;
-            const scoreB = typeof b.average_score === 'number' ? b.average_score : -Infinity;
-            return scoreB - scoreA;
-          });
-          break;
-        case 'name_asc':
-          data.sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''));
-          break;
-        case 'name_desc':
-          data.sort((a, b) => (b.project_name || '').localeCompare(a.project_name || ''));
-          break;
-        case 'rank':
-        default:
-          data.sort((a, b) => {
-            const rankA = typeof a.rank === 'number' ? a.rank : Infinity;
-            const rankB = typeof b.rank === 'number' ? b.rank : Infinity;
-            return rankA - rankB;
-          });
-          break;
-      }
-      return data;
-    }
-
-    async function fetchLeaderboard() {
-      if (isLoading) return;
-      setUIState('loading');
-      try {
-        let data;
-        if (USE_MOCK_DATA) {
-          await new Promise(resolve => setTimeout(resolve, 800));
-          data = MOCK_LEADERBOARD_DATA;
-        } else {
-          const response = await fetch(API_LEADERBOARD_URL);
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          data = await response.json();
+            if (isLoading) {
+                statusMessageElement.classList.remove('visible', 'error', 'info');
+                listElement.innerHTML = '';
+            }
         }
-        if (!Array.isArray(data)) throw new Error('Invalid data format received from server.');
-        currentLeaderboardData = data;
-        renderLeaderboard();
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        showStatusMessage(`Could not load leaderboard data. ${error.message}`, 'error', 'fa-exclamation-triangle');
-        currentLeaderboardData = [];
-      } finally {
-        setUIState('idle');
-      }
-    }
 
-    function bindEventListeners() {
-      sortSelect.addEventListener('change', (e) => {
-        currentSort = e.target.value;
-        renderLeaderboard();
-      });
+        function showStatusMessage(message, type = 'info', iconClass = 'fa-info-circle') {
+            listElement.innerHTML = '';
+            statusMessageElement.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${message}`;
+            statusMessageElement.className = 'visible';
+            statusMessageElement.classList.add(type);
+            setUIState('idle');
+        }
 
-      refreshButton.addEventListener('click', fetchLeaderboard);
-    }
+        function renderLeaderboard() {
+            if (isLoading) return;
+            statusMessageElement.classList.remove('visible', 'error', 'info');
+            listElement.innerHTML = '';
 
-    function escapeHTML(str) {
-      if (str === null || str === undefined) return '';
-      const p = document.createElement('p');
-      p.textContent = str;
-      return p.innerHTML;
-    }
+            if (currentLeaderboardData.length === 0) {
+                 showStatusMessage('No project data available currently.', 'info', 'fa-info-circle');
+                 return;
+            }
 
-    function init() {
-      bindEventListeners();
-      fetchLeaderboard();
-      // Uncomment below to enable Socket.IO or polling if desired:
-      // initSocketIO();
-      // startPolling();
-    }
+            const sortedData = sortData([...currentLeaderboardData], currentSort);
+            const fragment = document.createDocumentFragment();
+            sortedData.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.classList.add('leaderboard-item');
+                li.style.animationDelay = `${index * 0.05}s`;
+                li.setAttribute('data-rank', item.rank ?? 'N/A');
+                const scoreDisplay = (typeof item.average_score === 'number')
+                    ? item.average_score.toFixed(2)
+                    : 'N/A';
+                li.innerHTML = `
+                    <div class="rank">#${item.rank ?? '-'}</div>
+                    <div class="project-info">
+                        <h4 class="project-name">${escapeHTML(item.project_name || 'Unnamed Project')}</h4>
+                        <p class="project-score">Average Score: <strong>${scoreDisplay}</strong></p>
+                    </div>
+                    <button class="feedback-btn" data-project-id="${item.project_id}" data-project-name="${escapeHTML(item.project_name || 'Unnamed Project')}" aria-label="Submit Feedback for ${escapeHTML(item.project_name || 'Unnamed Project')}">
+                       <i class="fas fa-comment-dots" aria-hidden="true"></i> Feedback
+                    </button>
+                `;
+                fragment.appendChild(li);
+            });
+            listElement.appendChild(fragment);
+        }
 
-    init();
+        function sortData(data, sortType) {
+            switch (sortType) {
+                case 'score':
+                    data.sort((a, b) => {
+                        const scoreA = typeof a.average_score === 'number' ? a.average_score : -Infinity;
+                        const scoreB = typeof b.average_score === 'number' ? b.average_score : -Infinity;
+                        return scoreB - scoreA;
+                    });
+                    break;
+                case 'name_asc':
+                    data.sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''));
+                    break;
+                 case 'name_desc':
+                    data.sort((a, b) => (b.project_name || '').localeCompare(a.project_name || ''));
+                    break;
+                case 'rank':
+                default:
+                    data.sort((a, b) => {
+                        const rankA = typeof a.rank === 'number' ? a.rank : Infinity;
+                        const rankB = typeof b.rank === 'number' ? b.rank : Infinity;
+                        return rankA - rankB;
+                    });
+                    break;
+            }
+            return data;
+        }
 
-  });
+        async function fetchLeaderboard() {
+            if (isLoading) return;
+            setUIState('loading');
+            try {
+                let data;
+                if (USE_MOCK_DATA) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    data = MOCK_LEADERBOARD_DATA;
+                } else {
+                    const response = await fetch(API_LEADERBOARD_URL);
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    data = await response.json();
+                }
+                if (!Array.isArray(data)) throw new Error('Invalid data format received from server.');
+                currentLeaderboardData = data;
+                renderLeaderboard();
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                showStatusMessage(`Could not load leaderboard data. ${error.message}`, 'error', 'fa-exclamation-triangle');
+                currentLeaderboardData = [];
+            } finally {
+                setUIState('idle');
+            }
+        }
+
+        function openFeedbackModal(projectId, projectName) {
+            lastFocusedElement = document.activeElement;
+            feedbackProjectName.textContent = projectName;
+            feedbackProjectIdInput.value = projectId;
+            feedbackText.value = '';
+            feedbackStatus.textContent = '';
+            feedbackStatus.className = '';
+            feedbackSubmitButton.disabled = false;
+            modal.classList.add('visible');
+            feedbackText.focus();
+        }
+
+        function closeFeedbackModal() {
+            modal.classList.remove('visible');
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+                lastFocusedElement = null;
+            }
+        }
+
+        function updateFeedbackStatus(message, type = 'info') {
+             feedbackStatus.textContent = message;
+             feedbackStatus.className = 'visible';
+             feedbackStatus.classList.add(type);
+        }
+
+        async function handleFeedbackSubmit(event) {
+            event.preventDefault();
+            const projectId = feedbackProjectIdInput.value;
+            const feedbackContent = feedbackText.value.trim();
+            if (!feedbackContent) {
+                 updateFeedbackStatus('Please enter your feedback before submitting.', 'error');
+                 feedbackText.focus();
+                 return;
+            }
+            updateFeedbackStatus('Submitting...', 'submitting');
+            feedbackSubmitButton.disabled = true;
+            try {
+                let responseData;
+                if (USE_MOCK_DATA) {
+                     await new Promise(resolve => setTimeout(resolve, 800));
+                     if (Math.random() < 0.1) throw new Error("Mock submission failed!");
+                     responseData = { status: "success", message: "Feedback submitted successfully!" };
+                } else {
+                     const response = await fetch(API_FEEDBACK_URL, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ project_id: projectId, feedback: feedbackContent })
+                     });
+                     if (!response.ok) {
+                         let errorMsg = `HTTP error! Status: ${response.status}`;
+                         try { const errData = await response.json(); errorMsg = errData.message || errorMsg; } catch (e) {}
+                         throw new Error(errorMsg);
+                     }
+                     responseData = await response.json();
+                 }
+                if (responseData.status === 'success') {
+                    updateFeedbackStatus(responseData.message || 'Feedback submitted!', 'success');
+                    setTimeout(closeFeedbackModal, 1800);
+                } else {
+                    throw new Error(responseData.message || 'Feedback submission failed.');
+                }
+            } catch (error) {
+                console.error("Feedback submission error:", error);
+                updateFeedbackStatus(`Error: ${error.message || 'Could not submit feedback.'}`, 'error');
+                feedbackSubmitButton.disabled = false;
+            }
+        }
+
+        function bindEventListeners() {
+            sortSelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                renderLeaderboard();
+            });
+
+            refreshButton.addEventListener('click', fetchLeaderboard);
+
+            listElement.addEventListener('click', (event) => {
+                const feedbackButton = event.target.closest('.feedback-btn');
+                if (feedbackButton) {
+                    const projectName = feedbackButton.dataset.projectName;
+                    const projectId = feedbackButton.dataset.projectId;
+                    if (projectId && projectName) {
+                         openFeedbackModal(projectId, projectName);
+                    } else {
+                        console.warn('Feedback button clicked but missing data attributes.');
+                    }
+                }
+            });
+
+            closeModalBtn.addEventListener('click', closeFeedbackModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeFeedbackModal();
+                }
+            });
+            modal.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeFeedbackModal();
+                }
+            });
+
+            feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+        }
+
+        function initSocketIO() {
+            try {
+                const socket = io();
+                socket.on('connect', () => {
+                    console.log('Socket.IO connected for leaderboard updates.');
+                    if (pollingIntervalId) {
+                         clearInterval(pollingIntervalId);
+                         pollingIntervalId = null;
+                         console.log('Polling disabled, using Socket.IO.');
+                    }
+                });
+                socket.on('leaderboard_update', (updatedData) => {
+                    console.log('Received leaderboard update via Socket.IO:', updatedData);
+                    if (!Array.isArray(updatedData)) {
+                         console.warn('Received invalid leaderboard update data format via Socket.IO.');
+                         return;
+                     }
+                    currentLeaderboardData = updatedData;
+                    renderLeaderboard();
+                    const headerP = document.querySelector('.leaderboard-header p');
+                    if(headerP){
+                        headerP.style.transition = 'none';
+                        headerP.style.color = 'var(--ksu-dark-gold, #c79100)';
+                        headerP.style.fontWeight = 'bold';
+                        setTimeout(() => {
+                             headerP.style.transition = 'color 0.5s ease, font-weight 0.5s ease';
+                             headerP.style.color = '';
+                             headerP.style.fontWeight = '';
+                        }, 200);
+                    }
+                });
+                socket.on('disconnect', (reason) => {
+                     console.log(`Socket.IO disconnected: ${reason}.`);
+                });
+                socket.on('connect_error', (err) => {
+                     console.error('Socket.IO connection error:', err);
+                });
+            } catch (e) {
+                 console.warn("Socket.IO client library not found or failed to initialize. Real-time updates disabled.", e);
+            }
+        }
+
+        function startPolling() {
+            if (pollingIntervalId) clearInterval(pollingIntervalId);
+            if (POLLING_INTERVAL_MS > 0) {
+                 pollingIntervalId = setInterval(fetchLeaderboard, POLLING_INTERVAL_MS);
+                 console.log(`Polling for leaderboard updates every ${POLLING_INTERVAL_MS / 1000} seconds.`);
+            }
+        }
+
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
+        }
+
+        function init() {
+            bindEventListeners();
+            fetchLeaderboard();
+            // initSocketIO();
+            // startPolling();
+        }
+
+        init();
+
+    });
 </script>
 {% endblock %}

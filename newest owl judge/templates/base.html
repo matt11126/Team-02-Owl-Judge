@@ -1,5 +1,5 @@
 <!DOCTYPE html>
- <html lang="en">
+<html lang="en">
  <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -306,7 +306,6 @@
              transition-delay: 0s; /* Show immediately on adding class */
          }
  
- 
          /* --- Button Styles --- */
          .btn {
              display: inline-block;
@@ -338,7 +337,6 @@
              box-shadow: none;
          }
  
- 
          /* --- Flash Message Styles --- */
          .flash-messages-container {
              position: fixed;
@@ -365,14 +363,12 @@
          }
           .flash-close-btn:hover { opacity: 1; }
  
- 
          /* --- Footer Styles --- */
          .site-footer {
              background-color: var(--ksu-black); color: var(--ksu-gold); text-align: center;
              padding: 1.5rem 1rem; margin-top: auto; /* Pushes footer to bottom */ font-size: 0.9rem;
          }
          .site-footer p { margin: 0; color: #ccc; }
- 
  
          /* --- Responsive Design --- */
          /* Desktop Styles (Large Screens) */
@@ -420,6 +416,8 @@
           }
  
      </style>
+     <!-- Added block for extra head content -->
+     {% block head_extra %}{% endblock %}
  </head>
  <body>
      <!-- Side Sliding Menu (Mobile) -->
@@ -539,7 +537,7 @@
              const closeBtn = document.getElementById("close-menu-btn");
              const overlay = document.getElementById("overlay");
              // const mainContent = document.getElementById("main-content"); // Not currently used, but keep for potential focus trap
- 
+             
              // --- Side Menu Functions ---
              function openSideMenu() {
                  if (sideMenu && !sideMenu.classList.contains('open')) {
@@ -650,4 +648,4 @@
  
  {# Removed the unnecessary Cloudflare IFRAME script #}
  </body>
- </html>
+</html>
