@@ -9,6 +9,10 @@ from functools import wraps
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template, flash, g, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import redis as redis
+
+r = redis.Redis(host='localhost', port=6379)        ## redis server object init
+
 
 # Try importing pandas, required for import/export. Handle if not installed.
 try:
@@ -1884,6 +1888,13 @@ if __name__ == '__main__':
         print("Database tables created/verified.")
         # Populate with test data if needed
         create_test_data()
+
+    ## verification that app has successfully connected to redis server
+    try:
+        r.ping()
+        print("Successfully connected to Redis!")
+    except redis.exceptions.ConnectionError as e:
+        print(f"Could not connect to Redis: {e}")
 
     # Run the Flask development server
     # Use host='0.0.0.0' to make it accessible on the network (use with caution)
