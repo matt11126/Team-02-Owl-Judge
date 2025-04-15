@@ -11,7 +11,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import redis as redis
 
+from sqlalchemy import func
+
 r = redis.Redis(host='localhost', port=6379)        ## redis server object init
+
 
 
 # Try importing pandas, required for import/export. Handle if not installed.
@@ -247,6 +250,42 @@ def handle_success(message, redirect_url=None, redirect_url_name='index', is_jso
     else:
         flash(message, "success")
         return redirect(redirect_target)
+
+##############
+def update_leaderboards():
+
+    # query scores table to sum scores for each group
+
+    project_scores = db.session.query(Projects.project_name,
+                                      func.sum(Scores.score_given).label('tot')
+                                      ).join(Projects).group_by(Projects.project_name).all()
+    print(project_scores)
+
+    # sqlalchemy queries return tuples, but redis can only accept dicts, this line casts the data to
+    # a format readable by redis
+    score_mapping = {project_name: tot for project_name, tot in project_scores}
+
+    # assign name to sorted set
+    redis_key_name = 'Scoreboard'
+
+    # iterate through scores dict and upload each team, ZADD() overwrites score value if group name is already inside
+    # instead of incrementing it
+    for item in score_mapping:
+        r.zadd(redis_key_name, score_mapping)
+        print('Score uploaded to Redis!')
+
+    # functionality to pull scores back from redis server
+    projects_ranked = r.zrevrange(redis_key_name, 0, -1, withscores=True)
+
+    # redis stores info as bytes, need to convert name back to string. bing bang boom
+    for project_bytes, score in projects_ranked:
+        project_name = project_bytes.decode('utf-8')
+        print(f'Project: {project_name}, Score: {score}')
+
+    return
+
+
+##############
 
 # --- Routes ---
 
@@ -686,6 +725,10 @@ def submit_vote():
 
     judge_id = g.current_user.id
 
+
+
+
+
     try:
         # Validate all scores first
         validated_scores = {}
@@ -703,6 +746,7 @@ def submit_vote():
                 validated_scores[category] = score
             except (ValueError, TypeError):
                  return jsonify({'status': 'error', 'message': f"Invalid score value '{score_value}' for category '{category}'. Must be a whole number between {MIN_SCORE} and {MAX_SCORE}."}), 400
+
 
         # Process validated scores (update or insert)
         for category, score in validated_scores.items():
@@ -724,10 +768,18 @@ def submit_vote():
                     score_given=score
                     # timestamp defaults to utcnow
                 )
+
+
+
                 db.session.add(new_score)
 
         db.session.commit()
         app.logger.info(f"Judge {judge_id} submitted/updated votes for project {project_id}")
+
+        ###
+        update_leaderboards()
+        ###
+
         return jsonify({'status': 'success', 'message': f'Votes for {project.project_name} submitted successfully.'}), 200
 
     except ValueError as ve: # Catch specific validation error from score range check
@@ -737,6 +789,8 @@ def submit_vote():
         db.session.rollback()
         app.logger.error(f"Error submitting vote for project {project_id} by judge {judge_id}: {e}")
         return jsonify({'status': 'error', 'message': 'An internal error occurred while submitting votes.'}), 500
+
+
 
 # --- Admin Routes ---
 
