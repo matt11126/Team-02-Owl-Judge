@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Profile - OwlJudge{% endblock %}
+
+{% block content %}
+{# ***** IMPORTANT: Add this meta tag to your base.html <head> section if using Flask-WTF ***** #}
+{# <meta name="csrf-token" content="{{ csrf_token() }}"> #}
+
+<style>
+    /* --- Styles from previous version (condensed for brevity) --- */
+    .profile-page-main { padding: 3rem 1rem; }
+    .profile-container { max-width: 700px; margin: 0 auto; background-color: var(--white); padding: 2.5rem 3rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); animation: fadeInUp 0.6s 0.2s ease-out forwards; }
+    .profile-header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--medium-gray); }
+    .profile-header h1 { font-size: 2rem; margin-bottom: 0.3rem; }
+    .profile-header p { font-size: 1rem; color: #666; margin: 0; }
+    .profile-details dl { margin: 0 0 2rem 0; }
+    .profile-details div { display: flex; align-items: center; margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px dashed var(--medium-gray); }
+    .profile-details div:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .profile-details dt { font-weight: 600; color: var(--dark-gray); width: 120px; flex-shrink: 0; margin-right: 1rem; text-align: right; }
+    .profile-details dt i { margin-right: 6px; color: var(--ksu-gold); font-size: 0.9em; }
+    .profile-details dd { margin: 0; font-size: 1.05rem; color: #333; flex-grow: 1; } /* Added flex-grow */
+    .profile-details .role-badge { display: inline-block; padding: 3px 8px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; color: var(--white); background-color: #6c757d; text-transform: capitalize; }
+    .profile-details .role-badge.admin { background-color: #dc3545; }
+    .profile-details .role-badge.judge { background-color: #007bff; }
+    .profile-details .role-badge.user { background-color: #28a745; }
+    .judge-request-section { margin-top: 2.5rem; padding: 1.5rem; background-color: var(--light-gray); border-radius: 8px; border: 1px solid var(--medium-gray); text-align: center; }
+    .judge-request-section p { font-size: 1.1rem; color: var(--dark-gray); margin-bottom: 1.5rem; }
+    .judge-request-buttons { display: flex; justify-content: center; gap: 1rem; }
+    .btn-request-yes { background-color: var(--ksu-gold); color: var(--ksu-black); min-width: 100px; }
+    .btn-request-yes:hover { background-color: var(--ksu-dark-gold); }
+    .btn-request-no { background-color: #6c757d; color: white; min-width: 100px; }
+    .btn-request-no:hover { background-color: #5a6268; }
+
+    /* --- Styles for Editing and Password Change --- */
+    .btn-small { padding: 2px 8px; font-size: 0.85rem; border: none; border-radius: 4px; cursor: pointer; vertical-align: middle; margin-left: 8px; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-primary { background-color: var(--ksu-gold); color: var(--ksu-black); }
+    .btn-primary:hover { background-color: var(--ksu-dark-gold); }
+    #name-input { width: 200px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 1.05rem; vertical-align: middle; box-sizing: border-box; }
+    .change-password-section { margin-top: 2.5rem; padding: 1.5rem; background-color: var(--light-gray); border-radius: 8px; border: 1px solid var(--medium-gray); }
+    .change-password-section h2 { font-size: 1.5rem; margin-bottom: 1rem; text-align: center; border-bottom: 1px solid var(--medium-gray); padding-bottom: 0.8rem;}
+    .change-password-section form div { margin-bottom: 1rem; }
+    .change-password-section label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+    .change-password-section input[type="password"] { width: 100%; max-width: 350px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; display: block; /* Ensure input takes block space */ margin: 0 auto; /* Center input */ }
+    #passwordHelp { font-size: 0.8rem; color: #666; display: block; text-align: center; margin-top: 0.5rem; max-width: 350px; margin-left: auto; margin-right: auto;} /* Center hint */
+    .change-password-section button { display: block; margin: 1.5rem auto 0; padding: 10px 25px; background-color: var(--ksu-gold); color: var(--ksu-black); border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+    .change-password-section button:hover { background-color: var(--ksu-dark-gold); }
+
+    /* Status Messages (Shared) */
+    .status-message { margin-top: 1rem; font-weight: 500; text-align: center; min-height: 20px; font-size: 0.95rem; }
+    .status-message.success { color: #155724; } /* Adjusted success color */
+    .status-message.error { color: #721c24; } /* Adjusted error color */
+    .status-message.info { color: #0c5460; } /* Adjusted info color */
+    #name-status { margin-left: 10px; display: inline; } /* Keep name status inline */
+    #password-status { margin-top: 1.5rem; } /* Adjust password status margin */
+    #request-status { margin-top: 1.5rem; } /* Adjust request status margin */
+
+
+    /* Spinner for buttons */
+    .btn .fa-spinner { margin-right: 5px; } /* Target spinner inside buttons */
+    button:disabled { cursor: not-allowed; opacity: 0.7; } /* Style for disabled buttons */
+
+    /* Flash Message Styles */
+    .alert-flash {
+        padding: 10px 15px;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .alert-flash-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+    .alert-flash-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+    .alert-flash-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+    .alert-flash-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
+
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 576px) {
+        .profile-container { padding: 1.5rem 1rem; }
+        .profile-details div { flex-direction: column; align-items: flex-start; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .profile-details dt { text-align: left; width: auto; margin-bottom: 0.3rem; }
+        .profile-details dt i { margin-right: 4px; }
+        .profile-details dd { margin-left: 0; }
+        #name-input { width: 100%; max-width: 250px; }
+        .change-password-section input[type="password"] { max-width: 100%; }
+        #passwordHelp { max-width: 100%; }
+    }
+
+</style>
+
+<main class="profile-page-main">
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Your OwlJudge Profile</h1>
+            <p>Manage your account details.</p>
+        </div>
+
+         <!-- Display flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages" style="margin-bottom: 1.5rem;">
+                {% for category, message in messages %}
+                {# Use category 'danger' for errors if not specified, else default to 'info' #}
+                {% set alert_category = category if category else 'info' %}
+                {% if alert_category == 'error' %}{% set alert_category = 'danger' %}{% endif %}
+                <div class="alert-flash alert-flash-{{ alert_category }}" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="profile-details">
+            <dl>
+                <div>
+                    <dt><i class="fas fa-user fa-fw"></i> Name</dt>
+                    <dd>
+                        <span id="name-display">{{ user.name }}</span>
+                        <input type="text" id="name-input" value="{{ user.name }}" style="display:none;" aria-label="Edit Name">
+                        <button id="edit-name-btn" class="btn-small btn-secondary" aria-label="Edit Name">Edit</button>
+                        <button id="save-name-btn" class="btn-small btn-primary" style="display:none;" aria-label="Save Name">
+                            <span class="btn-text">Save</span>
+                        </button>
+                         <span id="name-status" class="status-message" aria-live="polite"></span>
+                    </dd>
+                </div>
+                <div>
+                    <dt><i class="fas fa-envelope fa-fw"></i> Email</dt>
+                    <dd>{{ user.email }}</dd>
+                </div>
+                <div>
+                    <dt><i class="fas fa-shield-alt fa-fw"></i> Role</dt>
+                    <dd><span class="role-badge {{ user.role }}">{{ user.role }}</span></dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="change-password-section">
+            <h2>Change Your Password</h2>
+            <form id="change-password-form" novalidate> {# Added novalidate to rely on JS/backend validation #}
+                <div>
+                    <label for="current-password">Current Password:</label>
+                    <input type="password" id="current-password" name="current_password" required autocomplete="current-password">
+                </div>
+                <div>
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" name="new_password" required autocomplete="new-password" aria-describedby="passwordHelp">
+                     <small id="passwordHelp">Minimum 12 characters, include uppercase, lowercase, number, and symbol.</small>
+                </div>
+                <div>
+                    <label for="confirm-password">Confirm New Password:</label>
+                    <input type="password" id="confirm-password" name="confirm_password" required autocomplete="new-password">
+                </div>
+                <button type="submit" id="change-password-submit-btn" class="btn"> {# Added btn class for spinner targetting #}
+                    <span class="btn-text">Change Password</span>
+                </button>
+            </form>
+            <p id="password-status" class="status-message" aria-live="polite"></p>
+        </div>
+
+        <!-- Judge Role Request Section -->
+        {% if user.role == 'user' %}
+            <div id="judge-request-container" class="judge-request-section">
+                {% if user.judge_request_pending %}
+                    <p><i class="fas fa-info-circle" style="color: #0c5460;"></i> Your request to become a judge is pending administrator review.</p>
+                {% else %}
+                    <p>Are you involved with C-Day and need to evaluate projects as a Judge?</p>
+                    <div class="judge-request-buttons">
+                        <button id="request-yes-btn" class="btn btn-request-yes"> {# Added btn class for spinner targetting #}
+                            <span class="btn-text">Yes, Request Judge Role</span>
+                        </button>
+                    </div>
+                    <p id="request-status" class="status-message" aria-live="polite"></p>
+                {% endif %}
+            </div>
+        {% elif user.role == 'judge' %}
+            <div class="judge-request-section" style="background-color: #d4edda; border-color: #c3e6cb;"> {# Use consistent success colors #}
+                <p style="color: #155724; font-weight: 500;"><i class="fas fa-check-circle"></i> You are registered as a Judge.</p>
+                <a href="{{ url_for('vote_casting') }}" class="btn btn-request-yes">Go to Judging Page</a>
+            </div>
+        {% elif user.role == 'admin' %}
+            <div class="judge-request-section" style="background-color: #f8d7da; border-color: #f5c6cb;"> {# Use consistent danger colors #}
+                <p style="color: #721c24; font-weight: 500;"><i class="fas fa-user-shield"></i> You have Administrator privileges.</p>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-request-no" style="background-color: #dc3545; color: white;">Go to Admin Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Function to get CSRF token from meta tag (ensure meta tag exists in base.html)
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    }
+
+    // Helper function for fetch API calls with status updates and loading indicators
+    async function fetchAndUpdateStatus(url, options, statusElement, buttonElement = null, successCallback = null) {
+        const buttonTextEl = buttonElement?.querySelector('.btn-text');
+        const originalButtonText = buttonTextEl?.textContent;
+        let spinner = null;
+
+        // --- Start: Prepare UI for loading ---
+        statusElement.textContent = ''; // Clear previous status
+        statusElement.className = 'status-message'; // Reset status class
+
+        if (buttonElement) {
+            buttonElement.disabled = true;
+            spinner = document.createElement('i');
+            spinner.className = 'fas fa-spinner fa-spin';
+            buttonElement.prepend(spinner); // Add spinner icon
+            if (buttonTextEl) buttonTextEl.textContent = 'Processing...';
+        }
+        // --- End: Prepare UI for loading ---
+
+        try {
+            // --- Prepare fetch options ---
+            const csrfToken = getCsrfToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json', // Indicate we expect JSON back
+                ...(csrfToken && options.method === 'POST' && { 'X-CSRFToken': csrfToken }) // Add CSRF token header for POST
+            };
+
+            const fetchOptions = {
+                method: options.method || 'GET',
+                headers: headers,
+                body: options.body // Should be JSON stringified for POST/PUT etc.
+            };
+            // --- End: Prepare fetch options ---
+
+
+            // --- Execute fetch ---
+            const response = await fetch(url, fetchOptions);
+            let data;
+            try {
+                data = await response.json(); // Try parsing JSON
+            } catch (jsonError) {
+                // Handle cases where response is not JSON (e.g., server error page)
+                console.error('Failed to parse JSON response:', jsonError);
+                data = { status: 'error', message: 'Received non-JSON response from server.' };
+                if (response.ok) { // If status code was 2xx but not JSON
+                    data.message = 'Received an unexpected response format from server.';
+                } else { // If status code was error (4xx, 5xx) and not JSON
+                     data.message = `Server error (${response.status}): ${response.statusText || 'Please try again.'}`;
+                }
+            }
+            // --- End: Execute fetch ---
+
+
+            // --- Update UI based on response ---
+            statusElement.textContent = data.message || (data.status === 'success' ? 'Operation successful.' : 'An unknown error occurred.');
+            statusElement.className = `status-message ${data.status || 'error'}`; // Add success/error/info class
+
+            if (response.ok && data.status === 'success') {
+                if (successCallback) {
+                    successCallback(data); // Execute custom success logic
+                }
+                 // Optionally auto-clear success message after a delay
+                 setTimeout(() => {
+                     if (statusElement.classList.contains('success')) {
+                        statusElement.textContent = '';
+                        statusElement.className = 'status-message';
+                     }
+                 }, 5000);
+            } else if (!response.ok) {
+                 console.error(`API Error (${response.status}) at ${url}:`, data.message || response.statusText);
+            }
+            // --- End: Update UI based on response ---
+
+            return data; // Return data for potential further use
+
+        } catch (error) {
+            // --- Handle network errors ---
+            console.error(`Network error during fetch to ${url}:`, error);
+            statusElement.textContent = 'A network error occurred. Please check your connection and try again.';
+            statusElement.className = 'status-message error';
+            return { status: 'error', message: 'Network error' }; // Return consistent error structure
+            // --- End: Handle network errors ---
+        } finally {
+            // --- Restore UI state ---
+            if (buttonElement) {
+                buttonElement.disabled = false;
+                spinner?.remove(); // Safely remove spinner if it exists
+                if (buttonTextEl && originalButtonText) {
+                     buttonTextEl.textContent = originalButtonText; // Restore original button text
+                }
+            }
+            // --- End: Restore UI state ---
+        }
+    }
+
+
+    // --- Name Editing Functionality ---
+    const editNameBtn = document.getElementById('edit-name-btn');
+    const saveNameBtn = document.getElementById('save-name-btn');
+    const nameDisplay = document.getElementById('name-display');
+    const nameInput = document.getElementById('name-input');
+    const nameStatus = document.getElementById('name-status');
+
+    if (editNameBtn && saveNameBtn && nameDisplay && nameInput && nameStatus) {
+        editNameBtn.addEventListener('click', () => {
+            nameDisplay.style.display = 'none';
+            editNameBtn.style.display = 'none';
+            nameInput.style.display = 'inline-block';
+            saveNameBtn.style.display = 'inline-block';
+            nameStatus.textContent = ''; // Clear previous status
+            nameStatus.className = 'status-message';
+            nameInput.select(); // Select text for easy replacement
+            nameInput.focus();
+        });
+
+        saveNameBtn.addEventListener('click', async () => {
+            const newName = nameInput.value.trim();
+            if (!newName) {
+                nameStatus.textContent = 'Name cannot be empty.';
+                nameStatus.className = 'status-message error';
+                nameInput.focus();
+                return;
+            }
+            if (newName === nameDisplay.textContent) { // No change
+                nameDisplay.style.display = 'inline';
+                editNameBtn.style.display = 'inline';
+                nameInput.style.display = 'none';
+                saveNameBtn.style.display = 'none';
+                return; // Exit without API call
+            }
+
+            await fetchAndUpdateStatus(
+                "{{ url_for('update_name') }}",
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ name: newName })
+                },
+                nameStatus,
+                saveNameBtn,
+                (data) => { // successCallback
+                    nameDisplay.textContent = newName; // Update display with new name
+                    nameInput.value = newName; // Update input value as well
+                    nameDisplay.style.display = 'inline';
+                    editNameBtn.style.display = 'inline';
+                    nameInput.style.display = 'none';
+                    saveNameBtn.style.display = 'none';
+                    // Success message shown by fetchAndUpdateStatus, auto-clears
+                }
+            );
+        });
+
+         // Allow saving with Enter key in name input
+         nameInput.addEventListener('keydown', (event) => {
+             if (event.key === 'Enter') {
+                 event.preventDefault(); // Prevent potential form submission if wrapped in one
+                 saveNameBtn.click();
+             } else if (event.key === 'Escape') {
+                  // Cancel editing on Escape
+                  nameDisplay.style.display = 'inline';
+                  editNameBtn.style.display = 'inline';
+                  nameInput.style.display = 'none';
+                  saveNameBtn.style.display = 'none';
+                  nameInput.value = nameDisplay.textContent; // Reset value
+                  nameStatus.textContent = '';
+                  nameStatus.className = 'status-message';
+             }
+         });
+    }
+
+    // --- Password Change Functionality ---
+    const changePasswordForm = document.getElementById('change-password-form');
+    const passwordStatus = document.getElementById('password-status');
+    const changePasswordSubmitBtn = document.getElementById('change-password-submit-btn');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+
+    if (changePasswordForm && passwordStatus && changePasswordSubmitBtn && newPasswordInput && confirmPasswordInput) {
+        changePasswordForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            // Reset previous errors visually
+            passwordStatus.textContent = '';
+            passwordStatus.className = 'status-message';
+            newPasswordInput.style.borderColor = ''; // Reset border color
+            confirmPasswordInput.style.borderColor = ''; // Reset border color
+
+            // Client-side validation
+            let isValid = true;
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                passwordStatus.textContent = 'All password fields are required.';
+                isValid = false;
+            } else if (newPassword.length < 12) { // Example: Basic length check
+                 passwordStatus.textContent = 'New password must be at least 12 characters long.';
+                 newPasswordInput.style.borderColor = '#dc3545'; // Highlight error field
+                 isValid = false;
+            // You might add more complex regex checks here if needed
+            } else if (newPassword !== confirmPassword) {
+                passwordStatus.textContent = 'New passwords do not match.';
+                confirmPasswordInput.style.borderColor = '#dc3545'; // Highlight error field
+                isValid = false;
+            }
+
+            if (!isValid) {
+                passwordStatus.className = 'status-message error';
+                return; // Stop if validation fails
+            }
+
+            // Proceed with API call if client-side validation passes
+            await fetchAndUpdateStatus(
+                "{{ url_for('change_password') }}",
+                {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                },
+                passwordStatus,
+                changePasswordSubmitBtn,
+                (data) => { // successCallback
+                    changePasswordForm.reset(); // Clear form fields on success
+                     // Success message shown by fetchAndUpdateStatus, auto-clears
+                }
+            );
+        });
+    }
+
+    // --- Judge Role Request Functionality ---
+    const requestYesBtn = document.getElementById('request-yes-btn');
+    const requestStatusDiv = document.getElementById('request-status');
+    const requestContainer = document.getElementById('judge-request-container');
+
+    if (requestYesBtn && requestStatusDiv && requestContainer) { // Check if the button exists
+        requestYesBtn.addEventListener('click', async () => {
+            const data = await fetchAndUpdateStatus(
+                "{{ url_for('request_judge_role') }}",
+                {
+                    method: 'POST'
+                    // Body is not needed for this specific request based on previous context
+                },
+                requestStatusDiv,
+                requestYesBtn
+                // No specific success callback needed here, UI update is handled below
+            );
+
+            // Update UI specifically after judge request attempt
+            if (data.status === 'success' || data.status === 'info') {
+                // Request submitted successfully OR request was already pending
+                const containerPara = requestContainer.querySelector('p:first-of-type');
+                if (containerPara) {
+                    // Update the main text to reflect pending status
+                     const iconClass = data.status === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+                     const iconColor = data.status === 'success' ? '#155724' : '#0c5460'; // Match success/info colors
+                     containerPara.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i> ${data.message}`;
+                }
+                // Remove the button area
+                requestContainer.querySelector('.judge-request-buttons')?.remove();
+                // Clear the specific status message div below buttons, as message is now shown above
+                requestStatusDiv.textContent = '';
+                requestStatusDiv.className = 'status-message';
+            }
+            // If status is 'error', fetchAndUpdateStatus handles showing the error in requestStatusDiv
+        });
+    }
+});
+</script>
+{% endblock %}

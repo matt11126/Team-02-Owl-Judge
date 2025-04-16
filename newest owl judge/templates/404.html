@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    .error-page-container {
+        text-align: center;
+        padding: 5rem 1rem;
+        min-height: 60vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .error-page-container h1 {
+        font-size: 4rem;
+        color: var(--ksu-black);
+        margin-bottom: 1rem;
+    }
+    .error-page-container p {
+        font-size: 1.2rem;
+        color: var(--dark-gray);
+        margin-bottom: 2rem;
+    }
+    .error-page-container .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+</style>
+
+<div class="error-page-container">
+    <h1>404</h1>
+    <p>Oops! The page you're looking for doesn't exist.</p>
+    <p>It might have been moved or deleted.</p>
+    <a href="{{ url_for('index') }}" class="btn">Go Back Home</a>
+</div>
+{% endblock %}
+```
+
+**2. New File: `templates/500.html`**
+```html
+{% extends "base.html" %}
+
+{% block title %}Server Error - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    .error-page-container {
+        text-align: center;
+        padding: 5rem 1rem;
+        min-height: 60vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .error-page-container h1 {
+        font-size: 4rem;
+        color: var(--ksu-black);
+        margin-bottom: 1rem;
+    }
+    .error-page-container p {
+        font-size: 1.2rem;
+        color: var(--dark-gray);
+        margin-bottom: 2rem;
+    }
+     .error-page-container .error-details {
+        font-size: 0.9rem;
+        color: #888;
+        margin-top: 1rem;
+    }
+    .error-page-container .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+</style>
+
+<div class="error-page-container">
+    <h1>500</h1>
+    <p>Oops! Something went wrong on our end.</p>
+    <p>We're working to fix the problem. Please try again later.</p>
+    <a href="{{ url_for('index') }}" class="btn">Go Back Home</a>
+    {% if config.DEBUG %}
+        {# Optionally show error details only in debug mode #}
+        {# Be very careful about exposing sensitive info #}
+        {# <p class="error-details">Error details available in server logs.</p> #}
+    {% endif %}
+</div>
+{% endblock %}

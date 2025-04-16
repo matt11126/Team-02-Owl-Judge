@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to signup.html --- */
+
+    /* Root variables (assuming they are defined in base.css or similar) */
+    /*
+    :root {
+        --header-height: 60px; / Example /
+        --white: #ffffff;
+        --ksu-black: #231F20; / Example /
+        --ksu-gold: #FFC82E; / Example /
+        --ksu-dark-gold: #D1A11E; / Example /
+        --dark-gray: #333;
+        --medium-gray: #ccc;
+        --primary-font: 'Inter', sans-serif; / Example /
+        --success-color: #2ecc71;
+        --error-color: #e74c3c;
+        --info-color: #3498db;
+        --warning-color: #f39c12;
+        --success-bg: rgba(40, 167, 69, 0.1);
+        --error-bg: rgba(220, 53, 69, 0.1);
+    }
+    */
+
+    .signup-page-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - var(--header-height, 60px) - 5rem); /* Provide fallback */
+        padding: 3rem 1rem;
+        box-sizing: border-box;
+    }
+
+    .signup-container {
+        max-width: 520px;
+        width: 100%;
+        padding: 2.5rem 3rem 3rem 3rem;
+        background-color: var(--white, #ffffff);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+        animation: popIn 0.6s 0.2s ease-out forwards;
+    }
+
+    @keyframes popIn {
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .signup-container h1 {
+        font-size: 2.1rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: var(--ksu-black, #231F20);
+        font-weight: 700;
+    }
+
+    .signup-container .signup-subtitle {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 2.5rem;
+    }
+
+    .signup-form .form-group {
+        margin-bottom: 1.2rem;
+        position: relative;
+        text-align: left;
+    }
+
+    .signup-form .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        color: var(--dark-gray, #333);
+        font-weight: 600;
+    }
+
+    .signup-form .form-group input {
+        width: 100%;
+        padding: 11px 15px;
+        padding-right: 40px; /* Space for icon */
+        box-sizing: border-box;
+        border: 2px solid var(--medium-gray, #ccc);
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: var(--primary-font, 'Inter', sans-serif);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        line-height: 1.5; /* Ensure text isn't cut off */
+    }
+
+    .signup-form .form-group input:-webkit-autofill,
+    .signup-form .form-group input:-webkit-autofill:hover,
+    .signup-form .form-group input:-webkit-autofill:focus,
+    .signup-form .form-group input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px var(--white, #ffffff) inset !important;
+        box-shadow: 0 0 0 30px var(--white, #ffffff) inset !important;
+        /* Optionally control text color if needed: */
+        /* -webkit-text-fill-color: var(--ksu-black, #231F20) !important; */
+    }
+
+    .signup-form .password-wrapper {
+        position: relative; /* Needed for icon positioning */
+    }
+
+    .signup-form .form-group input:focus {
+        border-color: var(--ksu-gold, #FFC82E);
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25);
+        outline: none;
+    }
+
+    .signup-form .form-group input.invalid {
+        border-color: var(--error-color, #e74c3c) !important;
+        /* Remove box-shadow on invalid to prevent gold glow */
+        box-shadow: none !important;
+    }
+
+    .signup-form .form-group input.valid {
+        border-color: var(--success-color, #2ecc71) !important;
+         /* Remove box-shadow on valid to prevent gold glow */
+        box-shadow: none !important;
+    }
+
+    .validation-message {
+        font-size: 0.85rem;
+        margin-top: 6px;
+        min-height: 18px; /* Prevent layout shifts */
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease, max-height 0.3s ease, color 0.3s ease;
+        color: #666; /* Default text color */
+    }
+
+    .validation-message.visible {
+        opacity: 1;
+        max-height: 40px; /* Ensure enough space for message */
+    }
+
+    .validation-message.invalid {
+        color: var(--error-color, #e74c3c);
+    }
+
+    .validation-message.valid {
+        color: var(--success-color, #2ecc71);
+    }
+
+    .validation-message i { /* FontAwesome icons */
+        margin-right: 5px;
+        font-size: 0.9em;
+    }
+
+    #password-requirements {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0 0;
+        font-size: 0.85rem;
+        text-align: left; /* Align list items left */
+        transition: opacity 0.3s ease, max-height 0.3s ease;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+
+    #password-requirements.visible {
+        max-height: 150px; /* Adjust if needed for more reqs */
+        opacity: 1;
+    }
+
+    #password-requirements li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+        color: var(--error-color, #e74c3c); /* Default to error color */
+        transition: color 0.3s ease;
+    }
+
+    #password-requirements li.met {
+        color: var(--success-color, #2ecc71);
+    }
+
+    #password-requirements li i { /* FontAwesome icons */
+        margin-right: 6px;
+        width: 12px; /* Consistent icon width */
+        text-align: center;
+        font-size: 0.8em; /* Slightly smaller icons */
+    }
+
+    /* Password visibility toggle icon */
+    .password-toggle-icon {
+        position: absolute;
+        right: 12px;
+        /* Vertically center relative to the input field */
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        padding: 5px; /* Increase clickable area */
+    }
+
+    .password-toggle-icon:hover {
+        color: var(--ksu-black, #231F20);
+    }
+
+    /* Submit button */
+    .signup-form .btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 2rem;
+        border-radius: 6px;
+        background-color: var(--ksu-gold, #FFC82E);
+        color: var(--ksu-black, #231F20);
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease, opacity 0.3s ease;
+        display: inline-flex; /* Align icon and text */
+        align-items: center;
+        justify-content: center;
+    }
+
+    .signup-form .btn:hover:not(:disabled) {
+        background-color: var(--ksu-dark-gold, #D1A11E);
+    }
+
+    .signup-form .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--medium-gray, #ccc);
+    }
+
+    .signup-form .btn .fa-spinner {
+        margin-right: 8px;
+    }
+
+    /* Overall form error/success message area */
+    #form-error-message {
+        min-height: 25px;
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #form-error-message.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #form-error-message.error {
+        background-color: var(--error-bg, rgba(220, 53, 69, 0.1));
+        color: var(--error-color, #dc3545);
+    }
+
+    #form-error-message.success {
+        background-color: var(--success-bg, rgba(40, 167, 69, 0.1));
+        color: var(--success-color, #28a745);
+    }
+
+    #form-error-message i { /* FontAwesome icon */
+        margin-right: 6px;
+    }
+
+    /* Link to login page */
+    .login-link {
+        margin-top: 2rem;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .login-link a {
+        font-weight: 600;
+        color: var(--ksu-dark-gold, #D1A11E);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--ksu-dark-gold, #D1A11E);
+        transition: color 0.2s ease, border-bottom-style 0.2s ease;
+    }
+
+    .login-link a:hover,
+    .login-link a:focus {
+        color: var(--ksu-gold, #FFC82E);
+        border-bottom-style: solid;
+        outline: none; /* Improve focus visibility if needed */
+    }
+
+    /* Shake animation for validation errors */
+    @keyframes shake {
+        10%, 90% { transform: translateX(-1px); }
+        20%, 80% { transform: translateX(2px); }
+        30%, 50%, 70% { transform: translateX(-4px); }
+        40%, 60% { transform: translateX(4px); }
+    }
+
+    .shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Flash messages positioning within the container */
+    .flash-messages-container {
+        /* position: static; Remove static override if not needed */
+        max-width: 100%; /* Take full width of container */
+        margin: 0 auto 1.5rem auto;
+        padding: 0; /* No extra padding */
+        z-index: auto;
+    }
+
+    /* Style flash messages (assuming base style exists) */
+    .flash-message {
+        padding: 10px 15px;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        opacity: 1; /* Ensure visibility */
+        animation: none; /* Override potential fade-out */
+        /* Add specific colors based on category */
+    }
+    .flash-message.success { background-color: var(--success-bg, rgba(40, 167, 69, 0.1)); color: var(--success-color, #28a745); border: 1px solid var(--success-color, #28a745); }
+    .flash-message.error { background-color: var(--error-bg, rgba(220, 53, 69, 0.1)); color: var(--error-color, #dc3545); border: 1px solid var(--error-color, #dc3545); }
+    .flash-message.info { background-color: rgba(52, 152, 219, 0.1); color: var(--info-color, #3498db); border: 1px solid var(--info-color, #3498db); }
+    .flash-message.warning { background-color: rgba(243, 156, 18, 0.1); color: var(--warning-color, #f39c12); border: 1px solid var(--warning-color, #f39c12); }
+
+</style>
+
+<main class="signup-page-main">
+    <div class="signup-container">
+        <h1>Create Your OwlJudge Account</h1>
+        <p class="signup-subtitle">Join the KSU CCSE community platform.</p>
+
+        {# --- Display Flashed Messages --- #}
+        {# Positioned inside container, before the form for visibility #}
+        <div class="flash-messages-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {# Ensure category is one of the known types, default to 'info' #}
+                        {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                        <div class="flash-message {{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {# --- End Flashed Messages --- #}
+
+        <form id="signupForm" class="signup-form" method="POST" action="{{ url_for('signup') }}" novalidate>
+            {# No CSRF token needed if handled by Flask-WTF or other means, otherwise add it #}
+            {# {{ form.csrf_token }} #}
+
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Your full name" required aria-required="true" autocomplete="name" aria-describedby="name-validation" minlength="1">
+                <div id="name-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required aria-required="true" autocomplete="email" aria-describedby="email-validation" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$">
+                <div id="email-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Create a strong password" required aria-required="true" aria-describedby="password-requirements" autocomplete="new-password">
+                    <i class="fas fa-eye password-toggle-icon" id="togglePassword" aria-label="Show password" title="Show/Hide password"></i>
+                </div>
+                <ul id="password-requirements" aria-live="polite">
+                    <li id="req-length"><i class="fas fa-times"></i> Minimum 12 characters</li>
+                    <li id="req-uppercase"><i class="fas fa-times"></i> At least one uppercase letter (A-Z)</li>
+                    <li id="req-lowercase"><i class="fas fa-times"></i> At least one lowercase letter (a-z)</li>
+                    <li id="req-number"><i class="fas fa-times"></i> At least one number (0-9)</li>
+                    <li id="req-symbol"><i class="fas fa-times"></i> At least one symbol (!@#$%^&*)</li>
+                </ul>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required aria-required="true" aria-describedby="confirm-validation" autocomplete="new-password">
+                    <i class="fas fa-eye password-toggle-icon" id="toggleConfirmPassword" aria-label="Show password" title="Show/Hide password"></i>
+                </div>
+                <div id="confirm-validation" class="validation-message" aria-live="polite"></div>
+            </div>
+
+            {# Area for OVERALL FORM AJAX success/error messages #}
+            <p id="form-error-message" role="alert" aria-live="assertive"></p>
+
+            <button type="submit" class="btn" id="submitBtn" disabled> {# Start disabled, ID added for easier selection #}
+                <span class="btn-text">Sign Up</span>
+            </button>
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="{{ url_for('login') }}">Log In Here</a>
+        </p>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Constants ---
+        const MIN_PASSWORD_LENGTH = 12;
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const SYMBOL_REGEX = /[!@#$%^&*()_+=\-{}[\]:;\"'|\\<>,.?/~`]/;
+
+        // --- Get Elements ---
+        const signupForm = document.getElementById('signupForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const passwordReqList = document.getElementById('password-requirements');
+        const formErrorDiv = document.getElementById('form-error-message');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitBtnText = submitBtn.querySelector('.btn-text');
+        const signupContainer = document.querySelector('.signup-container');
+
+        // Validation message elements
+        const nameValidationDiv = document.getElementById('name-validation');
+        const emailValidationDiv = document.getElementById('email-validation');
+        const confirmValidationDiv = document.getElementById('confirm-validation');
+
+        // Password requirement list items
+        const reqItems = {
+            length: document.getElementById('req-length'),
+            uppercase: document.getElementById('req-uppercase'),
+            lowercase: document.getElementById('req-lowercase'),
+            number: document.getElementById('req-number'),
+            symbol: document.getElementById('req-symbol')
+        };
+
+        // --- Form Validity State ---
+        // Tracks if each field meets its individual requirements
+        let formValidity = {
+            name: false,
+            email: false,
+            password: false, // Represents meeting *all* password criteria
+            confirm: false  // Represents matching the *valid* base password
+        };
+
+        // --- Utility Functions ---
+
+        /**
+         * Sets the text and state of a validation message element.
+         * @param {HTMLElement} element The validation message container element.
+         * @param {string} message The message text (empty string hides the message).
+         * @param {boolean} isValid True if the state is valid, false otherwise.
+         */
+        function setValidationMessage(element, message, isValid) {
+            if (!element) return;
+            element.innerHTML = message ? `<i class="fas ${isValid ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${message}` : '';
+            element.classList.toggle('visible', !!message); // Show if message exists
+            element.classList.toggle('valid', isValid && !!message); // Mark valid only if shown and valid
+            element.classList.toggle('invalid', !isValid && !!message); // Mark invalid only if shown and invalid
+        }
+
+        /**
+         * Adds or removes 'valid'/'invalid' classes from an input element.
+         * @param {HTMLInputElement} inputElement The input element.
+         * @param {boolean} isValid True if the input's current value is considered valid.
+         * @param {boolean} forceNeutral Optional: If true, remove both classes regardless of validity.
+         */
+        function markInputValidity(inputElement, isValid, forceNeutral = false) {
+            if (!inputElement) return;
+            if (forceNeutral) {
+                inputElement.classList.remove('valid', 'invalid');
+            } else {
+                inputElement.classList.toggle('valid', isValid);
+                inputElement.classList.toggle('invalid', !isValid);
+            }
+        }
+
+        /**
+         * Checks the overall form validity state and enables/disables the submit button.
+         */
+        function checkFormValidity() {
+            const allValid = Object.values(formValidity).every(status => status === true);
+            submitBtn.disabled = !allValid;
+        }
+
+        /**
+         * Sets up the click listener for a password visibility toggle icon.
+         * @param {string} inputId The ID of the password input field.
+         * @param {string} toggleId The ID of the toggle icon (<i> element).
+         */
+        function setupPasswordToggle(inputId, toggleId) {
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+            if (!input || !toggle) return;
+
+            toggle.addEventListener('click', function () {
+                const isPassword = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPassword ? 'text' : 'password');
+                // Toggle eye icon classes
+                this.classList.toggle('fa-eye', !isPassword);
+                this.classList.toggle('fa-eye-slash', isPassword);
+                // Update accessibility labels
+                const label = isPassword ? 'Hide password' : 'Show password';
+                this.setAttribute('aria-label', label);
+                this.setAttribute('title', label); // Add title for tooltip
+            });
+        }
+
+        // --- Validation Logic Functions ---
+
+        /** Validates the Full Name field */
+        function validateName() {
+            const name = nameInput.value.trim();
+            const isValid = name.length > 0;
+            setValidationMessage(nameValidationDiv, isValid ? "Looks good!" : (nameInput.value ? "Full name is required." : ""), isValid); // Show required only if user typed something then erased
+            markInputValidity(nameInput, isValid, !nameInput.value); // Mark neutral if empty
+            formValidity.name = isValid;
+            checkFormValidity();
+        }
+
+        /** Validates the Email field */
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            let isValid = false;
+            let message = "";
+
+            if (email.length > 0) {
+                isValid = EMAIL_REGEX.test(email);
+                message = isValid ? "Email format is valid." : "Please enter a valid email address.";
+            } else {
+                // Optionally provide a message if required and empty after interaction, or keep silent
+                 message = ""; // Keep silent if simply empty
+            }
+            setValidationMessage(emailValidationDiv, message, isValid);
+            markInputValidity(emailInput, isValid, !email); // Mark neutral if empty
+            formValidity.email = isValid;
+            checkFormValidity();
+        }
+
+        /** Validates the Password field and updates requirements list */
+        function validatePassword() {
+            const password = passwordInput.value;
+            let requirementsMetCount = 0;
+            let isPasswordStrong = false;
+
+            // Toggle visibility of requirements list based on input presence
+            passwordReqList.classList.toggle('visible', password.length > 0);
+
+            // Check each requirement
+            const checks = {
+                length: password.length >= MIN_PASSWORD_LENGTH,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                symbol: SYMBOL_REGEX.test(password)
+            };
+
+            // Update list item styles and count met requirements
+            for (const req in checks) {
+                const element = reqItems[req];
+                if (element) {
+                    const met = checks[req];
+                    element.classList.toggle('met', met);
+                    element.querySelector('i').className = `fas ${met ? 'fa-check' : 'fa-times'}`;
+                    if (met) requirementsMetCount++;
+                }
+            }
+
+            // Determine overall password strength (all requirements met)
+            isPasswordStrong = requirementsMetCount === Object.keys(reqItems).length;
+            markInputValidity(passwordInput, isPasswordStrong, !password); // Mark neutral if empty
+            formValidity.password = isPasswordStrong;
+
+            // Since password changed, re-validate the confirm password field
+            validateConfirmPassword();
+            // Update overall form validity and button state
+            checkFormValidity();
+        }
+
+        /** Validates the Confirm Password field */
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirm = confirmPasswordInput.value;
+            let isMatchValid = false; // Is the *match* itself valid?
+            let message = "";
+
+            // Only validate confirm if the base password has met its criteria
+            if (formValidity.password) {
+                if (confirm.length > 0) {
+                    if (password === confirm) {
+                        message = "Passwords match!";
+                        isMatchValid = true;
+                    } else {
+                        message = "Passwords do not match.";
+                        isMatchValid = false;
+                    }
+                } else {
+                    // Empty confirm field when base password is valid
+                     message = "Please re-enter your password."; // Or keep silent? ""
+                     isMatchValid = false;
+                }
+            } else {
+                 // Base password isn't valid yet, don't mark confirm as explicitly invalid unless user typed
+                 if (confirm.length > 0) {
+                     message = "Base password requirements not met.";
+                     isMatchValid = false;
+                 } else {
+                    message = ""; // Keep silent if both are empty/base invalid
+                    isMatchValid = false;
+                 }
+            }
+
+            setValidationMessage(confirmValidationDiv, message, isMatchValid);
+            markInputValidity(confirmPasswordInput, isMatchValid, !confirm && !password); // Mark neutral if both empty
+            formValidity.confirm = isMatchValid; // Confirm field is only valid if it matches a STRONG password
+             // Update overall form validity and button state
+            checkFormValidity();
+        }
+
+        // --- Event Listeners ---
+
+        // Use 'input' for instant feedback where appropriate, 'blur' for less frequent checks
+        nameInput?.addEventListener('blur', validateName); // Validate name on blur (less intrusive)
+        emailInput?.addEventListener('input', validateEmail);
+        passwordInput?.addEventListener('input', validatePassword);
+        confirmPasswordInput?.addEventListener('input', validateConfirmPassword);
+
+        // Setup password visibility toggles
+        setupPasswordToggle('password', 'togglePassword');
+        setupPasswordToggle('confirm_password', 'toggleConfirmPassword');
+
+        // --- AJAX Form Submission ---
+        signupForm?.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default HTML form submission
+
+            // Final client-side validity check before submitting
+            // Run all validators again in case something was missed or changed
+            validateName();
+            validateEmail();
+            validatePassword();
+            validateConfirmPassword(); // This depends on validatePassword having run
+
+            if (!formValidity.name || !formValidity.email || !formValidity.password || !formValidity.confirm) {
+                formErrorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please ensure all fields are valid.`;
+                formErrorDiv.className = 'error show'; // Use specific class + show
+                signupContainer.classList.add('shake');
+                setTimeout(() => signupContainer.classList.remove('shake'), 500);
+
+                // Focus the first invalid input field for accessibility
+                const firstInvalid = signupForm.querySelector('input.invalid, input:invalid'); // Find first invalid field
+                firstInvalid?.focus();
+                return; // Stop submission
+            }
+
+            // --- Loading State ---
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Creating Account...';
+            // Add spinner icon (ensure Font Awesome is loaded)
+            submitBtn.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ');
+            formErrorDiv.textContent = ''; // Clear previous errors
+            formErrorDiv.classList.remove('show', 'success', 'error'); // Reset classes
+
+            const formData = new FormData(signupForm);
+            // Convert FormData to JSON object for the backend (since app.py expects JSON)
+            const jsonData = {};
+            formData.forEach((value, key) => {jsonData[key] = value});
+
+            try {
+                // --- Send Request ---
+                const response = await fetch(signupForm.action, { // Use form's action attribute
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json' // Indicate we expect JSON back
+                    },
+                    body: JSON.stringify(jsonData) // Send JSON data
+                });
+
+                // Always expect JSON response from the backend based on app.py logic
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    // --- Success ---
+                    formErrorDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message || 'Account created! Redirecting...'}`;
+                    formErrorDiv.className = 'success show'; // Use specific class
+                    submitBtnText.textContent = 'Success!';
+                    // Button remains disabled as we are redirecting
+                    submitBtn.querySelector('.fa-spinner')?.remove();
+
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "{{ url_for('login') }}"; // Use redirect URL from server or fallback
+                    }, 1500); // Shorter delay
+
+                } else {
+                    // --- Error from Server (e.g., email exists, backend validation fail, or other errors) ---
+                    // Throw an error to be caught by the catch block
+                    throw new Error(data.message || `Sign up failed (Status: ${response.status})`);
+                }
+
+            } catch (error) {
+                // --- Handle Fetch/Network Errors or Server Errors thrown above ---
+                console.error('Signup Error:', error);
+                formErrorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message || 'Sign up failed. Please try again.'}`;
+                formErrorDiv.className = 'error show'; // Use specific class
+                signupContainer.classList.add('shake');
+                setTimeout(() => signupContainer.classList.remove('shake'), 500);
+
+                // Reset button BUT keep disabled state based on current form validity
+                submitBtnText.textContent = 'Sign Up';
+                submitBtn.querySelector('.fa-spinner')?.remove();
+                checkFormValidity(); // Re-evaluate if button should be enabled based on current input states
+            }
+        });
+
+        // --- Initial Check on Load ---
+        // Trigger validation checks in case fields have auto-fill content
+        // Use setTimeout to ensure potential autofill is rendered
+        setTimeout(() => {
+            if (nameInput?.value) validateName();
+            if (emailInput?.value) validateEmail();
+            if (passwordInput?.value) validatePassword(); // This will also trigger confirm validation
+            // Initial check to set button state correctly based on autofilled content (or lack thereof)
+            checkFormValidity();
+        }, 100); // Short delay for autofill
+
+    }); // End DOMContentLoaded
+</script>
+
+{% endblock %}

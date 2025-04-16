@@ -1,0 +1,779 @@
+{% extends 'base.html' %}
+
+{% block title %}OwlJudge: KSU Project Evaluation Platform{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to index.html --- */
+    /* !! IMPORTANT: Move these styles to static/style.css for production !! */
+
+    /* --- General Enhancements --- */
+    body { overflow-x: hidden; } /* Prevent horizontal scrollbars */
+    .btn i, .hero-actions .btn i { margin-left: 8px; font-size: 0.9em; transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); }
+    .btn:hover i { transform: translateX(4px); }
+
+    /* Improved Focus Indication (Accessibility) */
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+        outline: 3px solid var(--ksu-gold);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 5px rgba(80, 80, 80, 0.5); /* Darker, more prominent glow */
+        border-radius: 3px; /* Slightly rounder */
+    }
+    /* Fine-tuning examples */
+    .faq-question:focus-visible { outline-offset: 1px; }
+    .slider-dots .dot:focus-visible { outline: 3px solid var(--ksu-black); box-shadow: 0 0 0 4px rgba(255, 180, 0, 0.6); }
+
+    /* --- Hero Section --- */
+    /* TODO: Optimize static/images/ksu_campus_blur.jpg for web */
+    .hero-section {
+        background: linear-gradient(135deg, rgba(15, 10, 10, 0.88) 0%, rgba(45, 45, 45, 0.80) 100%), url("{{ url_for('static', filename='images/ksu_campus_blur.jpg') }}") center/cover no-repeat fixed; /* Added fixed for subtle parallax */
+        /* Alt text implicitly provided by content, but ensure image is decorative or context is clear */
+        color: var(--white); padding: 7rem 1rem 6rem 1rem; text-align: center;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        min-height: 70vh;
+        margin-top: calc(-1 * var(--header-height));
+        padding-top: calc(var(--header-height) + 5rem);
+        position: relative;
+    }
+    .hero-section h1 {
+        font-size: 2.8rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--white);
+        text-shadow: 2px 3px 7px rgba(0,0,0,0.7);
+        animation: slideInDown 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    }
+    .hero-section .subtitle {
+        font-size: 1.15rem; max-width: 750px; margin: 0 auto 2.5rem auto;
+        color: rgba(255, 255, 255, 0.98); /* Slightly brighter */
+        line-height: 1.6;
+        animation: fadeIn 1.3s 0.3s ease-out forwards; opacity: 0;
+    }
+    .hero-actions { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; animation: fadeInUp 1.1s 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; opacity: 0; }
+    .hero-actions .btn { font-size: 1.05rem; padding: 14px 30px; border-radius: 35px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease; }
+    .hero-actions .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
+    .hero-actions .btn-secondary { background-color: transparent; border: 2px solid var(--ksu-gold); color: var(--ksu-gold); }
+    .hero-actions .btn-secondary:hover { background-color: var(--ksu-gold); color: var(--ksu-black); }
+
+    /* --- General Section Styling --- */
+    .content-section { background-color: var(--white); padding: 4.5rem 1rem; position: relative; overflow: hidden; }
+    #roles, #featured-projects { background-color: var(--light-gray); }
+    #testimonials {
+        /* TODO: Optimize static/images/ksu_campus_wide.jpg for web */
+        background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+                    url("{{ url_for('static', filename='images/ksu_campus_wide.jpg') }}") center center/cover no-repeat;
+        background-attachment: fixed; /* Parallax effect - disable via media query if needed */
+    }
+    #get-started {
+        background: linear-gradient(135deg, var(--ksu-gold), var(--ksu-dark-gold));
+        color: var(--ksu-black); text-align: center; padding: 4.5rem 1rem;
+    }
+
+    /* Scroll Animation container */
+    .content-section .container { opacity: 0; transform: translateY(25px) scale(0.98); transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1); will-change: opacity, transform; }
+    .content-section.visible .container { opacity: 1; transform: translateY(0) scale(1); }
+
+    /* Section headings */
+    .content-section h2 { text-align: center; font-size: 2.2rem; margin-bottom: 3.5rem; color: var(--ksu-black); position: relative; font-weight: 600; }
+    .content-section h2::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 70px; height: 4px; background: linear-gradient(90deg, var(--ksu-gold), var(--ksu-dark-gold)); border-radius: 2px; }
+    #testimonials h2 { color: var(--ksu-black); }
+    #testimonials h2::after { background: linear-gradient(90deg, var(--ksu-gold), var(--ksu-dark-gold)); }
+    #get-started h2 { color: var(--ksu-black); }
+    #get-started h2::after { background: var(--ksu-black); }
+
+    /* --- "Who is it For?" Section (Roles) --- */
+    .roles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.8rem; text-align: center; }
+    .role-card { background-color: var(--white); padding: 2rem 1.5rem; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.07); transition: transform 0.35s ease, box-shadow 0.35s ease; }
+    .role-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+    .role-card i { font-size: 3rem; color: var(--ksu-gold); margin-bottom: 1.3rem; transition: transform 0.4s ease; }
+    .role-card:hover i { transform: rotateY(180deg); } /* Add a flip effect */
+    .role-card h3 { font-size: 1.35rem; margin-bottom: 0.9rem; color: var(--ksu-black); font-weight: 600; }
+    .role-card p { font-size: 0.98rem; color: #555; line-height: 1.7; }
+
+    /* --- Key Features Section --- */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.8rem; }
+    .feature-item { display: flex; align-items: flex-start; gap: 1.4rem; text-align: left; padding: 1.2rem 0.8rem; border-bottom: 1px solid #eee; transition: background-color 0.3s ease; }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-item:hover { background-color: #f9f9f9; border-radius: 8px; }
+    .feature-item i { font-size: 2.4rem; color: var(--ksu-gold); margin-top: 6px; flex-shrink: 0; width: 40px; text-align: center; transition: transform 0.35s ease; }
+    .feature-item:hover i { transform: scale(1.15) rotate(-8deg); }
+    .feature-item h3 { margin-bottom: 0.6rem; font-size: 1.25rem; color: var(--ksu-black); font-weight: 600;}
+    .feature-item p { font-size: 0.95rem; color: #555; line-height: 1.65; margin: 0; }
+
+    /* --- Featured Projects Section (No Images) --- */
+    .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.8rem; }
+    .project-card {
+        background: var(--white); border-radius: 10px; border: 1px solid #ddd; /* Slightly stronger border */
+        overflow: hidden; transition: transform 0.35s ease, box-shadow 0.35s ease;
+        display: flex; flex-direction: column;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    .project-card:hover { transform: translateY(-10px); box-shadow: 0 14px 35px rgba(0,0,0,0.14); }
+    /* Removed .project-card-image styles */
+    .project-card-content { padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1; }
+    .project-card h3 { margin-bottom: 1rem; color: var(--ksu-black); font-size: 1.35rem; font-weight: 600; }
+    .project-card p { flex-grow: 1; margin-bottom: 1.5rem; color: #555; font-size: 0.98rem; line-height: 1.65; }
+    .project-card .btn { margin-top: auto; align-self: flex-start; padding: 9px 20px; font-size: 0.98em; border-radius: 25px; }
+
+    /* --- How It Works Section (Conditional) --- */
+    .steps-container { display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 1.8rem; margin-top: 3.5rem; position: relative; counter-reset: step-counter; }
+    .step-item { flex: 1; min-width: 250px; max-width: 330px; text-align: center; padding: 2.2rem 1.6rem; background: var(--white); border-radius: 12px; position: relative; border: 1px solid #e5e5e5; box-shadow: 0 6px 18px rgba(0,0,0,0.06); transition: transform 0.35s ease, box-shadow 0.35s ease; }
+    .step-item:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 12px 30px rgba(0,0,0,0.11); }
+    .step-item::before { counter-increment: step-counter; content: counter(step-counter); position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--ksu-gold), var(--ksu-dark-gold)); color: var(--ksu-black); width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 1.3rem; box-shadow: 0 4px 8px rgba(0,0,0,0.18); border: 3px solid var(--white); }
+    .step-item i { font-size: 3rem; color: var(--ksu-gold); margin-bottom: 1.3rem; transition: transform 0.35s ease; }
+    .step-item:hover i { transform: scale(1.1) rotate(5deg); }
+    .step-item h3 { margin-bottom: 0.9rem; font-size: 1.35rem; color: var(--ksu-black); font-weight: 600;}
+    .step-item p { color: #666; font-size: 0.98rem; line-height: 1.65; }
+
+    /* --- Testimonials Section --- */
+    #testimonials .container { position: relative; z-index: 1; }
+    .testimonial-slider { position: relative; max-width: 850px; margin: 2rem auto 0 auto; overflow: hidden; min-height: 260px; /* Adjust as needed */ }
+    .quote-item {
+        padding: 2rem; background: rgba(255, 255, 255, 0.98); border-left: 6px solid var(--ksu-gold);
+        border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        position: absolute; width: 100%; top: 0; left: 0;
+        opacity: 0; visibility: hidden;
+        transition: opacity 0.7s ease-in-out, visibility 0.7s ease-in-out;
+        will-change: opacity;
+    }
+    .quote-item.active { opacity: 1; visibility: visible; position: relative; }
+    .quote-item i.fa-quote-left { position: absolute; top: 18px; left: 25px; font-size: 2.2rem; color: var(--ksu-gold); opacity: 0.12; }
+    .quote-item p { font-style: italic; color: #333; margin-bottom: 1.2rem; line-height: 1.75; font-size: 1.05rem; position: relative; padding-left: 10px; }
+    .quote-citation { display: flex; align-items: center; margin-top: 1.5rem; }
+    /* TODO: Optimize testimonial avatar images (avatar_*.png, ksu.png) */
+    .quote-citation img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background-color: var(--medium-gray); border: 2px solid var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.25); }
+    .quote-citation span { font-weight: 700; color: #444; font-style: normal; font-size: 1rem; }
+    .slider-dots { text-align: center; margin-top: 1.8rem; }
+    .slider-dots .dot { display: inline-block; width: 11px; height: 11px; background-color: var(--medium-gray); border-radius: 50%; margin: 0 6px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease; border: none; padding: 0; }
+    .slider-dots .dot.active { background-color: var(--ksu-gold); transform: scale(1.2); }
+
+    /* --- FAQ Section --- */
+    #faq .container { max-width: 900px; margin-left: auto; margin-right: auto; }
+    .faq-container { margin-top: 1.5rem; }
+    .faq-item { border: 1px solid var(--medium-gray); border-radius: 10px; margin-bottom: 1.2rem; overflow: hidden; background-color: var(--white); box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
+    .faq-question { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.8rem; background-color: transparent; border: none; width: 100%; text-align: left; cursor: pointer; font-family: var(--primary-font); font-weight: 600; font-size: 1.15rem; color: var(--ksu-black); transition: background-color 0.2s ease; }
+    .faq-question:hover { background-color: #fafafa; }
+    .faq-question i { font-size: 1em; transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); margin-left: 1rem; color: var(--ksu-dark-gold); flex-shrink: 0; }
+    .faq-item.active .faq-question i { transform: rotate(180deg); }
+    .faq-answer { padding: 0 1.8rem; font-size: 1rem; line-height: 1.75; color: #444; max-height: 0; overflow: hidden; transition: max-height 0.45s ease-out, padding 0.45s ease-out, border-top 0.45s ease-out; background-color: #fdfdfd; will-change: max-height; border-top: 1px solid transparent; }
+    .faq-item.active .faq-answer { max-height: 600px; /* Increased max-height */ padding: 1.8rem 1.8rem; border-top: 1px solid var(--medium-gray); }
+
+    /* --- Get Started Section --- */
+    #get-started p { margin-bottom: 2.5rem; font-size: 1.15rem; color: rgba(10, 7, 7, 0.9); max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+    #get-started .btn { font-size: 1.15rem; padding: 15px 35px; border-radius: 35px; background-color: var(--ksu-black); color: var(--ksu-gold); box-shadow: 0 5px 18px rgba(0,0,0,0.25); transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    #get-started .btn:hover { background-color: #000; color: var(--white); transform: translateY(-4px) scale(1.04); box-shadow: 0 8px 25px rgba(0,0,0,0.35); }
+    #get-started .btn i { transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); }
+    #get-started .btn:hover i { transform: translateX(5px) rotate(5deg); } /* Added slight rotate */
+
+    /* --- Animations (Entry - Refined) --- */
+    @keyframes slideInDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } } /* Added subtle scale */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- Responsive Adjustments --- */
+    /* Medium Screens (Tablets) */
+    @media (max-width: 991px) {
+        .hero-section { background-attachment: scroll; padding: calc(var(--header-height) + 4rem) 1rem 4rem 1rem; min-height: 60vh; }
+        .hero-section h1 { font-size: 2.5rem; }
+        .hero-section .subtitle { font-size: 1.1rem; max-width: 90%; }
+        .content-section { padding: 3.5rem 1rem; }
+        .content-section h2 { font-size: 2rem; margin-bottom: 3rem; }
+        #testimonials { background-attachment: scroll; padding-bottom: 3.5rem; }
+        .testimonial-slider { max-width: 95%; min-height: 280px; } /* Adjust height if needed */
+        .project-card-content { padding: 1.5rem; } /* Adjusted padding */
+        .project-card h3 { font-size: 1.25rem; }
+        .project-card p { font-size: 0.95rem; }
+        .project-card .btn { padding: 8px 18px; }
+    }
+
+    /* Small Screens (Mobile) */
+    @media (max-width: 767px) {
+        .hero-section { padding: calc(var(--header-height) + 3rem) 1rem 4rem 1rem; min-height: 55vh; }
+        .hero-section h1 { font-size: 2.1rem; }
+        .hero-section .subtitle { font-size: 1rem; margin-bottom: 2rem; }
+        .hero-actions .btn { font-size: 1rem; padding: 12px 25px; }
+        .hero-actions { gap: 0.8rem; }
+
+        .content-section { padding: 3rem 1rem; }
+        .content-section h2 { font-size: 1.8rem; margin-bottom: 2.8rem; }
+        .content-section h2::after { width: 60px; height: 3px; bottom: -12px; }
+
+        .roles-grid, .features-grid, .project-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+        .role-card { padding: 1.8rem 1.2rem; }
+
+        .feature-item { gap: 1.2rem; padding: 1rem 0.5rem; }
+        .feature-item i { font-size: 2.1rem; width: 35px; }
+        .feature-item h3 { font-size: 1.15rem; }
+        .feature-item p { font-size: 0.9rem; }
+
+        /* Project Card Mobile - No Image */
+        .project-card-content { padding: 1.5rem; }
+        .project-card h3 { font-size: 1.25rem; }
+        .project-card p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.2rem; }
+        .project-card .btn { padding: 8px 18px; font-size: 0.95em; }
+
+        .steps-container { gap: 1.5rem; margin-top: 3rem; flex-direction: column; align-items: center; }
+        .step-item { padding: 2rem 1.2rem; width: 90%; max-width: 380px; }
+        .step-item::before { width: 40px; height: 40px; font-size: 1.2rem; top: -20px; }
+        .step-item i { font-size: 2.8rem; margin-bottom: 1.2rem; }
+        .step-item h3 { font-size: 1.25rem; }
+        .step-item p { font-size: 0.95rem; }
+
+        /* Testimonials Mobile */
+        .testimonial-slider { min-height: initial; padding: 0 0.5rem; margin-top: 1.5rem;}
+        .quote-item { padding: 1.8rem 1.5rem; }
+        .quote-item i.fa-quote-left { font-size: 2rem; left: 18px; top: 15px; }
+        .quote-item p { font-size: 0.95rem; line-height: 1.65; }
+        .quote-citation { margin-top: 1.2rem; flex-direction: column; align-items: center; text-align: center; }
+        .quote-citation img { margin-right: 0; margin-bottom: 0.7rem; width: 45px; height: 45px; }
+        .quote-citation span { font-size: 0.95rem; }
+        .slider-dots { margin-top: 1.2rem; }
+
+        /* FAQ Mobile */
+        .faq-question { font-size: 1.05rem; padding: 1rem 1.2rem; }
+        .faq-answer { font-size: 0.95rem; padding-left: 1.2rem; padding-right: 1.2rem; }
+        .faq-item.active .faq-answer { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+
+        /* Get Started Mobile */
+        #get-started { padding: 3.5rem 1rem; }
+        #get-started h2 { font-size: 1.8rem; }
+        #get-started p { font-size: 1.05rem; margin-bottom: 1.8rem; }
+        #get-started .btn { font-size: 1.05rem; padding: 13px 30px; width: 85%; max-width: 300px; }
+    }
+
+    /* Very Small Screens */
+    @media (max-width: 480px) {
+        .hero-section h1 { font-size: 1.9rem; }
+        .hero-actions { flex-direction: column; align-items: center; gap: 1rem; }
+        .hero-actions .btn { width: 85%; max-width: 320px; }
+        .step-item { width: 95%; padding: 1.8rem 1rem;}
+        .quote-citation span { font-size: 0.9rem; }
+        .project-card-content { padding: 1.2rem; }
+        .project-card h3 { font-size: 1.15rem; }
+        .project-card p { font-size: 0.9rem; }
+    }
+
+    /* Reduced Motion Preference */
+    @media (prefers-reduced-motion: reduce) {
+        /* Disable entry animations */
+        .hero-section h1, .hero-section .subtitle, .hero-actions,
+        .content-section .container { animation: none !important; opacity: 1 !important; transform: none !important; }
+        /* Disable transitions */
+        *, *::before, *::after { transition: none !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+        /* Disable hover effects involving transform/shadow/icon movements */
+        .role-card:hover, .feature-item:hover, .project-card:hover, .step-item:hover, .btn:hover, #get-started .btn:hover { transform: none !important; box-shadow: inherit !important; /* Use inherit or specific base shadow */ }
+        .role-card:hover i, .feature-item:hover i, .step-item:hover i, .btn:hover i, #get-started .btn:hover i { transform: none !important; }
+        /* Ensure slider doesn't rely on transition */
+        .quote-item { transition: visibility 0.01ms !important; } /* Instant change */
+        /* Disable parallax */
+        .hero-section, #testimonials { background-attachment: scroll !important; }
+        /* Remove dot scaling */
+        .slider-dots .dot.active { transform: none !important; }
+    }
+
+</style>
+
+{# --- Hero Section --- #}
+<section class="hero-section" aria-labelledby="hero-heading">
+    <div class="container">
+        <h1 id="hero-heading">Innovate. Evaluate. Celebrate.</h1>
+        <p class="subtitle">Welcome to OwlJudge, the official platform enhancing Kennesaw State University's CCSE project showcases. Discover groundbreaking student work, provide expert evaluations, and recognize academic excellence efficiently.</p>
+        <div class="hero-actions">
+            {# Conditional buttons based on user login status and role #}
+            {% if current_user %}
+                 {% if current_user.role == 'judge' %}
+                    <a href="{{ url_for('vote_casting') }}" class="btn">Start Judging <i class="fas fa-gavel"></i></a>
+                 {% elif current_user.role == 'admin' %}
+                     <a href="{{ url_for('admin_dashboard') }}" class="btn">Admin Dashboard <i class="fas fa-tachometer-alt"></i></a>
+                 {% else %} {# Default for 'user' (student/audience) role #}
+                     <a href="{{ url_for('audience') }}" class="btn">View Projects <i class="fas fa-list-ul"></i></a>
+                 {% endif %}
+                 <a href="#features" class="btn btn-secondary">Explore Features</a>
+            {% else %}
+                {# Buttons for logged-out users #}
+                <a href="{{ url_for('signup') }}" class="btn">Register Now <i class="fas fa-user-plus"></i></a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">Judge/Admin Login</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{# --- Who is OwlJudge For? --- #}
+<section id="roles" class="content-section" role="region" aria-labelledby="roles-heading">
+    <div class="container">
+        <h2 id="roles-heading">Designed for Everyone Involved</h2>
+        <div class="roles-grid">
+            <article class="role-card">
+                <i class="fas fa-gavel" aria-hidden="true"></i>
+                <h3>Judges & Faculty</h3>
+                <p>Streamline the evaluation process with clear digital criteria, easy score submission, real-time calculations, and transparent results management.</p>
+            </article>
+            <article class="role-card">
+                <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                <h3>Students</h3>
+                <p>Showcase your hard work effectively, gain valuable structured feedback, and see how your innovative projects rank amongst peers during showcase events.</p>
+            </article>
+            <article class="role-card">
+                <i class="fas fa-binoculars" aria-hidden="true"></i>
+                <h3>Audience & Industry</h3>
+                <p>Discover emerging tech talent, explore innovative capstone projects, follow event progress via leaderboards, and engage with the vibrant KSU CCSE community.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+{# --- Key Features Section --- #}
+<section id="features" class="content-section" role="region" aria-labelledby="features-heading">
+    <div class="container">
+        <h2 id="features-heading">Platform Highlights</h2>
+        <div class="features-grid">
+            <article class="feature-item">
+                <i class="fas fa-balance-scale-right" aria-hidden="true"></i>
+                <div> <h3>Fair & Structured Evaluation</h3> <p>Ensures consistent judging using predefined, customizable criteria and scoring rubrics for objective assessment.</p> </div>
+            </article>
+            <article class="feature-item">
+                <i class="fas fa-tasks" aria-hidden="true"></i>
+                <div> <h3>Efficient Digital Workflow</h3> <p>Simplifies project submission, automated judging assignments, digital score collection, and instant calculation of results.</p> </div>
+            </article>
+            <article class="feature-item">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> {# Changed icon slightly #}
+                <div> <h3>Live Leaderboard</h3> <p>Engage the audience and participants with optional, real-time updates on project rankings (fully controlled by administrators).</p> </div>
+            </article>
+            <article class="feature-item">
+                <i class="fas fa-desktop" aria-hidden="true"></i> {# Changed icon slightly #}
+                <div> <h3>Responsive & Accessible</h3> <p>Access, manage, and evaluate projects seamlessly on desktop, tablet, or smartphone, adhering to accessibility standards.</p> </div>
+            </article>
+            <article class="feature-item">
+                <i class="fas fa-user-shield" aria-hidden="true"></i> {# Changed icon slightly #}
+                <div> <h3>Secure Role-Based Access</h3> <p>Robust permissions system ensures data integrity and that users only access features relevant to their role (Admin, Judge, Student).</p> </div>
+            </article>
+            <article class="feature-item">
+                <i class="fas fa-cogs" aria-hidden="true"></i>
+                <div> <h3>Comprehensive Admin Control</h3> <p>Manage users, projects, scoring categories, event settings, leaderboard visibility, and system configurations with ease.</p> </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+{# --- Featured Projects Section (No Images) --- #}
+{% if featured_projects and featured_projects|length > 0 %} {# Check if list exists and is not empty #}
+<section id="featured-projects" class="content-section" role="region" aria-labelledby="featured-heading">
+    <div class="container">
+        <h2 id="featured-heading">Project Showcase Sampler</h2> {# Slightly updated heading #}
+        <div class="project-grid">
+            {% for project in featured_projects %}
+            <article class="project-card" aria-labelledby="project-title-{{ loop.index }}"> {# Added aria-labelledby for accessibility #}
+                 {# Removed the image div/tag entirely #}
+                <div class="project-card-content">
+                    <h3 id="project-title-{{ loop.index }}">{{ project.project_name }}</h3> {# Added ID for aria-labelledby #}
+                    <p>{{ project.description | truncate(130, True) if project.description else 'Discover the details of this innovative student project from Kennesaw State University\'s College of Computing and Software Engineering.' }}</p> {# Slightly longer truncate, improved placeholder #}
+                    {% if current_user and current_user.role in ['judge', 'admin'] %}
+                        <a href="{{ url_for('vote_casting') }}" class="btn">View & Judge <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    {% else %}
+                         {# Link for regular users or guests - directs to audience view #}
+                         <a href="{{ url_for('audience') }}" class="btn">View Details <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {# Optional: Add a link to view all projects if applicable #}
+        {# <div style="text-align: center; margin-top: 2.5rem;">
+            <a href="{{ url_for('audience') }}" class="btn btn-secondary">View All Projects</a>
+        </div> #}
+    </div>
+</section>
+{% endif %} {# End if featured_projects #}
+
+{# --- How It Works Section (Conditional) --- #}
+{% if not current_user %} {# Only show this section if the user is NOT logged in #}
+<section id="how-it-works" class="content-section" role="region" aria-labelledby="how-it-works-heading">
+     <div class="container">
+        <h2 id="how-it-works-heading">Getting Started is Simple</h2>
+        <div class="steps-container">
+            <article class="step-item">
+                <i class="fas fa-user-plus" aria-hidden="true"></i>
+                <h3>Register Your Account</h3>
+                <p>Quickly sign up using the registration link, selecting your appropriate role – Student, Judge, or potential Admin.</p>
+            </article>
+            <article class="step-item">
+                <i class="fas fa-search-plus" aria-hidden="true"></i>
+                <h3>Discover & Prepare</h3>
+                <p>Once approved/logged in, browse submitted projects, view details (like abstracts or team members), and prepare for evaluation if you're a judge.</p>
+            </article>
+            <article class="step-item">
+                <i class="fas fa-vote-yea" aria-hidden="true"></i>
+                <h3>Evaluate & Score</h3>
+                <p>Judges use the intuitive interface to access assigned projects and submit scores based on clearly defined event criteria during the judging period.</p>
+            </article>
+        </div>
+    </div>
+</section>
+{% endif %} {# End if not current_user #}
+
+{# --- Testimonials Section --- #}
+<section id="testimonials" class="content-section" role="region" aria-labelledby="testimonials-heading">
+     <div class="container">
+        <h2 id="testimonials-heading">What Our Users Say</h2>
+        {# aria-live="polite" will announce changes in active slide via JS #}
+        <div class="testimonial-slider" aria-live="polite">
+            {# Example testimonials - Replace with dynamic data or real quotes #}
+            <article class="quote-item active" id="testimonial-slide-0" role="tabpanel">
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <p>"OwlJudge truly transformed our senior project judging day. It was smooth, efficient, and the faculty judges appreciated the clear digital format and instant results."</p>
+                <div class="quote-citation">
+                    <img src="{{ url_for('static', filename='ksu.png') }}" alt="KSU logo representing faculty"> {# Using KSU logo as placeholder #}
+                    <span>- Anonymous </span>
+                </div>
+            </article>
+            <article class="quote-item" id="testimonial-slide-1" role="tabpanel" aria-hidden="true">
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <p>"As an industry judge, the platform was incredibly intuitive. Finding assigned projects and submitting scores across different categories was straightforward and much faster than paper."</p>
+                <div class="quote-citation">
+                    <img src="{{ url_for('static', filename='images/avatar_judge.png') }}" alt="Avatar for Jane Doe">
+                    <span>- Anoynmous </span>
+                </div>
+            </article>
+            <article class="quote-item" id="testimonial-slide-2" role="tabpanel" aria-hidden="true">
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <p>"It was exciting to see the optional leaderboard updates during the showcase event! Made it feel much more engaging as a student presenter, knowing where we stood."</p>
+                <div class="quote-citation">
+                    <img src="{{ url_for('static', filename='images/avatar_student.png') }}" alt="Avatar for Alex Johnson">
+                    <span>- Anonymous </span>
+                </div>
+            </article>
+            <article class="quote-item" id="testimonial-slide-3" role="tabpanel" aria-hidden="true">
+                <i class="fas fa-quote-left" aria-hidden="true"></i>
+                <p>"The administrative backend is powerful. Setting up the event, managing user roles, and customizing the scoring rubric was simple and saved us hours of manual work."</p>
+                <div class="quote-citation">
+                    <img src="{{ url_for('static', filename='images/avatar_admin.png') }}" alt="Avatar for Admin User"> {# Added generic admin avatar placeholder #}
+                    <span>- Anonymous </span>
+                </div>
+            </article>
+            {# Add more testimonials as needed #}
+        </div>
+        <div class="slider-dots" role="tablist" aria-label="Testimonial navigation"></div> {# Dots generated by JS will be buttons #}
+    </div>
+</section>
+
+{# --- FAQ Section --- #}
+<section id="faq" class="content-section" role="region" aria-labelledby="faq-heading">
+    <div class="container">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            {# Example FAQs - Replace with real questions and answers #}
+            <article class="faq-item">
+                <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-1">
+                    How do I register as a judge or faculty member?
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="faq-answer-1" class="faq-answer" role="region" aria-hidden="true">
+                    If you are external faculty or an industry professional invited to judge, please use the "Register Now" link on the homepage. After creating your account and logging in, navigate to your Profile page where you may find a "Request Judge Role" button (availability depends on admin configuration). An administrator will then review and approve your request. KSU faculty might be pre-registered or follow a specific internal process – please check with the event coordinator.
+                </div>
+            </article>
+             <article class="faq-item">
+                <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-2">
+                    How do students submit their projects?
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="faq-answer-2" class="faq-answer" role="region" aria-hidden="true">
+                    Project submission processes may vary by course or event. Typically, students with registered accounts will have access to a 'Submit Project' or 'My Projects' section after logging in, before the submission deadline set by the administrators. This section will guide them through providing project details like name, description, team members, and potentially uploading supporting documents or links. Please refer to specific instructions provided by your instructor or event organizer.
+                </div>
+            </article>
+            <article class="faq-item">
+                <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-3">
+                    What are the scoring criteria used?
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="faq-answer-3" class="faq-answer" role="region" aria-hidden="true">
+                    The specific scoring criteria (e.g., Innovation, Technical Execution, Presentation Quality, Documentation Completeness) and their point values are determined by the event administrators for each showcase. Once you are logged in as an approved judge and the judging period is active, the detailed criteria and scoring scale will be clearly presented on the voting page for each project you are assigned to evaluate.
+                </div>
+            </article>
+            <article class="faq-item">
+                <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-4">
+                    Can judges change their scores after submitting them?
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="faq-answer-4" class="faq-answer" role="region" aria-hidden="true">
+                    Yes, typically judges can edit their submitted scores for any project they have evaluated up until the official judging period deadline, as set by the administrator. To do this, simply navigate back to the specific project on the voting or judging page, modify your scores or comments in the provided fields, and click the "Update Vote" or "Save Changes" button.
+                </div>
+            </article>
+             <article class="faq-item">
+                <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-5">
+                    Is the leaderboard always visible?
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="faq-answer-5" class="faq-answer" role="region" aria-hidden="true">
+                    The visibility of the live leaderboard is controlled by the event administrators. They can choose to enable or disable it at any time during the event. It might be visible to the public, only to logged-in users, or only to judges and admins, depending on the event's requirements. Check the 'Audience View' or 'Leaderboard' link (if available) to see its current status.
+                </div>
+            </article>
+            {# Add more FAQ items as needed #}
+        </div>
+    </div>
+</section>
+
+{# --- Get Started Section (CTA) --- #}
+<section id="get-started" class="content-section" role="region" aria-labelledby="get-started-heading">
+     <div class="container">
+        <h2 id="get-started-heading">Ready to Elevate KSU's Project Showcases?</h2>
+        <p>Join the OwlJudge platform today. Experience a smarter, fairer, and more engaging way to manage, participate in, and celebrate the outstanding work within KSU's College of Computing and Software Engineering.</p>
+        {# Conditional buttons based on user login status and role #}
+        {% if not current_user %}
+            {# Button for logged-out users #}
+            <a href="{{ url_for('signup') }}" class="btn">Create Your Account <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        {% else %}
+            {# Buttons for logged-in users based on role #}
+            {% if current_user.role == 'judge' %}
+                <a href="{{ url_for('vote_casting') }}" class="btn">Go to Judging Dashboard <i class="fas fa-gavel" aria-hidden="true"></i></a>
+            {% elif current_user.role == 'admin' %}
+                 <a href="{{ url_for('admin_dashboard') }}" class="btn">Access Admin Controls <i class="fas fa-tachometer-alt" aria-hidden="true"></i></a>
+            {% else %} {# Default for 'user' (student/audience) role #}
+                <a href="{{ url_for('audience') }}" class="btn">View Current Showcase <i class="fas fa-list-ol" aria-hidden="true"></i></a>
+            {% endif %}
+        {% endif %}
+    </div>
+</section>
+
+<script>
+// Wrap all JS in DOMContentLoaded to ensure elements are loaded and ready
+document.addEventListener('DOMContentLoaded', function() {
+
+    /**
+     * --- Intersection Observer for Smooth Scroll Animations ---
+     * Animates sections into view more elegantly as they become visible.
+     * Unobserves elements after animation for performance optimization.
+     */
+    const sectionsToAnimate = document.querySelectorAll('.content-section .container');
+    if ('IntersectionObserver' in window) {
+        const observerOptions = {
+            threshold: 0.15, // Trigger when 15% of the element is visible
+            rootMargin: "0px 0px -50px 0px" // Trigger slightly before it fully enters viewport bottom
+         };
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const parentSection = entry.target.closest('.content-section');
+                    if(parentSection) {
+                        parentSection.classList.add('visible');
+                    }
+                    // Ensure the target itself gets observed/unobserved correctly
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        sectionsToAnimate.forEach(container => {
+             if(container) { observer.observe(container); }
+        });
+    } else {
+        // Fallback for older browsers lacking IntersectionObserver support
+        console.warn("IntersectionObserver not supported. Scroll animations disabled, elements shown by default.");
+        sectionsToAnimate.forEach(container => {
+            const parentSection = container.closest('.content-section');
+            if(parentSection) { parentSection.classList.add('visible'); } // Make elements visible directly
+        });
+    }
+
+    /**
+     * --- Enhanced Testimonial Slider Logic ---
+     * Handles automatic and manual sliding of testimonials with improved ARIA support and interactions.
+     */
+    const sliderContainer = document.querySelector('.testimonial-slider');
+    if (sliderContainer) {
+        const slides = sliderContainer.querySelectorAll('.quote-item'); // Should be <article> elements
+        const dotsContainer = document.querySelector('.slider-dots');
+        let currentSlide = 0;
+        let slideInterval;
+        const intervalTime = 7000; // Slightly longer interval (7 seconds)
+
+        // Proceed only if slides and dots container exist
+        if (slides && slides.length > 0 && dotsContainer) {
+
+            function showSlide(index) {
+                // Normalize index
+                const slideCount = slides.length;
+                index = (index % slideCount + slideCount) % slideCount; // Handles positive/negative overflow
+
+                // Update slides: Add .active class, set ARIA attributes
+                slides.forEach((slide, i) => {
+                    const isActive = (i === index);
+                    slide.classList.toggle('active', isActive);
+                    slide.setAttribute('aria-hidden', !isActive);
+                });
+
+                // Update dots: Add .active class, set ARIA attributes, manage tabindex
+                const dots = dotsContainer.querySelectorAll('.dot');
+                if(dots.length === slideCount) { // Ensure dots match slides
+                    dots.forEach((dot, i) => {
+                        const isSelected = (i === index);
+                        dot.classList.toggle('active', isSelected);
+                        dot.setAttribute('aria-selected', isSelected);
+                        dot.setAttribute('tabindex', isSelected ? '0' : '-1'); // Only active dot is tabbable
+                    });
+                }
+                currentSlide = index;
+            }
+
+            function nextSlide() { showSlide(currentSlide + 1); }
+
+            function startInterval() {
+                clearInterval(slideInterval); // Prevent multiple intervals
+                if (slides.length > 1) { // Only start if multiple slides
+                    slideInterval = setInterval(nextSlide, intervalTime);
+                }
+            }
+
+            function resetInterval() {
+                clearInterval(slideInterval);
+                startInterval();
+            }
+
+            // Initialize slider: Generate dots and set up first slide
+            if (slides.length > 1) {
+                dotsContainer.innerHTML = ''; // Clear potential placeholders
+                slides.forEach((slide, i) => {
+                    // Ensure each slide has a unique ID for aria-controls
+                    const slideId = `testimonial-slide-${i}`;
+                    slide.setAttribute('id', slideId);
+                    slide.setAttribute('role', 'tabpanel'); // Role for the content panel
+
+                    // Create dot button
+                    const dot = document.createElement('button');
+                    dot.classList.add('dot');
+                    dot.setAttribute('role', 'tab');
+                    dot.setAttribute('aria-label', `Show testimonial ${i + 1}`);
+                    dot.setAttribute('aria-controls', slideId); // Links dot to slide panel
+                    dot.setAttribute('aria-selected', 'false');
+                    dot.setAttribute('tabindex', '-1'); // Initially not focusable
+                    dot.setAttribute('type', 'button'); // Best practice for buttons
+                    dot.addEventListener('click', () => {
+                         if (currentSlide !== i) {
+                             showSlide(i);
+                             resetInterval(); // Reset timer on manual interaction
+                         }
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+                 // Set up the first slide and dot as active
+                 showSlide(0);
+                 startInterval(); // Begin automatic rotation
+            } else if (slides.length === 1) {
+                 // Only one slide: ensure it's visible and hide dots
+                 showSlide(0);
+                 dotsContainer.style.display = 'none';
+            } else {
+                 // No slides: hide dots container
+                 dotsContainer.style.display = 'none';
+            }
+
+            // Accessibility: Pause auto-rotation on hover/focus within the slider region
+            sliderContainer.addEventListener('mouseenter', () => clearInterval(slideInterval));
+            sliderContainer.addEventListener('mouseleave', startInterval);
+            sliderContainer.addEventListener('focusin', () => clearInterval(slideInterval));
+            sliderContainer.addEventListener('focusout', startInterval);
+
+            // Keyboard navigation for dots (within the dots container)
+            dotsContainer.addEventListener('keydown', (e) => {
+                 const dots = Array.from(dotsContainer.querySelectorAll('.dot'));
+                 const focusedDotIndex = dots.findIndex(dot => dot === document.activeElement);
+
+                 if (focusedDotIndex === -1) return; // Event not relevant if focus isn't on a dot
+
+                 let nextIndex = focusedDotIndex;
+                 let shouldPreventDefault = false;
+
+                 switch (e.key) {
+                     case 'ArrowRight':
+                     case 'ArrowDown':
+                         nextIndex = (focusedDotIndex + 1) % dots.length;
+                         shouldPreventDefault = true;
+                         break;
+                     case 'ArrowLeft':
+                     case 'ArrowUp':
+                         nextIndex = (focusedDotIndex - 1 + dots.length) % dots.length;
+                         shouldPreventDefault = true;
+                         break;
+                     case 'Home':
+                         nextIndex = 0;
+                         shouldPreventDefault = true;
+                         break;
+                     case 'End':
+                         nextIndex = dots.length - 1;
+                         shouldPreventDefault = true;
+                         break;
+                     default:
+                         return; // Ignore other keys
+                 }
+
+                 if (shouldPreventDefault) {
+                    e.preventDefault(); // Prevent page scroll
+                    dots[nextIndex].focus();
+                    // Optional: Immediately switch slide on arrow key navigation
+                    // if (currentSlide !== nextIndex) {
+                    //     showSlide(nextIndex);
+                    //     resetInterval();
+                    // }
+                 }
+            });
+
+        } else if (dotsContainer) {
+             dotsContainer.style.display = 'none'; // Hide dots container if no slides found
+        }
+    } // End if(sliderContainer)
+
+    /**
+     * --- Accessible FAQ Accordion Logic ---
+     * Uses event delegation for efficiency and handles ARIA states correctly.
+     */
+    const faqContainer = document.querySelector('.faq-container');
+    if (faqContainer) {
+
+        // Function to close all other FAQ items (optional behaviour)
+        const closeAllOtherFAQs = (currentItem) => {
+            faqContainer.querySelectorAll('.faq-item.active').forEach(item => {
+                if (item !== currentItem) {
+                    item.classList.remove('active');
+                    const button = item.querySelector('.faq-question');
+                    const answer = item.querySelector('.faq-answer');
+                    if (button) button.setAttribute('aria-expanded', 'false');
+                    if (answer) answer.setAttribute('aria-hidden', 'true');
+                }
+            });
+        };
+
+        // Handle clicks on question buttons using event delegation
+        faqContainer.addEventListener('click', function(e) {
+            const questionButton = e.target.closest('.faq-question');
+            if (!questionButton) return; // Exit if click wasn't on a question button
+
+            const faqItem = questionButton.closest('.faq-item');
+            if (!faqItem) return; // Exit if structure is unexpected
+
+            const answer = faqItem.querySelector('.faq-answer');
+            if (!answer) return; // Exit if no answer found
+
+            const isCurrentlyExpanded = faqItem.classList.contains('active');
+
+            // Optional: Uncomment next line to close others when one opens
+            // if (!isCurrentlyExpanded) closeAllOtherFAQs(faqItem);
+
+            // Toggle the current item's state
+            faqItem.classList.toggle('active');
+            questionButton.setAttribute('aria-expanded', !isCurrentlyExpanded);
+            answer.setAttribute('aria-hidden', isCurrentlyExpanded);
+        });
+
+        // Handle Enter/Space key presses on question buttons for accessibility
+        faqContainer.addEventListener('keydown', function(e) {
+            const questionButton = e.target.closest('.faq-question');
+            if (!questionButton) return;
+
+            // Trigger click on Enter or Spacebar
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); // Prevent default button action (like scrolling on space)
+                questionButton.click(); // Simulate a click to use the existing logic
+            }
+        });
+    } // End if(faqContainer)
+
+}); // End DOMContentLoaded
+</script>
+
+{% endblock %}

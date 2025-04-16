@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - OwlJudge{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to login.html --- */
+    /* Consider moving general styles (like .btn) to a shared style.css */
+
+    .login-page-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - var(--header-height) - 5rem); /* Adjust based on header/footer height */
+        padding: 2rem 1rem;
+    }
+
+    .login-container {
+        max-width: 450px;
+        width: 100%;
+        padding: 2.5rem 3rem; /* Generous padding */
+        background-color: var(--white);
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        /* Entry animation */
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+        animation: popIn 0.6s 0.2s ease-out forwards;
+    }
+
+    @keyframes popIn {
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .login-container h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        color: var(--ksu-black);
+    }
+    .login-container .login-subtitle {
+         font-size: 1rem;
+         color: #666;
+         margin-bottom: 2.5rem;
+     }
+
+    .login-form .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
+        text-align: left;
+    }
+
+    .login-form .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1rem;
+        color: var(--dark-gray);
+        font-weight: 500;
+    }
+
+    .login-form .form-group input {
+        width: 100%;
+        padding: 12px 15px; /* Comfortable padding */
+        padding-right: 40px; /* Space for icon */
+        box-sizing: border-box;
+        border: 1px solid var(--medium-gray);
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: var(--primary-font);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+     /* Style for password input specifically to position icon */
+     .login-form .password-wrapper {
+         position: relative;
+     }
+
+    .login-form .form-group input:focus {
+        border-color: var(--ksu-gold);
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2); /* Gold glow */
+        outline: none;
+    }
+
+    /* Input Validation Styles (Applied via JS) */
+    .login-form .form-group input.invalid {
+        border-color: #dc3545; /* Error color */
+    }
+    .login-form .form-group input.valid {
+         border-color: #28a745; /* Success color */
+     }
+
+    .password-toggle-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .password-toggle-icon:hover {
+         color: var(--ksu-black);
+     }
+
+    .login-form .btn { /* Button styling (can inherit from base or be specific) */
+        width: 100%;
+        padding: 14px 20px; /* Larger button */
+        font-size: 1.1rem;
+        border-radius: 6px;
+        /* Ensure btn styles from base.html are applied or define them here */
+    }
+     .login-form .btn .fa-spinner { /* Loading spinner */
+         margin-right: 8px;
+     }
+
+    /* --- Action Buttons Container --- */
+    .action-buttons {
+        margin-top: 1.5rem;
+        /* Styles below are less relevant with only one button, but harmless */
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    /* REMOVED: .btn-request-reset styles */
+
+    /* --- Message Area (Used for Login Errors) --- */
+    #message-area { /* Renamed from error-message for broader use */
+        min-height: 25px; /* Prevent layout shifts */
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #message-area.show {
+         opacity: 1;
+         transform: translateY(0);
+     }
+    #message-area.error {
+        background-color: rgba(220, 53, 69, 0.1); /* Light red background */
+        color: #dc3545; /* Red text */
+    }
+    #message-area.success {
+         background-color: rgba(40, 167, 69, 0.1); /* Light green background */
+         color: #28a745; /* Green text */
+     }
+     /* Kept info style in case flashed messages use it or for future needs */
+     #message-area.info {
+         background-color: rgba(23, 162, 184, 0.1); /* Light blue background */
+         color: #17a2b8; /* Blue text */
+     }
+     #message-area i { margin-right: 6px; } /* Icon spacing */
+
+
+    /* Signup Link */
+    .signup-link {
+        margin-top: 2rem;
+        font-size: 0.95rem;
+        color: #555;
+    }
+    .signup-link a {
+         font-weight: 500;
+         color: var(--ksu-dark-gold);
+         text-decoration: underline;
+     }
+     .signup-link a:hover {
+          color: var(--ksu-gold);
+      }
+
+    /* --- Shake Animation --- */
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-4px); }
+      40%, 60% { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+      transform: translateX(0);
+    }
+
+    /* --- Flashed Messages (from Flask redirects) --- */
+    .flash-messages-container {
+         /* Position within the login container */
+         position: static;
+         max-width: 450px; /* Match container width */
+         margin: 0 auto 1.5rem auto; /* Spacing */
+         width: 100%;
+         padding: 0 1rem; /* Consistent padding */
+         z-index: auto;
+    }
+    .flash-message {
+         opacity: 1; /* Ensure visibility */
+         animation: none; /* No extra animation needed here */
+         /* Inherit general flash message styles from base.html or style.css */
+     }
+
+</style>
+
+<div class="login-page-main">
+    <div class="login-container">
+        <h1>Welcome Back!</h1>
+        <p class="login-subtitle">Log in to access your OwlJudge dashboard.</p>
+
+        {# --- Display Flashed Messages (e.g., after signup redirect) --- #}
+        <div class="flash-messages-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {# Ensure category maps to a valid class, default to 'info' #}
+                        {% set alert_class = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                        <div class="flash-message {{ alert_class }}" role="alert">
+                            {# Consider adding icons to flashed messages too #}
+                            {# <i class="fas fa-..."></i> #}
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {# --- End Flashed Messages --- #}
+
+        {# --- Login Form --- #}
+        <form id="loginForm" class="login-form" method="POST" novalidate> {# novalidate prevents browser validation, we use JS #}
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required aria-required="true" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required aria-required="true" autocomplete="current-password">
+                    <i class="fas fa-eye password-toggle-icon" id="togglePassword" aria-label="Show password"></i>
+                </div>
+            </div>
+
+             {# --- Dynamic Message Area (for AJAX Login responses) --- #}
+            <p id="message-area" role="alert" aria-live="assertive"></p>
+
+            {# --- Action Buttons --- #}
+            <div class="action-buttons">
+                {# Login Button #}
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Login</span>
+                </button>
+                {# REMOVED: Reset Request Button #}
+            </div>
+            {# --- End Action Buttons --- #}
+
+        </form>
+
+        <p class="signup-link">
+            Don't have an account? <a href="{{ url_for('signup') }}">Sign Up Here</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Element References ---
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const messageDiv = document.getElementById('message-area');
+        const loginBtn = loginForm.querySelector('button[type="submit"]');
+        const loginBtnText = loginBtn.querySelector('.btn-text');
+        // REMOVED: requestResetBtn and requestResetBtnText references
+        const togglePassword = document.getElementById('togglePassword');
+        const loginContainer = document.querySelector('.login-container');
+
+        // --- Helper Functions ---
+
+        /**
+         * Displays a message in the message area.
+         * @param {string} message The message content.
+         * @param {'info'|'success'|'error'|'warning'} [type='info'] The type of message (determines style).
+         */
+        function showMessage(message, type = 'info') {
+            let iconClass = 'fa-info-circle'; // Default icon
+            if (type === 'success') iconClass = 'fa-check-circle';
+            else if (type === 'error') iconClass = 'fa-exclamation-triangle';
+            else if (type === 'warning') iconClass = 'fa-exclamation-circle'; // Added warning icon
+
+            messageDiv.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
+            messageDiv.className = `show ${type}`; // Reset classes and apply new ones
+            // Make the message accessible
+            messageDiv.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        }
+
+        /** Resets the message area to be empty and hidden. */
+        function resetMessageArea() {
+            messageDiv.textContent = '';
+            messageDiv.className = ''; // Remove all classes (hides it)
+            messageDiv.removeAttribute('aria-live');
+        }
+
+        /**
+         * Sets a button to its loading state (disabled, spinner, text change).
+         * @param {HTMLButtonElement} button The button element.
+         * @param {HTMLSpanElement} buttonTextSpan The span inside the button holding the text.
+         * @param {string} [loadingText='Processing...'] The text to display while loading.
+         */
+        function setButtonLoading(button, buttonTextSpan, loadingText = 'Processing...') {
+            if (!button || !buttonTextSpan) return;
+            button.disabled = true;
+            button.dataset.originalText = buttonTextSpan.textContent; // Store original text
+            buttonTextSpan.textContent = loadingText;
+            // Add spinner icon if not present
+            if (!button.querySelector('.fa-spinner')) {
+                button.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ');
+            }
+        }
+
+        /**
+         * Restores a button from its loading state.
+         * @param {HTMLButtonElement} button The button element.
+         * @param {HTMLSpanElement} buttonTextSpan The span inside the button holding the text.
+         * @param {string} [originalText=button.dataset.originalText] The original button text (optional, defaults to stored).
+         */
+        function restoreButtonState(button, buttonTextSpan, originalText) {
+            if (!button || !buttonTextSpan) return;
+            const textToRestore = originalText || button.dataset.originalText || 'Submit'; // Fallback text
+            button.disabled = false;
+            buttonTextSpan.textContent = textToRestore;
+            button.querySelector('.fa-spinner')?.remove(); // Remove spinner if present
+            delete button.dataset.originalText; // Clean up dataset
+        }
+
+        /**
+         * Applies a shake animation to the login container and removes validation styles.
+         */
+        function triggerShakeAnimation() {
+            loginContainer.classList.add('shake');
+            emailInput.classList.add('invalid'); // Mark field as invalid on shake
+            passwordInput.classList.add('invalid'); // Mark field as invalid on shake
+            setTimeout(() => {
+                loginContainer.classList.remove('shake');
+                 // Optionally remove invalid class after shake, or keep until corrected
+                 // emailInput.classList.remove('invalid');
+                 // passwordInput.classList.remove('invalid');
+            }, 500);
+        }
+
+        // --- Password Toggle Functionality ---
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                // Toggle eye icon class
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+                // Update accessibility label
+                this.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+            });
+        }
+
+        // --- AJAX Login Form Submission ---
+        if (loginForm && loginBtn && loginBtnText) {
+            loginForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent traditional form submission
+
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                // --- Reset UI states ---
+                resetMessageArea();
+                loginContainer.classList.remove('shake');
+                emailInput.classList.remove('invalid', 'valid'); // Clear validation classes
+                passwordInput.classList.remove('invalid', 'valid');
+
+                // --- Basic Client-Side Validation ---
+                let isValid = true;
+                if (!email) {
+                    showMessage('Please enter your email address.', 'error');
+                    emailInput.classList.add('invalid');
+                    isValid = false;
+                } else {
+                     emailInput.classList.add('valid'); // Optional: mark as valid
+                }
+                if (!password) {
+                    if (isValid) { // Only show password error if email was valid
+                         showMessage('Please enter your password.', 'error');
+                    }
+                    passwordInput.classList.add('invalid');
+                    isValid = false;
+                } else if (isValid) { // Only mark as valid if email was also valid
+                     passwordInput.classList.add('valid'); // Optional: mark as valid
+                }
+
+                if (!isValid) {
+                    triggerShakeAnimation();
+                    return; // Stop submission if validation fails
+                }
+
+                // --- Show Loading State ---
+                setButtonLoading(loginBtn, loginBtnText, 'Logging In...');
+
+                const payload = { email: email, password: password };
+
+                try {
+                    const response = await fetch("{{ url_for('login') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, // Specify accept
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json(); // Assume backend always sends JSON
+
+                    if (response.ok && data.status === 'success') {
+                        // Success: Show message, disable buttons, redirect
+                        showMessage(data.message || 'Login successful! Redirecting...', 'success');
+                        loginBtn.disabled = true; // Keep disabled on success
+                        // REMOVED: Disabling requestResetBtn
+                        loginBtnText.textContent = 'Success!';
+                        loginBtn.querySelector('.fa-spinner')?.remove();
+
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url || "{{ url_for('index') }}"; // Use redirect URL from backend or default
+                        }, 1500);
+
+                    } else {
+                        // Handle backend errors (non-2xx or status='error')
+                        throw new Error(data.message || 'Invalid credentials or server error.');
+                    }
+                } catch (error) {
+                    // Handle fetch errors or errors thrown from response handling
+                    console.error('Login Error:', error);
+                    showMessage(error.message || 'Login failed. Please check your credentials and try again.', 'error');
+                    triggerShakeAnimation();
+                    restoreButtonState(loginBtn, loginBtnText); // Restore button on error
+                }
+            });
+        } else {
+            console.error("Login form elements (form, button, or button text) not found.");
+        }
+
+        // REMOVED: Entire AJAX Request Password Reset block
+
+    }); // End DOMContentLoaded
+</script>
+
+{% endblock %}

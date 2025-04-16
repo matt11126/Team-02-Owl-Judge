@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact KSU CCSE{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Styles specific to contact_us.html --- */
+    /* Consider moving general styles to style.css */
+
+    :root {
+        /* Define KSU colors if not already in base CSS */
+        --ksu-black: #000000;
+        --ksu-gold: #FFC107;
+        --ksu-dark-gold: #d9a400; /* Example darker gold */
+        --white: #ffffff;
+        --light-gray: #f9fafb;
+        --medium-gray: #e5e7eb;
+        --dark-gray: #4b5563;
+        --primary-font: 'Arial', sans-serif; /* Replace with actual project font */
+    }
+
+    .contact-page-main {
+        padding: 3rem 1rem;
+        background-color: var(--light-gray); /* Very light background */
+        min-height: calc(100vh - 100px); /* Adjust 100px based on header/footer height */
+        display: flex; /* Use flex to center container vertically if needed */
+        align-items: center; /* Center container vertically */
+        justify-content: center; /* Center container horizontally */
+    }
+
+    .contact-container {
+        max-width: 800px; /* Adjusted max-width for single column */
+        width: 100%; /* Ensure it takes up space */
+        margin: 2rem auto; /* Auto margins for horizontal centering, add top/bottom */
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        overflow: hidden; /* Contain elements */
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s 0.2s ease-out forwards;
+    }
+
+    /* --- Contact Info Section --- */
+    .contact-info-section {
+        padding: 3rem 2.5rem;
+        background-color: var(--ksu-black); /* KSU Black */
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .contact-info-section h2 {
+        color: var(--ksu-gold);
+        font-size: 2rem; /* Slightly larger title */
+        margin-bottom: 2.5rem; /* More space below title */
+        border-bottom: 2px solid rgba(255, 193, 7, 0.3); /* Faint gold line */
+        padding-bottom: 1rem;
+        text-align: center;
+    }
+
+    .contact-details {
+        list-style: none; /* Remove default list styling */
+        padding: 0;
+        margin: 0 0 2.5rem 0; /* Space before map */
+    }
+
+    .contact-details li {
+        display: flex;
+        align-items: flex-start; /* Align icon top */
+        margin-bottom: 1.8rem; /* Increased spacing */
+        font-size: 1.05rem; /* Slightly larger font */
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.85);
+    }
+    .contact-details li i {
+        color: var(--ksu-gold);
+        font-size: 1.4rem; /* Larger icons */
+        margin-right: 18px;
+        margin-top: 5px; /* Adjust vertical alignment */
+        width: 25px; /* Ensure alignment */
+        text-align: center;
+        flex-shrink: 0; /* Prevent icon from shrinking */
+    }
+    .contact-details li div { /* Container for text */
+        flex-grow: 1;
+    }
+
+    .contact-details li strong { /* Make labels bolder */
+        font-weight: 600; /* Slightly bolder */
+        display: block;
+        margin-bottom: 4px; /* Space between label and value */
+        color: var(--white);
+        font-size: 1.1rem; /* Larger label */
+    }
+     .contact-details li a { /* Style links within info */
+         color: var(--ksu-gold);
+         text-decoration: none;
+         transition: color 0.3s ease;
+     }
+      .contact-details li a:hover {
+          color: var(--ksu-dark-gold);
+          text-decoration: underline;
+      }
+      .contact-details li small {
+          display: block;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin-top: 4px;
+      }
+
+    .map-container {
+        margin-top: 2.5rem;
+        border-radius: 8px;
+        overflow: hidden; /* Clip iframe corners */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        height: 300px; /* Increased height for better visibility */
+        border: 3px solid var(--ksu-gold); /* Thicker border */
+    }
+    .map-container iframe {
+        border: 0;
+        width: 100%;
+        height: 100%;
+        display: block; /* Remove potential extra space below iframe */
+    }
+
+    /* --- Flash Messages Styling (if needed elsewhere, keep) --- */
+    .flash-messages-container {
+        padding: 0 2.5rem; /* Match content padding */
+        margin-bottom: 1.5rem;
+    }
+    .flash-message {
+        padding: 12px 15px;
+        margin-bottom: 1rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        text-align: center;
+    }
+    .flash-message.success { background-color: rgba(40, 167, 69, 0.1); color: #155724; border: 1px solid rgba(40, 167, 69, 0.2); }
+    .flash-message.error   { background-color: rgba(220, 53, 69, 0.1); color: #721c24; border: 1px solid rgba(220, 53, 69, 0.2); }
+    .flash-message.info    { background-color: rgba(23, 162, 184, 0.1); color: #0c5460; border: 1px solid rgba(23, 162, 184, 0.2); }
+    .flash-message.warning { background-color: rgba(255, 193, 7, 0.1); color: #856404; border: 1px solid rgba(255, 193, 7, 0.2); }
+
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 768px) {
+         .contact-info-section { padding: 2.5rem 1.5rem; }
+         .contact-info-section h2 { font-size: 1.8rem; margin-bottom: 2rem;}
+         .contact-details li { font-size: 1rem; margin-bottom: 1.5rem;}
+         .contact-details li i { font-size: 1.2rem; margin-right: 15px; width: 20px;}
+         .contact-details li strong { font-size: 1rem; }
+         .map-container { height: 250px; }
+         .flash-messages-container { padding: 0 1.5rem; }
+    }
+     @media (max-width: 480px) {
+          .contact-page-main { padding: 2rem 0.5rem; }
+          .contact-info-section { padding: 2rem 1rem; }
+          .contact-details li { flex-direction: column; align-items: flex-start; } /* Stack icon and text */
+          .contact-details li i { margin-bottom: 8px; margin-top: 0; } /* Adjust icon spacing */
+          .map-container { height: 200px; }
+     }
+
+    /* --- Animation --- */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+</style>
+
+<main class="contact-page-main">
+    <div class="contact-container">
+        {# --- Display Flashed Messages --- #}
+        {# Moved above the main content box for general page messages if needed #}
+        {# Or keep inside .contact-container if messages are specific to this page's context #}
+        <div class="flash-messages-container">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                      {% for category, message in messages %}
+                          {% set category = category if category in ['success', 'error', 'info', 'warning'] else 'info' %}
+                          <div class="flash-message {{ category }}" role="alert">
+                              {# Optionally add icons based on category #}
+                              {% if category == 'success' %}<i class="fas fa-check-circle"></i>
+                              {% elif category == 'error' %}<i class="fas fa-exclamation-triangle"></i>
+                              {% elif category == 'info' %}<i class="fas fa-info-circle"></i>
+                              {% elif category == 'warning' %}<i class="fas fa-exclamation-circle"></i>
+                              {% endif %}
+                              {{ message }}
+                          </div>
+                      {% endfor %}
+                  {% endif %}
+              {% endwith %}
+          </div>
+        {# --- End Flashed Messages --- #}
+
+        {# --- Contact Info Section --- #}
+        <div class="contact-info-section">
+            <h2>Contact KSU CCSE</h2>
+            <ul class="contact-details">
+                <li>
+                    <i class="fas fa-map-marker-alt fa-fw"></i>
+                    <div>
+                        <strong>Address:</strong>
+                        Kennesaw State University<br>
+                        College of Computing and Software Engineering<br>
+                        (Atrium Building J)<br>
+                        1100 South Marietta Pkwy SE, Marietta, GA 30060
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-phone-alt fa-fw"></i>
+                    <div>
+                        <strong>Phone:</strong>
+                        <a href="tel:470-578-3803">(470) 578-3803</a>
+                    </div>
+                </li>
+                 <li>
+                    <i class="fas fa-envelope fa-fw"></i>
+                    <div>
+                        <strong>Email:</strong>
+                        <a href="mailto:ccse@kennesaw.edu">ccse@kennesaw.edu</a><br>
+                        <small>(For general CCSE inquiries)</small>
+                        {# If there's a specific OwlJudge/C-Day contact, mention it clearly #}
+                        {# Example: <p style="margin-top: 1rem; color: rgba(255,255,255,0.8);">For C-Day specific questions, please contact [Coordinator Name/Email]</p> #}
+                    </div>
+                </li>
+                 <li>
+                    <i class="fas fa-clock fa-fw"></i>
+                    <div>
+                        <strong>Office Hours:</strong>
+                        Monday - Friday, 8:00 AM - 5:00 PM
+                    </div>
+                </li>
+                 <li>
+                    <i class="fas fa-globe fa-fw"></i>
+                    <div>
+                        <strong>Website:</strong>
+                        <a href="https://ccse.kennesaw.edu/" target="_blank" rel="noopener noreferrer">ccse.kennesaw.edu</a>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="map-container">
+                 {# --- KSU CCSE Google Maps Embed --- #}
+                 <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.802051496299!2d-84.52085768478855!3d33.9199559806414!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f5110f5405b359%3A0x4a0c550d5c3c5522!2sKennesaw%20State%20University%20-%20College%20of%20Computing%20and%20Software%20Engineering!5e0!3m2!1sen!2sus!4v1678886000000!5m2!1sen!2sus"
+                     aria-label="Map showing Kennesaw State University College of Computing and Software Engineering location"
+                    allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade" title="KSU CCSE Location Map">
+                </iframe>
+                 {# --- End Map Embed --- #}
+            </div>
+        </div>
+
+    </div>
+</main>
+
+{# Removed the JavaScript related to form validation and submission #}
+{# Keep the IntersectionObserver if you want the fade-in animation #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Scroll Animation Observer ---
+    const contactContainer = document.querySelector('.contact-container');
+    if (contactContainer) {
+        // Check if element is already in view on load
+        const rect = contactContainer.getBoundingClientRect();
+        const isInitiallyVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+
+        if (isInitiallyVisible) {
+             contactContainer.style.opacity = '1';
+             contactContainer.style.transform = 'translateY(0)';
+        } else {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1'; // Start fade in
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target); // Stop observing once animated
+                    }
+                });
+            }, { threshold: 0.1 }); // Trigger when 10% is visible
+            observer.observe(contactContainer);
+        }
+    }
+});
+</script>
+
+{% endblock %}

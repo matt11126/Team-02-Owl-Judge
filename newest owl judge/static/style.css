@@ -1,0 +1,298 @@
+/* Header Container Setup */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Left Section: Hamburger & Logo */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+.hamburger {
+  background: none;
+  border: none;
+  color: #d4af37;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+.logo img {
+  max-width: 150px;
+}
+
+/* Middle Section: Navigation */
+.header-middle {
+  flex: 1;
+  text-align: center;
+}
+.header-middle nav ul {
+  list-style: none;
+  display: inline-flex;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+}
+.header-middle nav ul li a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.header-middle nav ul li a:hover {
+  color: #fff;
+}
+
+/* Right Section: Login/Signup or User Dropdown */
+.header-right {
+  text-align: right;
+  white-space: nowrap;
+}
+.header-right a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  margin-left: 10px;
+  transition: color 0.3s;
+}
+.header-right a:hover {
+  color: #fff;
+}
+
+/* (Keep the rest of your existing CSS below unchanged) */
+
+
+
+
+
+
+
+
+/* Ensure html and body fill the entire viewport */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Make the body a flex container with column direction */
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Header styling */
+header {
+  background-color: #000;
+  color: #d4af37;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Logo styling */
+.logo img {
+  max-width: 150px;
+}
+
+/* Navigation Bar */
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #fff;
+}
+
+/* Login/User Dropdown styling */
+.login-btn a {
+  background-color: #d4af37;
+  padding: 8px 16px;
+  color: #000;
+  text-decoration: none;
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.login-btn a:hover {
+  background-color: #fff;
+}
+
+/* User Dropdown */
+.user-dropdown {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.user-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #d4af37;
+  border-radius: 4px;
+  padding: 8px 0;
+  display: none;
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 16px;
+  color: #000;
+  text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+  background-color: #d4af37;
+  color: #000;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+/* Main content grows to fill available space */
+main {
+  flex: 1;
+  padding: 20px;
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+/* Footer at the bottom */
+footer {
+  background-color: #000;
+  color: #d4af37;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Side Drawer */
+.side-menu {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1100;
+  top: 0;
+  left: 0;
+  background-color: #000;
+  overflow-x: hidden;
+  transition: width 0.3s;
+  padding-top: 60px;
+}
+
+.side-menu a {
+  padding: 10px 20px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #d4af37;
+  display: block;
+  transition: color 0.3s;
+}
+
+.side-menu a:hover {
+  color: #fff;
+}
+
+.side-menu .closebtn {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 36px;
+  color: #d4af37;
+}
+
+/* Center form elements in pages like Login/Signup/Contact */
+.login-section, .contact-form, .signup-section {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.form-group input,
+.form-group textarea {
+  display: block;
+  margin: 10px auto;
+  width: 100%;
+  max-width: 400px;
+}
+.hidden {
+  display: none;
+}
+
+/* Style the dropdown */
+select {
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+/* Rating Bubbles */
+.rating-bubbles {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  justify-content: center; /* Center the bubbles horizontally */
+}
+
+.bubble {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #d4af37;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.bubble:hover, .bubble.selected {
+  background-color: #fff;
+  border: 1px solid #d4af37;
+  color: black;
+}
+
+/* Score Display */
+#finalScore {
+  font-size: 24px;
+  font-weight: bold;
+  color: #d4af37;
+}
+
+
+
+
+

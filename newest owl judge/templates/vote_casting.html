@@ -1,0 +1,595 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  /* Animated Background: Run animation once for 3s, then remain static */
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(-45deg, #fff, #d4af37, #000, #fff);
+    background-size: 400% 400%;
+    animation: gradient 3s ease 1 forwards;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  /* Tooltip Styling */
+  .tooltip {
+    position: relative;
+    cursor: pointer;
+  }
+  .tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%; /* Position above the element */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 4px 8px; /* Slightly larger padding */
+    font-size: 0.8rem; /* Slightly larger font */
+    border-radius: 4px; /* More rounded */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out; /* Smoother transition */
+    white-space: nowrap;
+    z-index: 10; /* Ensure tooltip is above other elements */
+  }
+  .tooltip:hover::after {
+    opacity: 1;
+  }
+
+  /* Glassmorphism Voting Cubes */
+  .glass-project-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.5); /* Dark translucent backdrop */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .glass-project-header {
+    text-align: center;
+    font-size: 2.2rem; /* Slightly larger header */
+    margin-bottom: 35px; /* More spacing */
+    color: #d4af37;
+    font-weight: 600; /* Bolder header */
+  }
+  .glass-project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px; /* Increased gap */
+  }
+  .glass-project-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 25px; /* Increased padding */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smoother transitions */
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.5s ease forwards;
+    animation-delay: calc(var(--index) * 0.1s);
+    display: flex; /* Use flexbox for better alignment */
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: space-between; /* Space out content */
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .glass-project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35); /* Enhanced shadow */
+  }
+  .glass-project-card h3 {
+    font-size: 1.85rem; /* Slightly larger project name */
+    margin-bottom: 15px;
+    color: #d4af37;
+  }
+  .glass-project-card p {
+    font-size: 0.95rem; /* Slightly smaller descriptive text */
+    color: #ccc;
+    margin: 8px 0; /* Adjusted margin */
+    flex-grow: 1; /* Allow description to take space */
+    line-height: 1.4; /* Better readability */
+  }
+  .glass-project-card .project-info {
+      font-size: 0.85rem;
+      color: #bbb;
+      margin-bottom: 15px;
+  }
+  .glass-project-card .vote-status {
+      margin-bottom: 15px; /* Space before button */
+      min-height: 25px; /* Reserve space even if no badge */
+  }
+  .glass-vote-btn {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 11px 18px; /* Adjusted padding */
+    border-radius: 6px; /* Slightly more rounded */
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    font-weight: 500; /* Slightly bolder text */
+    margin-top: auto; /* Push button to bottom */
+  }
+  .glass-vote-btn:hover {
+    background: #b4972a; /* Darker gold on hover */
+  }
+  .glass-vote-btn:active {
+    transform: scale(0.96); /* Slightly more pronounced active effect */
+  }
+  .voted-badge {
+    display: inline-block; /* Needed for margin */
+    background: #28a745; /* Bootstrap success green */
+    color: white;
+    padding: 3px 7px; /* Adjusted padding */
+    border-radius: 4px;
+    font-size: 0.85em; /* Slightly larger badge text */
+    font-weight: 500;
+    margin-right: 8px; /* Space between badge and button */
+    vertical-align: middle; /* Align with button text */
+  }
+
+  /* Modal Styling with Subtle Glassmorphism on Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6); /* Darker overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    overflow-y: auto; /* Allow scrolling if content overflows */
+    padding: 20px; /* Padding for smaller screens */
+    box-sizing: border-box;
+  }
+  .modal.show {
+    display: flex;
+  }
+  .modal-content {
+    background: rgba(255, 255, 255, 0.9); /* Slightly less transparent white */
+    border: 1px solid rgba(200, 200, 200, 0.3); /* Softer border */
+    /* backdrop-filter: blur(5px); Remove blur for better text readability */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25); /* Softer shadow */
+    color: #333; /* Darker text for readability */
+    padding: 25px 30px; /* More padding */
+    border-radius: 10px; /* More rounded corners */
+    width: 100%; /* Full width on small screens */
+    max-width: 450px; /* Max width */
+    transform: translateY(-50px) scale(0.95); /* Initial state for animation */
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out; /* Smoother animation */
+    position: relative; /* Needed for close button positioning */
+  }
+  .modal.show .modal-content {
+    transform: translateY(0) scale(1); /* Final state for animation */
+    opacity: 1;
+  }
+  .close {
+    position: absolute; /* Position relative to modal-content */
+    top: 10px;
+    right: 15px;
+    font-size: 2rem; /* Larger close icon */
+    font-weight: bold;
+    color: #888; /* Grey color */
+    cursor: pointer;
+    transition: color 0.2s ease;
+    line-height: 1; /* Prevent extra spacing */
+  }
+  .close:hover {
+    color: #333; /* Darker on hover */
+  }
+  .close.tooltip::after { /* Tooltip for close button */
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    right: 0;
+    transform: translateY(5px); /* Position below the 'x' */
+    background: #333; /* Dark background */
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .close.tooltip:hover::after {
+    opacity: 1;
+  }
+  .modal-content h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+      font-weight: 600;
+  }
+  #project-name {
+      color: #d4af37; /* Highlight project name */
+      font-weight: bold;
+  }
+  .form-group {
+    margin-bottom: 20px; /* More space between form groups */
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 8px; /* More space below label */
+    font-weight: 500; /* Slightly bolder label */
+    color: #555;
+  }
+  .form-group input[type="number"] {
+    width: 100%;
+    padding: 10px 12px; /* Comfortable padding */
+    box-sizing: border-box;
+    border: 1px solid #ccc; /* Standard border */
+    border-radius: 5px; /* Rounded input fields */
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .form-group input[type="number"]:focus {
+      border-color: #d4af37; /* Gold border on focus */
+      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2); /* Subtle glow on focus */
+      outline: none; /* Remove default outline */
+  }
+
+  /* Modern Submit Vote Button */
+  button[type="submit"] {
+    display: block; /* Make it block level */
+    width: 100%; /* Full width */
+    background: linear-gradient(45deg, #d4af37, #b4972a);
+    border: none;
+    border-radius: 8px;
+    color: #000; /* Black text */
+    font-weight: 600;
+    padding: 12px 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer; /* Ensure cursor changes */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px; /* Space above button */
+  }
+  button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  button[type="submit"]:active {
+    transform: translateY(-1px) scale(0.99); /* Less pronounced active effect */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+</style>
+
+<div class="glass-project-container">
+  <h2 class="glass-project-header">Projects to Judge</h2>
+  <div class="glass-project-grid">
+    {% if projects %}
+      {% for project in projects %}
+      <div class="glass-project-card" style="--index: {{ loop.index0 }};">
+        <div> {# Top part of the card #}
+          <h3>{{ project.project_name }}</h3>
+          <div class="project-info">Group ID: {{ project.group_id }}</div>
+          {% if project.description %}
+              <p>{{ project.description | truncate(120, True) }}</p> {# Slightly longer truncate #}
+          {% else %}
+              <p><i>No description provided.</i></p>
+          {% endif %}
+        </div>
+        <div> {# Bottom part of the card #}
+          <div class="vote-status">
+            {% if project.has_voted %}
+              <span class="voted-badge">Voted</span>
+            {% endif %}
+          </div>
+          {# --- Button Logic Updated --- #}
+          {% if project.has_voted %}
+            <button class="glass-vote-btn tooltip" data-tooltip="Click to edit your vote" data-project-id="{{ project.project_id }}">
+              Edit Vote
+            </button>
+          {% else %}
+            <button class="glass-vote-btn tooltip" data-tooltip="Click to cast your vote" data-project-id="{{ project.project_id }}">
+              Cast Vote
+            </button>
+          {% endif %}
+          {# --- End Button Logic Update --- #}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: #ccc; text-align: center; grid-column: 1 / -1;">No projects are currently available for judging.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="voting-modal" class="modal">
+  <div class="modal-content">
+    <span class="close tooltip" data-tooltip="Close this window">×</span>
+    <h2>Vote for Project: <br><span id="project-name"></span></h2> {# Project name on new line #}
+    <form id="voting-form" data-project-id="">
+      <div class="form-group">
+        <label for="innovation">Innovation (1-10)</label>
+        <input type="number" id="innovation" name="innovation" min="1" max="10" required> {# Ensured max="10" #}
+      </div>
+      <div class="form-group">
+        <label for="presentation">Presentation (1-10)</label>
+        <input type="number" id="presentation" name="presentation" min="1" max="10" required> {# Ensured max="10" #}
+      </div>
+      <div class="form-group">
+        <label for="technical_merit">Technical Merit (1-10)</label>
+        <input type="number" id="technical_merit" name="technical_merit" min="1" max="10" required> {# Ensured max="10" #}
+      </div>
+      <button type="submit">Submit Vote</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('voting-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    const closeButton = modal.querySelector('.close');
+    const votingForm = document.getElementById('voting-form');
+
+    // Open modal when vote button is clicked
+    document.querySelectorAll('.glass-vote-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const projectId = button.dataset.projectId;
+        // Find the closest ancestor card, then find the h3 within it
+        const projectCard = button.closest('.glass-project-card');
+        const projectName = projectCard ? projectCard.querySelector('h3').textContent : 'Unknown Project';
+        openVotingModal(projectId, projectName);
+      });
+    });
+
+    // Function to close modal
+    function closeModal() {
+      modal.classList.remove('show');
+    }
+
+    // Close modal listeners
+    closeButton.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      // Close if clicked on the background overlay (the modal itself)
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === "Escape" && modal.classList.contains('show')) {
+        closeModal();
+      }
+    });
+
+
+    // Form submission
+    votingForm.addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent default form submission
+      const projectId = this.dataset.projectId;
+      const scores = {};
+      const inputs = this.querySelectorAll('input[type="number"]');
+      let validationPassed = true;
+      let firstInvalidInput = null;
+
+      // --- Enhanced Client-Side Validation ---
+      inputs.forEach(input => {
+        const scoreValue = parseInt(input.value);
+        // Use associated label text for clearer error messages
+        const label = input.previousElementSibling;
+        const categoryName = label ? label.textContent.split('(')[0].trim() : input.name;
+
+        if (isNaN(scoreValue) || scoreValue < input.min || scoreValue > input.max) {
+          alert(`Please enter a valid score (${input.min}-${input.max}) for ${categoryName}.`);
+          if (!firstInvalidInput) { // Focus the first invalid field found
+              firstInvalidInput = input;
+          }
+          validationPassed = false;
+        } else {
+          scores[input.name] = scoreValue; // Only add valid scores
+        }
+      });
+
+      // If validation failed, focus the first problematic input and stop
+      if (!validationPassed) {
+        if(firstInvalidInput) {
+            firstInvalidInput.focus();
+            firstInvalidInput.select(); // Select the content for easy correction
+        }
+        return;
+      }
+
+      // Optional: Ensure all expected categories were captured (more robust)
+      // const expectedCategories = ['innovation', 'presentation', 'technical_merit'];
+      // if (Object.keys(scores).length !== expectedCategories.length) {
+      //     alert("Please fill out all score categories.");
+      //     return; // Prevent submission if not all scores are validly entered
+      // }
+      // --- End Validation ---
+
+
+      // --- Submit Data ---
+      try {
+        const response = await fetch('/submit_vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json' // Indicate we prefer JSON response
+          },
+          body: JSON.stringify({ project_id: projectId, scores: scores })
+        });
+
+        const data = await response.json(); // Attempt to parse JSON response
+
+        if (response.ok && data.status === 'success') {
+          alert(data.message || 'Vote submitted/updated successfully!'); // Use message from backend
+          closeModal();
+          location.reload(); // Reload page to reflect changes (e.g., button text, badge)
+        } else {
+           // Display error message from backend or a generic one
+           const errorMessage = data.message || `Error: ${response.statusText} (Status: ${response.status})`;
+           alert(`Submission failed: ${errorMessage}`);
+           console.error("Submission error details:", data);
+        }
+      } catch (error) {
+        // Handle network errors or issues parsing JSON
+        console.error('Network or Parsing Error:', error);
+        alert('An error occurred while submitting your vote. Please check your network connection and try again.');
+      }
+    });
+  }); // End DOMContentLoaded
+// Form submission
+    votingForm.addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent default form submission
+
+      // --- MODIFICATION START: More robust project ID retrieval ---
+      const projectIdStr = this.dataset.projectId; // Get from form's data attribute
+      console.log("Attempting submission for project ID string:", projectIdStr); // Debug log
+
+      // Check if projectIdStr is valid before converting/sending
+      if (!projectIdStr || projectIdStr.trim() === '') {
+          alert("Submission failed: Could not determine the Project ID. Please close the modal and try again.");
+          console.error("Project ID missing or empty on form dataset.");
+          return; // Stop submission
+      }
+      // Convert to number *after* validation (optional but good practice if backend expects number)
+      const projectId = parseInt(projectIdStr, 10);
+      if (isNaN(projectId) || projectId <= 0) {
+           alert(`Submission failed: Invalid Project ID (${projectIdStr}). Please close the modal and try again.`);
+           console.error("Invalid Project ID after parsing:", projectIdStr);
+           return; // Stop submission
+      }
+      // --- MODIFICATION END ---
+
+
+      const scores = {};
+      const inputs = this.querySelectorAll('input[type="number"]');
+      let validationPassed = true;
+      let firstInvalidInput = null;
+
+      // Client-Side Score Validation (remains the same)
+      inputs.forEach(input => {
+        const scoreValue = parseInt(input.value);
+        const label = input.previousElementSibling;
+        const categoryName = label ? label.textContent.split('(')[0].trim() : input.name;
+
+        if (isNaN(scoreValue) || scoreValue < input.min || scoreValue > input.max) {
+          alert(`Please enter a valid score (${input.min}-${input.max}) for ${categoryName}.`);
+          if (!firstInvalidInput) {
+              firstInvalidInput = input;
+          }
+          validationPassed = false;
+        } else {
+          scores[input.name] = scoreValue;
+        }
+      });
+
+      if (!validationPassed) {
+        if(firstInvalidInput) {
+            firstInvalidInput.focus();
+            firstInvalidInput.select();
+        }
+        return;
+      }
+
+      console.log("Validated scores:", scores); // Debug log
+      console.log("Sending Project ID:", projectId); // Debug log
+
+      // --- Submit Data ---
+      try {
+        const response = await fetch('/submit_vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+           // --- MODIFICATION: Ensure correct projectId variable is used ---
+          body: JSON.stringify({ project_id: projectId, scores: scores })
+          // --- END MODIFICATION ---
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          alert(data.message || 'Vote submitted/updated successfully!');
+          closeModal();
+          location.reload();
+        } else {
+           const errorMessage = data.message || `Error: ${response.statusText} (Status: ${response.status})`;
+           alert(`Submission failed: ${errorMessage}`); // This now matches the message source
+           console.error("Submission error details:", data);
+        }
+      } catch (error) {
+        console.error('Network or Parsing Error:', error);
+        alert('An error occurred while submitting your vote. Please check your network connection and try again.');
+      }
+    }); // End form submit listener
+
+    // The openVotingModal function remains the same as the previous correct version
+    // ... (async function openVotingModal(...) code here) ...
+  // Function to open modal and fetch/populate scores
+  async function openVotingModal(projectId, projectName) {
+    const modal = document.getElementById('voting-modal');
+    const form = document.getElementById('voting-form');
+    const inputs = form.querySelectorAll('input[type="number"]');
+
+    // --- Reset form before populating ---
+    form.reset(); // More reliable way to clear form fields
+    // Also clear any previous validation states if applicable (e.g., removing error classes)
+    // --- End Reset ---
+
+    document.getElementById('project-name').textContent = projectName;
+    form.dataset.projectId = projectId; // Store project ID on the form
+
+    // --- Fetch existing scores ---
+    try {
+      const response = await fetch(`/get_scores/${projectId}`); // Assumes this endpoint exists
+
+      if (!response.ok) {
+          // Log error but don't necessarily block modal opening
+          console.error(`Failed to fetch scores for project ${projectId}: ${response.status} ${response.statusText}`);
+          // Optional: Alert the user if needed
+          // alert('Could not load previously submitted scores.');
+      } else {
+          const scores = await response.json();
+          // Populate form fields if scores were found
+          if (Object.keys(scores).length > 0) {
+              console.log("Populating form with scores:", scores);
+              for (const [category, score] of Object.entries(scores)) {
+                // Match input by 'name' attribute which should correspond to the category key
+                const input = form.querySelector(`input[name="${category}"]`);
+                if (input) {
+                  input.value = score;
+                } else {
+                  console.warn(`Input field with name="${category}" not found in the modal form.`);
+                }
+              }
+          } else {
+              console.log("No previous scores found for this project.");
+          }
+       }
+    } catch (error) {
+      console.error('Error during fetch scores request:', error);
+       // Optional: Alert the user about the error
+       // alert('An error occurred while trying to load existing scores.');
+    } finally {
+       // --- Show the modal ---
+       modal.classList.add('show');
+       // Optional: Focus the first input field in the modal for better UX
+       const firstInput = form.querySelector('input[type="number"]');
+       if (firstInput) {
+           // Timeout helps ensure focus works after modal transition
+           setTimeout(() => firstInput.focus(), 350);
+       }
+    }
+  }
+</script>
+{% endblock %}
