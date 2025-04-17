@@ -260,6 +260,116 @@ def index():
 def about():
     return render_template('about_us.html')
 
+# ------- Admin Routes ------- #
+@app.route('/admin/dashboard')
+@role_required('admin')
+def admin_dashboard():
+    """Admin dashboard page showing users, projects, scores, and pending requests."""
+    try:
+        users_obj = User.query.order_by(User.name).all()
+        projects_obj = Projects.query.order_by(Projects.project_name).all()
+        scores_obj = db.session.query(Scores).options(
+            db.joinedload(Scores.project),
+            db.joinedload(Scores.judge)
+        ).order_by(Scores.timestamp.desc()).all()
+
+        users_list = [{
+            'id': u.id, 'email': u.email, 'name': u.name, 'role': u.role,
+            'judge_request_pending': u.judge_request_pending
+        } for u in users_obj]
+
+        projects_list = [{
+            'project_id': p.project_id, 'project_name': p.project_name, 'group_id': p.group_id,
+            'description': p.description
+        } for p in projects_obj]
+
+        scores_list = [{
+            'score_id': s.score_id, 'category': s.category, 'score_given': s.score_given,
+            'project_id': s.project_id, 'judge_id': s.judge_id,
+            'timestamp': s.timestamp.isoformat() if s.timestamp else None,
+            'project_name': s.project.project_name if s.project else 'N/A',
+            'judge_name': s.judge.name if s.judge else 'N/A'
+        } for s in scores_obj]
+
+        return render_template('admin_dashboard.html',
+                               users=users_list,
+                               projects=projects_list,
+                               scores=scores_list)
+    except Exception as e:
+        app.logger.error(f"Error loading admin dashboard: {e}", exc_info=True)
+        flash("Error loading dashboard data. Please try again.", "error")
+        return redirect(url_for('index'))
+
+@app.route('/admin/approve_judge/<int:user_id>', methods=['POST'])
+@role_required('admin')
+def approve_judge_role(user_id):
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found.'}), 404
+
+    if not user.judge_request_pending:
+        return jsonify({'status': 'info', 'message': 'User does not have a pending request.'}), 400
+
+    if user.role != 'user':
+        user.judge_request_pending = False
+        db.session.commit()
+        return jsonify({'status': 'info', 'message': f'User is already a {user.role}. Request flag cleared.'}), 200
+
+    try:
+        user.role = 'judge'
+        user.judge_request_pending = False
+        db.session.commit()
+        updated_user_data = {
+            'id': user.id, 'email': user.email, 'name': user.name,
+            'role': user.role, 'judge_request_pending': user.judge_request_pending
+        }
+        return jsonify({
+            'status': 'success',
+            'message': f'"{user.name}" ({user.email}) has been promoted to Judge.',
+            'user': updated_user_data
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error approving judge role for user {user_id}: {e}", exc_info=True)
+        return jsonify({'status': 'error', 'message': 'Internal server error occurred while approving the role.'}), 500
+
+@app.route('/admin/users', methods=['POST'])
+@role_required('admin')
+def add_user():
+    if not request.is_json:
+        return jsonify({'status': 'error', 'message': 'Request must be JSON.'}), 415
+    data = request.get_json()
+    if not data:
+        return jsonify({'status': 'error', 'message': 'Invalid JSON payload.'}), 400
+
+    required = ['name', 'email', 'password', 'role']
+    if not all(k in data and data[k] not in [None, ''] for k in required):
+        return jsonify({'status': 'error', 'message': 'Missing or empty required fields: name, email, password, role.'}), 400
+
+    email = data['email'].strip()
+    name = data['name'].strip()
+    password = data['password']
+    role = data['role'].strip()
+
+    if role not in ['user', 'judge', 'admin']:
+        return jsonify({'status': 'error', 'message': 'Invalid role specified.'}), 400
+
+    if User.query.filter(db.func.lower(User.email) == db.func.lower(email)).first():
+        return jsonify({'status': 'error', 'message': 'Email already registered.'}), 409
+
+    try:
+        new_user = User(email=email, name=name, role=role)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'status': 'success', 'message': 'User created successfully.'}), 201
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating user by admin: {e}", exc_info=True)
+        return jsonify({'status': 'error', 'message': 'Internal server error while creating user.'}), 500
+
+# --------------------------------------------------------------------------------------------------------- #
+
 @app.route('/audience')
 @login_required
 def audience():
